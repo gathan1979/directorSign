@@ -1,0 +1,101 @@
+body{
+	/*background-image: url("images/newYear.jpg");*/	
+	background-repeat:repeat;
+
+}
+
+td {
+  word-wrap:break-word;
+  word-break:break-word;
+}
+
+.table-responsive {
+   font-size : 12px;
+}
+
+select{
+	font-size : 8px;
+}
+
+select.trano{
+	font-size : 14px;
+}
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.table > thead > tr > th {
+    vertical-align: middle;
+}
+@font-face { font-family: byz ; src: url('byz.ttf'); } 
+@font-face { font-family: Bradley ; src: url('BRADHITC.TTF'); } 
+@font-face { font-family: arcade ; src: url('ka1.ttf'); } 
+@font-face { font-family: robot ; src: url('joystix.ttf'); } 
+@font-face { font-family: electron ; 
+			src: url('Game-Over.woff2') format('woff2'),
+			src: url('Game-Over.woff') format('woff'),
+			src: url('game_over.ttf') format('truetype');
+			} 
+
+label.titlos{
+	font-size : 50px;
+	padding-left : 40px;
+	font-family : electron,"Mistal","Verdana";
+	color : black;
+}
+
+label.titlosMikros{
+	font-size : 20px;
+	padding-left : 40px;
+	font-family : robot,"Mistal","Verdana";
+	color : red;
+}
+
+.breadcrumb > li + li:before {
+    color: #ccc;
+    content: "/ ";
+    padding: 0 0px;
+	margin : 0 0px;
+}
+
+.breadcrumb {
+	margin-top : 0 0px;
+	padding-left : 80px;
+}
+
+.navbar{
+	margin : 0 0px;
+	padding : 0 0px;
+}
+
+td a{
+	font-weight:bold;
+}
+
+td .fa-search{
+	color :green;
+	font-size: 1.3em;
+}	
+
+td .fa-search-plus{
+	color :green;
+	font-size: 1.2em;
+}
+
+td .fa-paperclip{
+	color :blue;
+	font-size: 1.2em;
+}	
+
+td .fa-amilia{
+	color :red;
+	font-size: 1.2em;
+}
+
+
+.btn-mybutton {
+  color: #ffffff;
+  background-color: #green;
+  border-color: #green;
+}

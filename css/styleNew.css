@@ -1,0 +1,195 @@
+*{
+	box-sizing : border-box;
+}
+
+body{
+	margin : 0px;
+	padding : 0px;	
+	font-family : calibri;
+}
+
+.myNavbar {
+	padding-left : 1em;
+	display : flex;
+	justify-content : space-between;
+	align-items : center;
+	background-color : #333;
+	color : white;
+	box-shadow : 0px 10px 10px 5px rgba(0,0,0,0.5);
+	
+}	
+
+.myNavbarTitle {
+	margin : .5 em;
+	font-size : 1.5em;
+	padding-right : 2em;
+	font-weight : bold;
+}
+
+.myNavbarBody ul{
+	margin : 0px;
+	padding : 0.5em;
+	display : flex;
+	gap : 1em;
+}
+
+.myNavbarBody li{
+	list-style : none;
+	padding : 0.3em;
+}
+
+.myNavbarBody li:hover{
+	background-color : #777;
+}
+
+.myNavbarBody li a{
+	text-decoration : none;
+	display : block;
+	color : white;
+}
+
+.buttonWithIcon{
+	display : flex;
+	flex-direction : column;
+	gap : 1em;
+	justify-content : center;
+	align-items : center;
+}
+
+.toggle-button{
+	position : absolute;
+	top : 1em;
+	left : 1em;
+	display : none;
+	flex-direction : column;
+	justify-content : space-between;
+	width : 30px;
+	height : 20px;
+}
+
+.toggle-button .bar{
+	height : 3px;
+	width :100%;
+	background-color : white;
+	border-radius : 10px;	
+}
+
+
+.dropdown{
+	padding-right: 2em;
+	position : relative;	
+}
+
+.dropdownContent{
+	opacity:0;
+}
+
+.dropdownContentUl{
+	display: flex;
+	flex-direction : column;
+	gap: 2px;
+	position : absolute;
+	width : 25em;
+	right: 0;
+	top: calc(100% + 1em);
+	background-color: rgba(0,0,0, .6);
+	border-radius: 0.25em;
+	box-shadow:0 2px 5px 0 rgba(0,0,0, .1);
+	
+	transition : opacity 150ms ease-in-out;
+	padding : 1em;
+}
+
+.dropdownContentUl li{
+	list-style : none;
+	text-decoration : none;
+}
+
+.dropdownContentUl li a{
+	text-decoration : none;
+}
+
+.dropdownContentUl li a:visited{
+	color : white;
+}
+
+
+.dropdownContent.active{
+	opacity:1;	
+}
+
+.dropdownContentItem{
+	padding: 5px 0px 5px 0px;
+}
+
+.dropdownIcon.buttonWithIcon  i{
+	cursor :pointer;
+}
+
+.dropdownContentItem.btn{
+	border-radius : 5px;
+	background-color: rgba(0,0,0, .4);
+}
+	
+
+.dropdownContentItem.selected{
+	background-color: rgba(0,255,0, .4);
+	padding: 5px 5px 5px 5px;
+	border-radius : 5px;
+}
+
+.dropdownContentItem.selected > a{
+	cursor : not-allowed;
+	pointer-events:none;
+}
+
+.userDepartmentBox{
+	display : flex;
+	flex-direction: column;
+	gap : 5px;
+	padding : 5px;
+
+	border-radius : 5px;
+}
+
+@media (max-width: 850px) {
+	.toggle-button {
+		display : flex;	
+	}
+	
+	.myNavbarBody{
+		display : none;	
+		width : 100%;
+	}
+	
+	.myNavbar{
+		flex-direction : column;
+	}
+	
+	.myNavbarBody ul{
+		flex-direction : column;		
+		gap : 0.5em;
+		width : 100%;
+	}
+	
+	.myNavbarBody ul li .buttonWithIcon{
+		flex-direction : row;
+	}
+	
+	.myNavbarBody.active {
+		display : flex;	
+	}
+	
+	.buttonWithIcon {
+		width : 100%;
+		justify-content : flex-start;	
+	}
+	
+	.buttonWithIcon div:nth-child(2) { order : -1}
+	
+	.myNavbar {
+		min-height : 3em;	
+		padding-top:0.5em;
+	}
+	
+}

@@ -1,0 +1,15 @@
+    
+Local Area Connection:
+Node IpAddress: [10.142.49.10] Scope Id: []
+
+           NetBIOS Remote Machine Name Table
+
+       Name               Type         Status
+    ---------------------------------------------
+    XATSIDOU-PC    <00>  UNIQUE      Registered 
+    WORKGROUP      <00>  GROUP       Registered 
+    XATSIDOU-PC    <20>  UNIQUE      Registered 
+    WORKGROUP      <1E>  GROUP       Registered 
+
+    MAC Address = 44-37-E6-BC-0E-E9
+
