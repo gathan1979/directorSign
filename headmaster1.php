@@ -13,7 +13,7 @@
 			//include 'login.php';
 			if (!isset($_SESSION['user'])){
 				if ($_SESSION['privilege']!="1") {
-					header('Location: index.php');
+					//header('Location: index.php');
 				}
 				//else{
 				//	echo "Access restricted";
@@ -93,13 +93,7 @@
 				?>	
 			
 			
-			function logout(){
-				const url = JSON.parse(localStorage.getItem("userData")).server_address;
-				console.log(url);
-				localStorage.clear();
-				location.href = "https://"+url+"/directorSign/logout.php";
-				
-			}
+			
 			
 			function signDocument(aa){
 				$('#signModal').modal('hide');

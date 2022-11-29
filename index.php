@@ -39,7 +39,7 @@
 			$_SESSION['loginTime'] = time();
 
 			//$multiuser = 0;
-			include 'login1.php';
+			//include 'login1.php';
 			//$queryString = "?multiuser=".$multiuser;
 			if (isset($_SESSION['user'])){
 				if ($_SESSION['accessLevel']=="0") {
@@ -180,15 +180,16 @@
 						//console.log(resdec);
 						localStorage.setItem("jwt",resdec);
 						//return res.json();
-						let jwt = localStorage.getItem("jwt");
-						const testInit = {headers: {'Authorization': `Bearer ${jwt}`}};
-						const test = await fetch("test1.php",testInit); 
-						if (test.status >= 200 && test.status <= 299) {
-							console.log(await test.text());
-						}
+						<!-- let jwt = localStorage.getItem("jwt"); -->
+						<!-- const testInit = {headers: {'Authorization': `Bearer ${jwt}`}}; -->
+						<!-- const test = await fetch("test1.php",testInit);  -->
+						<!-- if (test.status >= 200 && test.status <= 299) { -->
+							<!-- console.log(await test.text()); -->
+						<!-- } -->
+						location.href= "headmaster1.php"
 					}
 					else{
-						console.log("Σφάλμα στην αυθεντικοποίηση");
+						alert("Σφάλμα στην αυθεντικοποίηση");
 					}
 				}
 				
@@ -225,9 +226,9 @@
 								<!--<div class="form-group" style="padding-top:10px;">
 									<button type="submit" class="btn btn-btn-primary" id="submit_form"/>ΥΠΟΒΟΛΗ</button>
 								</div>
-							</div>-->
-								<button style="margin-top : 0.5em;" type="submit" class="btn btn-primary" id="submit_form"/>Είσοδος</button>
-								<button style="margin-top : 0.5em;" type="button" onclick="login();" class="btn btn-warning" id="submit_form1"/>Μη με πατάτε</button>
+							</div>
+								<button style="margin-top : 0.5em;" type="submit" class="btn btn-primary" id="submit_form"/>Είσοδος</button>-->
+								<button style="margin-top : 0.5em;" type="button" onclick="login();" class="btn btn-success" id="submit_form1"/>Σύνδεση</button>
 								
 							<!--<div class="game" style="height:700px;"></div>-->
 						</div>
@@ -270,7 +271,7 @@
 											break;
 										}
 										$row1 = mysqli_fetch_array($result1, MYSQLI_BOTH);	
-										echo '<div style="padding:6px;border;"><span style="display: block;border-radius: 15px 30px;border:1px solid black;font-size:0.7em;background-color : 	 #ffd699; margin-top :5px;padding:5px;letter-spacing: 1.5px;" class="badge bg-warning text-dark" id="user'.$row1['aa'].'" onclick="changeAssignmentStatus(\'user'.$row1['aa'].'\')" >'.$row1['fullname'].'</span></div>';
+										echo '<div style="padding:6px;border;"><span style="display: block;border-radius: 15px 30px;border:1px solid black;font-size:0.8em;background-color : 	 #ffd699; margin-top :5px;padding:5px;letter-spacing: 1.5px;" class="badge bg-warning text-dark" id="user'.$row1['aa'].'" onclick="changeAssignmentStatus(\'user'.$row1['aa'].'\')" >'.$row1['fullname'].'</span></div>';
 								}
 								echo '</div>';
 							}

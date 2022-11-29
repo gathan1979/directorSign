@@ -1,4 +1,5 @@
 <?php 
+		session_start();
 		header("Content-Type: application/json");
 		require_once('vendor/autoload.php');
 		//declare(strict_types=1);
@@ -103,30 +104,59 @@
 					if(!isset($_SESSION['codePage'])){
 						$_SESSION['codePage'] = "UTF-8";
 					};
-					//-------------------------JWT ----------------------------------------------------------------
-					$secretKey  = 'bGS6lzFqvvSQ8ALbOxatm7/Vk7mLQyzqaS34Q4oR1ew=';
+					
+				}
+			}
+			if ($login == 0){
+				header('HTTP/1.0 401 Unauthorized');
+				echo json_encode('Login error');
+			}
+			else{
+				//-------------------------JWT Refresh Token----------------------------------------------------------------
+					$secretKey  = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 					$issuedAt   = new DateTimeImmutable();
-					$expire     = $issuedAt->modify('+30 minutes')->getTimestamp();      // Add 30 minutes
+					$expire     = $issuedAt->modify('+3 minutes')->getTimestamp();      // Add 8 hours
 					$serverName = "10.142.49.10";
-					$username   = $k['fullName'];                                         // Retrieved from filtered POST data
-
+					
 					$data = [
 						'iat'  => $issuedAt->getTimestamp(),         // Issued at: time when the token was generated
 						'iss'  => $serverName,                       // Issuer
 						'nbf'  => $issuedAt->getTimestamp(),         // Not before
 						'exp'  => $expire,                           // Expire
 					];
+					$userData = [];
+					$userData["ip"] = $_SERVER['REMOTE_ADDR'];
+					$merge = array_merge($data, $userData);
+					$jwtHeader = JWT::encode($data,$secretKey,'HS512');	
+					setcookie("rToken", $jwtHeader, time()+120, "/",$_SESSION["server_address"], 1, 1);
+					$query = 'INSERT INTO `refreshtokens`(`rToken`, `user`) VALUES ("'.$jwtHeader.'",'.$_SESSION["aa_staff"].')';
+					$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 
+					//break;
+				//-------------------------JWT ----------------------------------------------------------------
+				
+				
+				
+				//-------------------------JWT ----------------------------------------------------------------
+					$secretKey  = 'bGS6lzFqvvSQ8ALbOxatm7/Vk7mLQyzqaS34Q4oR1ew=';
+					$issuedAt   = new DateTimeImmutable();
+					$expire     = $issuedAt->modify('+1 minutes')->getTimestamp();      // Add 5 minutes
+					$serverName = "10.142.49.10";
 					
-					$merge = array_merge($data, $_SESSION);
+					$data = [
+						'iat'  => $issuedAt->getTimestamp(),         // Issued at: time when the token was generated
+						'iss'  => $serverName,                       // Issuer
+						'nbf'  => $issuedAt->getTimestamp(),         // Not before
+						'exp'  => $expire,                           // Expire
+					];
+					$userData = [];
+					$userData["aa_staff"] = $_SESSION["aa_staff"];
+					$userData["aa_user"] = $_SESSION["aa_user"];
+					$userData["user"] = $_SESSION["user"];
+					$merge = array_merge($data, $userData);
 					$jwtHeader = JWT::encode($data,$secretKey,'HS512');	
 					echo json_encode($jwtHeader);
-					break;
+					//break;
 					//-------------------------JWT ----------------------------------------------------------------
-				}
-			}
-			if ($login == 0){
-				header('HTTP/1.0 401 Unauthorized');
-				echo json_encode('Login error');
 			}
 			
 			mysqli_close($con);
