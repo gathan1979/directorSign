@@ -66,10 +66,10 @@
 		
 		<script src="js/jquery-ui.min.js"></script>
 		<script type="text/javascript" src="js/customfunctions.js"></script>  
-		<script type="module" src="./modules/getDBData.js"></script>
+		<script type="module" src="./modules/userData.js"></script>
 		
 		<script type="module" >
-			import {getUserData}  from "./modules/getDBData.js";
+			import {getUserData}  from "./modules/userData.js";
 			if (localStorage.getItem("userData") == null){
 				console.log("Λήψη δεδομένων χρήστη");
 				const user = getUserData().then( res => {

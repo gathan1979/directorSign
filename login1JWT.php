@@ -128,7 +128,7 @@
 					$userData["ip"] = $_SERVER['REMOTE_ADDR'];
 					$merge = array_merge($data, $userData);
 					$jwtHeader = JWT::encode($data,$secretKey,'HS512');	
-					setcookie("rToken", $jwtHeader, time()+120, "/",$_SESSION["server_address"], 1, 1);
+					setcookie("rToken", $jwtHeader, time()+24000, "/",$_SESSION["server_address"], 1, 1);
 					$query = 'INSERT INTO `refreshtokens`(`rToken`, `user`) VALUES ("'.$jwtHeader.'",'.$_SESSION["aa_staff"].')';
 					$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 
 					//break;
@@ -139,7 +139,7 @@
 				//-------------------------JWT ----------------------------------------------------------------
 					$secretKey  = 'bGS6lzFqvvSQ8ALbOxatm7/Vk7mLQyzqaS34Q4oR1ew=';
 					$issuedAt   = new DateTimeImmutable();
-					$expire     = $issuedAt->modify('+1 minutes')->getTimestamp();      // Add 5 minutes
+					$expire     = $issuedAt->modify('+10 minutes')->getTimestamp();      // Add 5 minutes
 					$serverName = "10.142.49.10";
 					
 					$data = [
@@ -153,7 +153,7 @@
 					$userData["aa_user"] = $_SESSION["aa_user"];
 					$userData["user"] = $_SESSION["user"];
 					$merge = array_merge($data, $userData);
-					$jwtHeader = JWT::encode($data,$secretKey,'HS512');	
+					$jwtHeader = JWT::encode($merge,$secretKey,'HS512');	
 					echo json_encode($jwtHeader);
 					//break;
 					//-------------------------JWT ----------------------------------------------------------------

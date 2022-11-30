@@ -24,7 +24,7 @@
 					
 				?>
 					
-				<li class="text-center"><a target="_blank" href="
+				<li class="text-center"><a target="_blank" rel="opener" href="
 				<?php 
 						echo "https://".$_SERVER['SERVER_ADDR']."/nocc-1.9.8/protocol/editTable1.php?tn=book";
 					
