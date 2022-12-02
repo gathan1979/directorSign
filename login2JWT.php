@@ -10,7 +10,7 @@
 			include 'connection.php';
 			mysqli_query($con,"SET NAMES 'UTF8'");
 			mysqli_query($con,"set names utf8");
-			$query = 'SELECT attendanceNumber,fullName,password,accessLevel,department,signature,signatureAped,roleName,prime, protocolAccessLevel,presenceAccessLevel,canSignAsLast,staff.aa as staffAA FROM 
+			$query = 'SELECT `signpasswords`.aa as roleAA,attendanceNumber,fullName,password,accessLevel,department,signature,signatureAped,roleName,prime, protocolAccessLevel,presenceAccessLevel,canSignAsLast,staff.aa as staffAA FROM 
 			`staff` left join `signpasswords` on attendanceNumber=attendanceId order by prime desc;';
 			$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 
 			//$fullname=mysqli_real_escape_string($con,strip_tags($_POST['fullname']));
@@ -74,6 +74,7 @@
 					$role['department'] = $k['department'];
 					$role['departmentName'] =$d[0];
 					$role['prime'] = $k['prime'];
+					$role['aa_role'] = $k['roleAA'];
 		
 					$role['device'] ="";
 					array_push($user['roles'],$role);
@@ -112,8 +113,10 @@
 					];
 					$userData = [];
 					$userData["ip"] = $_SERVER['REMOTE_ADDR'];
+					$userData["aa_staff"] = $user["aa_staff"];
+					$userData["aa_user"] = $user["aa_user"];
 					$merge = array_merge($data, $userData);
-					$jwtHeader = JWT::encode($data,$secretKey,'HS512');	
+					$jwtHeader = JWT::encode($merge,$secretKey,'HS512');	
 					setcookie("rToken", $jwtHeader, time()+24000, "/",$settings["server_address"], 1, 1);
 					$query = 'INSERT INTO `refreshtokens`(`rToken`, `user`) VALUES ("'.$jwtHeader.'",'.$user["aa_staff"].')';
 					$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 

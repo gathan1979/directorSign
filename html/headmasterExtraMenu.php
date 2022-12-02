@@ -14,7 +14,6 @@
 	}
 	else{
 		echo '<button id="mindigitalButton" style="margin-left : 0.2em;" class="btn btn-danger" data-toggle="tooltip" title="Σύνδεση στο mindigital" onclick="showMindigitalModal();"><i class="fas fa-file-signature"></i></button>';
-
 	}
 	
 ?>
