@@ -193,6 +193,25 @@
 					}
 				}
 				
+				async function login1(){
+					let formData = new FormData();
+					formData.append('name',document.getElementById("name").value);
+					formData.append('pass',document.getElementById("pass").value);
+					let init = {method: 'POST', body: formData};
+					//console.log(init);
+					const res = await fetch("login2JWT.php",init); 
+					if (res.status >= 200 && res.status <= 299) {
+						const loginData = await res.json();
+						localStorage.setItem("loginData",JSON.stringify(loginData));
+						console.log(JSON.parse(localStorage.getItem("loginData")));
+						localStorage.setItem("currentRole",0);
+						location.href= "headmaster1_test.php"
+					}
+					else{
+						alert("Σφάλμα στην αυθεντικοποίηση");
+					}
+				}
+				
 		</script>
 	
 	<?php
