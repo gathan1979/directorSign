@@ -662,6 +662,5 @@ function saveCheckBoxSetting(user,setting){
 function logout(){
 	localStorage.clear();
 	location.href = "logout.php";
-	
 }
 

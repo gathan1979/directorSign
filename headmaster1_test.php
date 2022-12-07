@@ -49,7 +49,9 @@
 		<script type="module" src="./modules/startPage.js"></script>
 		
 		<script type="module" >
-	
+			import {getRecords} from "./modules/startPage.js";
+				
+			getRecords();	
 			
 		</script>  
 		
@@ -664,87 +666,6 @@
 			
 </script>	
 
-		<style>
-			@media print {
-				.ektos {display:none};
-			}
-			
-			#loading {
-				display:none;
-				position:absolute;
-				left:0;
-				top:0;
-				z-index:1000;
-				width:100%;
-				height:100%;
-				min-height:100%;
-				background:white;
-				opacity:0.8;
-				text-align:center;
-				color:#fff;
-			}
-			#loader {
-				display:none;
-				position:absolute;
-				left:0;
-				top:0;
-				z-index:1000;
-				width:100%;
-				height:100%;
-				min-height:100%;
-				background:white;
-				opacity:0.8;
-				text-align:center;
-				color:#fff;
-			}
-			#signing {
-				display:none;
-				position:absolute;
-				left:0;
-				top:0;
-				z-index:1000;
-				width:100%;
-				height:100%;
-				min-height:100%;
-				background:white;
-				opacity:0.8;
-				text-align:center;
-				color:#fff;
-			}
-			#rejecting {
-				display:none;
-				position:absolute;
-				left:0;
-				top:0;
-				z-index:1000;
-				width:100%;
-				height:100%;
-				min-height:100%;
-				background:white;
-				opacity:0.8;
-				text-align:center;
-				color:#fff;
-			}
-			
-			#canceling {
-				display:none;
-				position:absolute;
-				left:0;
-				top:0;
-				z-index:1000;
-				width:100%;
-				height:100%;
-				min-height:100%;
-				background:white;
-				opacity:0.8;
-				text-align:center;
-				color:#fff;
-			}
-			
-			
-		</style>		
-
-		<!--  <meta http-equiv="refresh" content="<?php echo $sec?>;URL='<?php echo $page?>'">  -->
 	</head>
 	<body > 
 		<?php include 'html/startPageMenu_test.php';?> 
@@ -777,7 +698,7 @@
 			<button class="btn btn-success" id="showEmployees">Εμφάνιση Εγγράφων Υφισταμένων</button>
 			<button class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>
 			-->
-			<?php include 'html/headmasterExtraMenu.php';?> 
+			<?php include 'html/headmasterExtraMenu_test.php';?> 
 			
 			<div class="table-responsive" id="soma">
 				<table class="table table-striped" id="example1">

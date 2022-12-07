@@ -10,7 +10,6 @@
 	//		$handle = @fopen("../codes.txt", "r");     palia morfi pou to diavasma xriston to ekana me file
 			include 'connection.php';
 			mysqli_query($con,"SET NAMES 'UTF8'");
-			mysqli_query($con,"set names utf8");
 			$query = 'SELECT attendanceNumber,fullName,password,accessLevel,department,signature,signatureAped,roleName,prime, protocolAccessLevel,presenceAccessLevel,canSignAsLast,staff.aa as staffAA FROM 
 			`staff` left join `signpasswords` on attendanceNumber=attendanceId order by prime desc;';
 			$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 

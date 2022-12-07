@@ -5,7 +5,7 @@ if (+JSON.parse(localStorage.getItem("loginData")).user.privilege){
 	document.querySelector("#bs-example-navbar-collapse-1>ul").innerHTML += adeiesBtn;
 }
 
-const loginData = localStorage.getItem("loginData")?JSON.parse(localStorage.getItem("loginData")):alert('Δεν υπάρχουν δεδομένα χρήστη');
+let loginData = localStorage.getItem("loginData")?JSON.parse(localStorage.getItem("loginData")):alert('Δεν υπάρχουν δεδομένα χρήστη');
 //Πρόσβαση στο Πρωτόκολλο λεκτικό
 let cRole = localStorage.getItem("currentRole");
 if (+loginData.user.roles[cRole].protocolAccessLevel){
@@ -79,7 +79,7 @@ const aaStaff = loginData.user.aa_staff;
 const aaUser = loginData.user.aa_user;
 document.querySelector("#changePwdBtn").href = "changePasswordForm.php?aa="+aaStaff+"&aaP="+aaUser;
 
-async function getRecords(){
+export async function getRecords(){
 	const loginData = localStorage.getItem("loginData")?JSON.parse(localStorage.getItem("loginData")):alert('Δεν υπάρχουν δεδομένα χρήστη');
 	const jwt = loginData.jwt;
 	console.log(jwt);
@@ -88,7 +88,7 @@ async function getRecords(){
 	
 	let init = {method: 'GET',  headers : myHeaders};
 	//console.log(init);
-	const res = await fetch("/api/getRecords.php",init); 
+	const res = await fetch("/api/getRecords.php?role="+loginData.user.roles[localStorage.getItem("currentRole")].aa,init); 
 	if (res.status >= 200 && res.status <= 299) {
 		console.log("αλλαγή ρόλου πραγματοποιήθηκε");
 	}

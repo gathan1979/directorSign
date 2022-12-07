@@ -180,17 +180,17 @@
 						//console.log(resdec);
 						//localStorage.setItem("jwt",resdec);
 						
-						const res = await fetch("login2JWT.php",init); 
-						if (res.status >= 200 && res.status <= 299) {
-							const loginData = await res.json();
-							localStorage.setItem("loginData",JSON.stringify(loginData));
-							console.log(JSON.parse(localStorage.getItem("loginData")));
-							localStorage.setItem("currentRole",0);
-							location.href= "headmaster1_test.php"
-						}
-						else{
-							alert("Σφάλμα στην αυθεντικοποίηση");
-						}
+						<!-- const res = await fetch("login2JWT.php",init);  -->
+						<!-- if (res.status >= 200 && res.status <= 299) { -->
+							<!-- const loginData = await res.json(); -->
+							<!-- localStorage.setItem("loginData",JSON.stringify(loginData)); -->
+							<!-- console.log(JSON.parse(localStorage.getItem("loginData"))); -->
+							<!-- localStorage.setItem("currentRole",0); -->
+							<!-- //location.href= "headmaster1_test.php" -->
+						<!-- } -->
+						<!-- else{ -->
+							<!-- alert("Σφάλμα στην αυθεντικοποίηση"); -->
+						<!-- } -->
 						
 						location.href= "headmaster1.php"
 					}
