@@ -69,18 +69,7 @@
 		<script type="module" src="./modules/userData.js"></script>
 		
 		<script type="module" >
-			import {getUserData}  from "./modules/userData.js";
-			if (localStorage.getItem("userData") == null){
-				console.log("Λήψη δεδομένων χρήστη");
-				const user = getUserData().then( res => {
-					console.log(res);
-					localStorage.setItem("userData", JSON.stringify(res));
-					return res;
-				});
-			}
-			else{
-				console.log("Ήδη συνδεδεμένος");
-			}
+			
 			
 		</script>  
 		

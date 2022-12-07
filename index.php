@@ -174,11 +174,11 @@
 					formData.append('pass',document.getElementById("pass").value);
 					let init = {method: 'POST', body: formData};
 					//console.log(init);
-					const res = await fetch("login1JWT.php",init); 
+					const res = await fetch("login1.php",init); 
 					if (res.status >= 200 && res.status <= 299) {
-						const resdec = await res.json();
+						//const resdec = await res.json();
 						//console.log(resdec);
-						localStorage.setItem("jwt",resdec);
+						//localStorage.setItem("jwt",resdec);
 						//return res.json();
 						<!-- let jwt = localStorage.getItem("jwt"); -->
 						<!-- const testInit = {headers: {'Authorization': `Bearer ${jwt}`}}; -->
@@ -305,6 +305,8 @@
 	
 
 </body>
-
+	<?php
+		//var_dump( $_SESSION);
+	?>
 
 </html>

@@ -3,7 +3,7 @@
 		//declare(strict_types=1);
 		use Firebase\JWT\JWT;
 		use Firebase\JWT\Key;
-		
+		session_start();
 
 
 		if (isset($_POST['name']) and isset($_POST['pass'])){
@@ -129,8 +129,14 @@
 					//-------------------------JWT ----------------------------------------------------------------
 				}
 			}
+			if (!$login){	
+				header($_SERVER['SERVER_PROTOCOL'].'401 Internal Server Error', true, 401);	
+			}
 			//fortosi rithmiseon
 			
 			mysqli_close($con);
+		}
+		else{
+			header($_SERVER['SERVER_PROTOCOL'].'500 Internal Server Error', true, 500);	
 		}
 ?>
