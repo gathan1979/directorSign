@@ -10,7 +10,7 @@
 			include 'connection.php';
 			mysqli_query($con,"SET NAMES 'UTF8'");
 			mysqli_query($con,"set names utf8");
-			$query = 'SELECT attendanceNumber,fullName,password,accessLevel,department,signature,signatureAped,roleName,prime, protocolAccessLevel,presenceAccessLevel,canSignAsLast,staff.aa as staffAA FROM 
+			$query = 'SELECT signpasswords.aa as roleAA,attendanceNumber,fullName,password,accessLevel,department,signature,signatureAped,roleName,prime, protocolAccessLevel,presenceAccessLevel,canSignAsLast,staff.aa as staffAA FROM 
 			`staff` left join `signpasswords` on attendanceNumber=attendanceId order by prime desc;';
 			$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 
 			//$fullname=mysqli_real_escape_string($con,strip_tags($_POST['fullname']));
@@ -61,7 +61,7 @@
 						$user['signatureAped'] = $k['signatureAped'];	
 						$res=mysqli_query($con,'insert into `login` (userId, fromIP) values ('.$user['aa_user'].",'".$_SERVER['REMOTE_ADDR']."');") or die ('login import to database error');
 					}
-					
+					$role['aa'] = $k['roleAA'];
 					$role['privilege'] =$k['presenceAccessLevel'] ;
 					$role['canSignAsLast'] = $k['canSignAsLast'];
 					$role['accessLevel'] = $k['accessLevel'];

@@ -16,24 +16,23 @@
 						<li id="ipogegrammena"  text-center"><a href="../../directorSign/signed.php"><span class="label label-success">Διεκπεραιωμένα</span></br></br><i class="far fa-file-pdf fa-lg"></i></a></li>
 						<script type="text/javascript" defer>
 							
-							//Πρόσβαση στο Παρουσιολόγιο
-							//if (+JSON.parse(localStorage.getItem("loginData")).user.privilege){
-								const adeiesBtn = '<li class="text-center"><a target="_blank" href="/adeies/index.php"><span class="label label-info">Άδειες</span></br></br><i class="far fa-calendar-alt  fa-lg"></i></a></li>';
-							//}
-							document.querySelector("#bs-example-navbar-collapse-1>ul").innerHTML += adeiesBtn;
+							// if (+JSON.parse(localStorage.getItem("loginData")).user.privilege){
+								// const adeiesBtn = '<li class="text-center"><a target="_blank" href="/adeies/index.php"><span class="label label-info">Άδειες</span></br></br><i class="far fa-calendar-alt  fa-lg"></i></a></li>';
+								// document.querySelector("#bs-example-navbar-collapse-1>ul").innerHTML += adeiesBtn;
+							// }
+						
 						</script>
 							
 						<li class="text-center"><a target="_blank" rel="opener" href="../nocc-1.9.8/protocol/editTable1.php?tn=book"><span id="protocolAppText" class="label label-primary"></span></br></br><i class="fas fa-book fa-lg"></i></a></li>
 						<script type="text/javascript" defer>
-							const loginData = localStorage.getItem("loginData")?JSON.parse(localStorage.getItem("loginData")):alert('Δεν υπάρχουν δεδομένα χρήστη');
-							//Πρόσβαση στο Πρωτόκολλο λεκτικό
-							let cRole = localStorage.getItem("currentRole");
-							if (+loginData.user.roles[cRole].protocolAccessLevel){
-								document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
-							}
-							else{
-								document.querySelector("#protocolAppText").textContent = "Χρεώσεις Μου";
-							}
+							// const loginData = localStorage.getItem("loginData")?JSON.parse(localStorage.getItem("loginData")):alert('Δεν υπάρχουν δεδομένα χρήστη');
+							// let cRole = localStorage.getItem("currentRole");
+							// if (+loginData.user.roles[cRole].protocolAccessLevel){
+								// document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
+							// }
+							// else{
+								// document.querySelector("#protocolAppText").textContent = "Χρεώσεις Μου";
+							// }
 							
 						</script>	
 
@@ -41,15 +40,6 @@
 						<li class="text-center"><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book"><span class="label label-primary">
 						Πρωτόκολλο</span></br></br><i class="fab fa-readme fa-lg"></i></a></li>
 						
-						<div style="display:none;">
-							<form name="heskForm" id="heskForm" action="../hesk/admin/index.php" method="post"  target="_blank">
-							  <input type="text" name="user" id="user" value="<?php echo $_SESSION['aa_user'] ?>"></input>
-							  <input type="text" name="pass" id="pass" value="1Q2w3e$"></input>
-							  <input type="text" name="remember_user" id="remember_user" value="NOTHANKS"></input>
-							  <input type="text" name="a" id="a" value="do_login"></input>
-							  <input type="submit"  value="Submit form">
-							</form>
-						</div>
 
 						<li id="minimata" class="text-center"><a href="/messages.php"><span class="label label-success">Μηνύματα</span></br></br><i class="fas fa-envelope-open fa-lg"></i><span class="badge badge-warning"></span></a></li>
 
@@ -66,20 +56,9 @@
 								<ul style="margin:1em; list-style-type: none;" id="userRoles"></ul>
 
 							<script type="text/javascript" defer>
-								loginData.user.roles.forEach((role,index)=>{
-									let newRole;
-									if(index == cRole){
-										newRole = '<li style="margin-top:2px;"><button type="button" class="btn btn-success btn-sm">'+role.roleName+'</btn></li>';
-									}
-									else{
-										newRole = '<li style="margin-top:2px;"><button type="button" class="btn btn-info btn-sm">'+role.roleName+'</btn></li>';
-									}
-									//console.log(newRole);
-									document.querySelector("#userRoles").innerHTML += newRole;
-									return;
-								});
-								document.querySelector("#connectedUser>span").textContent = loginData.user.user;
-							
+								
+									//-------------------------------------------------------------------	
+								
 							</script>
 							
 								<li role="separator" class="divider"></li>
@@ -89,9 +68,7 @@
 							</ul></div></li>
 							
 							<script type="text/javascript" defer>
-								const aaStaff = loginData.user.aa_staff;
-								const aaUser = loginData.user.aa_user;
-								document.querySelector("#changePwdBtn").href = "changePasswordForm.php?aa="+aaStaff+"&aaP="+aaUser;
+								
 							</script>
 					</ul>
 				</div><!-- /.navbar-collapse -->
