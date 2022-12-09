@@ -1,4 +1,5 @@
 <?php 
+		session_start();
 		require_once('vendor/autoload.php');
 		//declare(strict_types=1);
 		use Firebase\JWT\JWT;
@@ -104,36 +105,16 @@
 					if(!isset($_SESSION['codePage'])){
 						$_SESSION['codePage'] = "UTF-8";
 					};
-					//-------------------------JWT ----------------------------------------------------------------
-					$secretKey  = 'bGS6lzFqvvSQ8ALbOxatm7/Vk7mLQyzqaS34Q4oR1ew=';
-					$issuedAt   = new DateTimeImmutable();
-					$expire     = $issuedAt->modify('+30 minutes')->getTimestamp();      // Add 60 seconds
-					$serverName = "10.142.49.10";
-					$username   = "username";                                           // Retrieved from filtered POST data
-
-					$data = [
-						'iat'  => $issuedAt->getTimestamp(),         // Issued at: time when the token was generated
-						'iss'  => $serverName,                       // Issuer
-						'nbf'  => $issuedAt->getTimestamp(),         // Not before
-						'exp'  => $expire,                           // Expire
-					];
 					
-					$merge = array_merge($data, $_SESSION);
-					header("Content-Type: application/json");
-					echo JWT::encode(
-						$data,
-						$secretKey,
-						'HS512'
-					);
-
-					//-------------------------JWT ----------------------------------------------------------------
 				}
 			}
 			if (!$login){	
 				header($_SERVER['SERVER_PROTOCOL'].'401 Internal Server Error', true, 401);	
 			}
 			//fortosi rithmiseon
-			
+			if (!$login){
+				header("HTTP/1.1 401 Authentication failed",true,401);	
+			}
 			mysqli_close($con);
 		}
 		else{

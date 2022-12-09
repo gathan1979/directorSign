@@ -176,16 +176,16 @@
 					//console.log(init);
 					const res = await fetch("login1.php",init); 
 					if (res.status >= 200 && res.status <= 299) {
-						//const resdec = await res.json();
-						//console.log(resdec);
-						//localStorage.setItem("jwt",resdec);
-						//return res.json();
-						<!-- let jwt = localStorage.getItem("jwt"); -->
-						<!-- const testInit = {headers: {'Authorization': `Bearer ${jwt}`}}; -->
-						<!-- const test = await fetch("test1.php",testInit);  -->
-						<!-- if (test.status >= 200 && test.status <= 299) { -->
-							<!-- console.log(await test.text()); -->
-						<!-- } -->
+						const res2 = await fetch("login2JWT.php",init); 
+						if (res2.status >= 200 && res2.status <= 299) {
+							const loginData = await res2.json();
+							localStorage.setItem("loginData",JSON.stringify(loginData));
+							console.log(JSON.parse(localStorage.getItem("loginData")));
+							localStorage.setItem("currentRole",0);
+						}
+						else{
+							alert("Σφάλμα στην αυθεντικοποίηση");
+						}
 						location.href= "headmaster1.php"
 					}
 					else{

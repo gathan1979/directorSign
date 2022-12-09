@@ -66,7 +66,7 @@
 		
 		<script src="js/jquery-ui.min.js"></script>
 		<script type="text/javascript" src="js/customfunctions.js"></script>  
-		<script type="module" src="./modules/userData.js"></script>
+		
 		
 		<script type="module" >
 			
