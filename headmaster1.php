@@ -75,14 +75,22 @@
 		
 		<script type="text/javascript" defer>
 		
-				<?php
-					if (isset($_GET['rmsg'])){
-						echo 'alert("'.$_GET['rmsg'].'");';
-					}
-				?>	
+			// θα αφαιρεθεί μετά την πλήρη απαλλαγή από το SESSION
+			readRole();
+			function readRole(){
+				const urlParams = new URLSearchParams(window.location.search);
+				if (urlParams.has('role')){
+					const userRoles = JSON.parse(localStorage.getItem("loginData")).user.roles;
+					userRoles.forEach( (role,index)=>{
+						if (role.aa_role == urlParams.get("role")){
+							localStorage.setItem("currentRole",index)
+						}
+					});
+				}
+			}
 			
 			
-			
+			//--------------------------------------------------------------------------------------------
 			
 			function signDocument(aa){
 				$('#signModal').modal('hide');

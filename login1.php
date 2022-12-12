@@ -12,7 +12,7 @@
 			include 'connection.php';
 			mysqli_query($con,"SET NAMES 'UTF8'");
 			mysqli_query($con,"set names utf8");
-			$query = 'SELECT attendanceNumber,fullName,password,accessLevel,department,signature,signatureAped,roleName,prime, protocolAccessLevel,presenceAccessLevel,canSignAsLast,staff.aa as staffAA FROM 
+			$query = 'SELECT signpasswords.aa as roleAA, attendanceNumber,fullName,password,accessLevel,department,signature,signatureAped,roleName,prime, protocolAccessLevel,presenceAccessLevel,canSignAsLast,staff.aa as staffAA FROM 
 			`staff` left join `signpasswords` on attendanceNumber=attendanceId order by prime desc;';
 			$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 
 			//$fullname=mysqli_real_escape_string($con,strip_tags($_POST['fullname']));
@@ -77,6 +77,7 @@
 						$_SESSION['department'] = $k['department'];
 						$_SESSION['departmentName'] =$d[0];
 						$_SESSION['prime'] = $k['prime'];
+						$_SESSION['role'] = $k['roleAA'];
 					}
 					else{
 						$_SESSION['privilege'.$l] =$k['presenceAccessLevel'] ;
@@ -91,6 +92,7 @@
 						$_SESSION['department'.$l] = $k['department'];
 						$_SESSION['departmentName'.$l] = $d[0];
 						$_SESSION['prime'.$l] = $k['prime'];
+						$_SESSION['role'.$l] = $k['roleAA'];
 					}		
 					$_SESSION['device'] ="";
 					$res=mysqli_query($con,'insert into `login` (userId, fromIP) values ('.$_SESSION['aa_user'].",'".$_SERVER['REMOTE_ADDR']."');") or die ('login import to database error');
