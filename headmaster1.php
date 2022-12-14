@@ -83,7 +83,17 @@
 					const userRoles = JSON.parse(localStorage.getItem("loginData")).user.roles;
 					userRoles.forEach( (role,index)=>{
 						if (role.aa_role == urlParams.get("role")){
-							localStorage.setItem("currentRole",index)
+							localStorage.setItem("currentRole",index);
+							filter = {
+								showForArchive : 0,
+								selectedDate : null,
+								selectedDateDep : null,
+								isAssigned : 0,
+								isAssignedToDep : 0,
+								isAssignedLast :0,
+								noNotifications : 0
+							};
+							localStorage.setItem("filter", JSON.stringify(filter));
 						}
 					});
 				}
