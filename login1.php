@@ -95,7 +95,6 @@
 						$_SESSION['role'.$l] = $k['roleAA'];
 					}		
 					$_SESSION['device'] ="";
-					$res=mysqli_query($con,'insert into `login` (userId, fromIP) values ('.$_SESSION['aa_user'].",'".$_SERVER['REMOTE_ADDR']."');") or die ('login import to database error');
 					$l++;
 				}
 				if ($login){
@@ -112,6 +111,9 @@
 			}
 			if (!$login){	
 				header($_SERVER['SERVER_PROTOCOL'].'401 Internal Server Error', true, 401);	
+			}
+			else{
+				$res=mysqli_query($con,'insert into `login` (userId, fromIP) values ('.$_SESSION['aa_user'].",'".$_SERVER['REMOTE_ADDR']."');") or die ('login import to database error');	
 			}
 			//fortosi rithmiseon
 			if (!$login){

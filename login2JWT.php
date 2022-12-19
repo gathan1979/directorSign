@@ -59,7 +59,6 @@
 						$user['aa_staff'] = $k['staffAA'];	
 						$user['signature'] = $k['signature'];
 						$user['signatureAped'] = $k['signatureAped'];	
-						$res=mysqli_query($con,'insert into `login` (userId, fromIP) values ('.$user['aa_user'].",'".$_SERVER['REMOTE_ADDR']."');") or die ('login import to database error');
 					}
 					
 					$role['privilege'] =$k['presenceAccessLevel'] ;
