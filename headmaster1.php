@@ -1257,7 +1257,7 @@
 			//echo '<pre>' . print_r($_SESSION, TRUE) . '</pre>';
 			//var_dump($_SESSION);
 			//echo $_SESSION['canSignAsLast'].'φφφ';
-			//echo $_SESSION['codePage'];
+			//echo $_SESSION['selectedYear'];
 
 		?>
 		
