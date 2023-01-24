@@ -16,7 +16,8 @@
 	$msg = "";
 	$uploadOk = 1;
 	$numFiles = $_POST['numFiles'];
-	$aped = $_POST['aped'];
+	//$aped = $_POST['aped'];				// ----13-01-2023
+	$aped = 1; 								// ++++13-01-2023
 	if (isset($_POST['tobeSigned'])){
 		$tobeSigned = $_POST['tobeSigned'];
 	}
@@ -140,7 +141,7 @@
 					   $authorComment .= " - ";
 					   $authorComment .= $_POST['authorComment'];
 					}
-					$signerId = null;
+					$signerId = -1;
 					if (isset($_POST['signerId'])){
 					   $signerId = str_replace("user","",$_POST['signerId']);;
 					}
@@ -149,6 +150,7 @@
 				}
 					
 				//}
+				//echo $erotima;
 				$result = mysqli_query($con,$erotima);	
 				if ($result == false) {
 					$msg.= "Αποτυχία εκτέλεσης καταχώρησης στη βάση. ";

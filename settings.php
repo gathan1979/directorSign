@@ -86,6 +86,27 @@
 		
 		<script type="text/javascript" src="js/customfunctions.js"></script>  
 		
+		
+		
+		<script type="text/javascript" defer>
+			let loginData = localStorage.getItem("loginData");
+			if (loginData === null){
+				alert("Δεν υπάρχουν στοιχεία χρήστη");
+			}
+			else{
+				const aaStaff = loginData.user.aa_staff;
+				const aaUser = loginData.user.aa_user;
+				loginData = JSON.parse(loginData);
+				//Πρόσβαση στο Πρωτόκολλο λεκτικό
+				let cRole = localStorage.getItem("currentRole");
+				document.querySelector("#changePwdBtn").href = "changePasswordForm.php?aa="+aaStaff+"&aaP="+aaUser;
+			}
+		</script>
+			
+			
+			
+			
+		
 		<script type="text/javascript">	
 				
 			

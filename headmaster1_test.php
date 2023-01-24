@@ -11,42 +11,28 @@
 		<title>Ηλεκτρονικές Υπηρεσίες</title>
 		
 		<!-- Bootstrap core CSS -->
-		<link rel="stylesheet" type="text/css" href="bootstrap-3.3.5-dist/bootstrap-3.3.5-dist/css/bootstrap.min.css" >
-		<link rel="stylesheet" type="text/css" href="hopscotch.css" />
 		
-		<link rel="stylesheet" type="text/css" href="DataTables-1.10.16/css/dataTables.bootstrap.min.css" >
-		<link rel="stylesheet" type="text/css" href="DataTables-1.10.16/css/buttons.bootstrap.min.css" >
+		<script src="js/jquery-3.6.3.min.js"></script>
+		<script src="js/popper.min.js"></script>
 		
-		<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+		<link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
+		<script src="bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>
+		
 		<link rel="stylesheet" type="text/css" href="style.css" />
 
-		<script src="js/jquery-2.1.4.min.js"></script>
-
-		<script src="js/bootstrap.min.js"></script>	
-
-		
-		<script src="DataTables-1.10.16/js/jquery.dataTables.js"></script>
-		<script src="DataTables-1.10.16/js/dataTables.bootstrap.js"></script>
-		
-		<script src="DataTables-1.10.16/js/dataTables.buttons.min.js"></script>
-		<script src="DataTables-1.10.16/js/buttons.bootstrap.min.js"></script>
-		
-
-		<script src="js/hopscotch.js"></script>	
-		<script src="js/pdfobject.min.js"></script>	
-		
+		<!--fontawesome-->
 		<link href="css/all.css" rel="stylesheet">
-		<!--<script defer src="js/fontawesome-all.js"></script>-->
-		
-		<script src="js/jquery-ui.min.js"></script>
+		<!--fontawesome-->
+				
 		<script type="text/javascript" src="js/customfunctions.js"></script>  
-		<script type="module" src="./modules/userData.js"></script>
+		<script type="module" src="./modules/signatureRecords.js"></script>
 		
 		<script type="module" >
-			import {getUserRecords,fillTable}  from "./modules/userData.js";
+			import {getSigRecords,fillTable}  from "./modules/signatureRecords.js";
 			
-			const user = getUserRecords().then( res => {
-				return res;
+			const user = getSigRecords().then( res => {
+				//const table = $('#example1').DataTable();
+				fillTable(res);
 			});
 		</script>  
 		
@@ -202,65 +188,7 @@
 			
 			//+++30-07-2020 i sinartisi uploadfileold prepei na svistei se ligo kairo metaferthike sto js/customfunctions.js
 
-			function uploadfileold(){
-				var files = document.getElementById('selectedFile').files;
-				const numFiles = files.length;
-				var data = new FormData();
-				var k=0;
-				var aped = document.getElementById("apedCheckButton").checked;
-				if(aped){
-					aped=1;
-				}else{
-					aped=0;
-				}
-				for (i = 0; i < numFiles; i++) {
-					//const file = files[i];
-					data.append('selectedFile'+i, document.getElementById('selectedFile').files[i]);
-					var element = document.getElementById('filebutton_'+i);
-					if (element.classList.contains('btn-success')){
-						data.append('tobeSigned',i);
-						k+=1;
-					}
-				}
-				if (k>1){
-						alert("Έχετε επιλέξει περισσότερα από ένα έγγραφα προς υπογραφή");
-						return;
-				}
-				else if (k==0){
-						alert("Παρακαλώ επιλέξτε το αρχείο που θα υπογράψετε ψηφιακά");
-						return;
-				}
-				$("#loading").fadeIn();
-				data.append('authorComment', document.getElementById('authorComment').value);
-				data.append('numFiles',numFiles);
-				data.append('aped',aped);
-				var xmlhttp;
-				if (window.XMLHttpRequest)
-				{// code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp=new XMLHttpRequest();
-				}
-				else
-				{// code for IE6, IE5
-					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange=function()
-				{
-					if (xmlhttp.readyState==4 && xmlhttp.status==200)
-					{
-						clearInterval() 
-						//document.getElementById("soma").innerHTML=xmlhttp.responseText;
-						var response = xmlhttp.responseText;
-						alert(xmlhttp.responseText);
-						var checkSigned = response.search("@");
-						if (checkSigned != "-1"){
-							//notifyMe(response);
-						}
-						location.reload();
-					}
-				}
-				xmlhttp.open("POST","upload.php");
-				xmlhttp.send(data);	
-			}	
+			
 		
 			function notifyMe(e) {
 				var notification = new Notification(e);
@@ -309,72 +237,64 @@
 			
 			
 			$(document).ready(function(){
-				$('[data-toggle="tooltip"]').tooltip(); 
-				$('#example1').DataTable( {
-				"bFilter": true,
-				"paging":   false,
-				"ordering": true,
-				"info":     false,
-				"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-				 "order": [[ 4, "desc" ]],
-				responsive : true,
-				language : {
-						"sDecimal":           ",",
-						"sEmptyTable":        "Δεν υπάρχουν δεδομένα στον πίνακα",
-						"sInfo":              "Εμφανίζονται _START_ έως _END_ από _TOTAL_ εγγραφές",
-						"sInfoEmpty":         "Εμφανίζονται 0 έως 0 από 0 εγγραφές",
-						"sInfoFiltered":      "(φιλτραρισμένες από _MAX_ συνολικά εγγραφές)",
-						"sInfoPostFix":       "",
-						"sInfoThousands":     ".",
-						"sLengthMenu":        "Δείξε _MENU_ εγγραφές",
-						"sLoadingRecords":    "Φόρτωση...",
-						"sProcessing":        "Επεξεργασία...",
-						"sSearch":            "Αναζήτηση:",
-						"sSearchPlaceholder": "Αναζήτηση",
-						"sThousands":         ".",
-						"sUrl":               "",
-						"sZeroRecords":       "Δεν βρέθηκαν εγγραφές που να ταιριάζουν",
-						"oPaginate": {
-							"sFirst":    "Πρώτη",
-							"sPrevious": "Προηγούμενη",
-							"sNext":     "Επόμενη",
-							"sLast":     "Τελευταία"
-						},
-						"oAria": {
-							"sSortAscending":  ": ενεργοποιήστε για αύξουσα ταξινόμηση της στήλης",
-							"sSortDescending": ": ενεργοποιήστε για φθίνουσα ταξινόμηση της στήλης"
-						}
-					}
-				});
+				<!-- $('[data-toggle="tooltip"]').tooltip();  -->
+				<!-- $('#example1').DataTable( { -->
+				<!-- "bFilter": true, -->
+				<!-- "paging":   false, -->
+				<!-- "ordering": true, -->
+				<!-- "info":     false, -->
+				<!-- "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]], -->
+				 <!-- "order": [[ 4, "desc" ]], -->
+				<!-- responsive : true, -->
+				<!-- language : { -->
+						<!-- "sDecimal":           ",", -->
+						<!-- "sEmptyTable":        "Δεν υπάρχουν δεδομένα στον πίνακα", -->
+						<!-- "sInfo":              "Εμφανίζονται _START_ έως _END_ από _TOTAL_ εγγραφές", -->
+						<!-- "sInfoEmpty":         "Εμφανίζονται 0 έως 0 από 0 εγγραφές", -->
+						<!-- "sInfoFiltered":      "(φιλτραρισμένες από _MAX_ συνολικά εγγραφές)", -->
+						<!-- "sInfoPostFix":       "", -->
+						<!-- "sInfoThousands":     ".", -->
+						<!-- "sLengthMenu":        "Δείξε _MENU_ εγγραφές", -->
+						<!-- "sLoadingRecords":    "Φόρτωση...", -->
+						<!-- "sProcessing":        "Επεξεργασία...", -->
+						<!-- "sSearch":            "Αναζήτηση:", -->
+						<!-- "sSearchPlaceholder": "Αναζήτηση", -->
+						<!-- "sThousands":         ".", -->
+						<!-- "sUrl":               "", -->
+						<!-- "sZeroRecords":       "Δεν βρέθηκαν εγγραφές που να ταιριάζουν", -->
+						<!-- "oPaginate": { -->
+							<!-- "sFirst":    "Πρώτη", -->
+							<!-- "sPrevious": "Προηγούμενη", -->
+							<!-- "sNext":     "Επόμενη", -->
+							<!-- "sLast":     "Τελευταία" -->
+						<!-- }, -->
+						<!-- "oAria": { -->
+							<!-- "sSortAscending":  ": ενεργοποιήστε για αύξουσα ταξινόμηση της στήλης", -->
+							<!-- "sSortDescending": ": ενεργοποιήστε για φθίνουσα ταξινόμηση της στήλης" -->
+						<!-- } -->
+					<!-- } -->
+				<!-- }); -->
 				
-				//$('#showEmployees').change(function() {
-					//if(this.checked) {
-					//	
-					//}
-					//else{
-					//	
-					//}
-					//
-				//});
+				
 				$('#showEmployees').click(function() {
 					var user = $('#connectedUser').text();
 					tempUserElement= document.getElementById('showEmployees');
 					if(tempUserElement.classList.contains('btn-danger')){
 						tempUserElement.classList.remove('btn-danger');
 						tempUserElement.classList.add('btn-success');
-						$('#example1').DataTable().columns(2).search('').draw();
+						//$('#example1').DataTable().columns(2).search('').draw();
 					}
 					else if(tempUserElement.classList.contains('btn-success')){
 						tempUserElement.classList.remove('btn-success');
 						tempUserElement.classList.add('btn-danger');
-						$('#example1').DataTable().columns(2).search(user).draw();
+						//$('#example1').DataTable().columns(2).search(user).draw();
 					}
 					tempUserElement1= document.getElementById('showToSignOnly');
 					if(tempUserElement1.classList.contains('btn-danger')){
-						$('#example1').DataTable().columns(4).search('').draw();
+						//$('#example1').DataTable().columns(4).search('').draw();
 					}
 					else{
-						$('#example1').DataTable().columns(4).search('#sign#').draw();
+						//$('#example1').DataTable().columns(4).search('#sign#').draw();
 					}
 					//$('#textbox1').val(this.checked);        
 				});
@@ -447,19 +367,19 @@
 					if(tempUserElement.classList.contains('btn-danger')){
 						tempUserElement.classList.remove('btn-danger');
 						tempUserElement.classList.add('btn-success');
-						$('#example1').DataTable().columns(4).search("#sign#").draw();
+						//$('#example1').DataTable().columns(4).search("#sign#").draw();
 					}
 					else if(tempUserElement.classList.contains('btn-success')){
 						tempUserElement.classList.remove('btn-success');
 						tempUserElement.classList.add('btn-danger');
-						$('#example1').DataTable().columns(4).search('').draw();
+						//$('#example1').DataTable().columns(4).search('').draw();
 					}
 					tempUserElement1= document.getElementById('showEmployees');
 					if(tempUserElement1.classList.contains('btn-danger')){
-						$('#example1').DataTable().columns(2).search(user).draw();
+						//$('#example1').DataTable().columns(2).search(user).draw();
 					}
 					else{
-						$('#example1').DataTable().columns(2).search('').draw();
+						//$('#example1').DataTable().columns(2).search('').draw();
 					}
 					//$('#textbox1').val(this.checked);        
 				});
@@ -472,7 +392,7 @@
 				//tempUserElement.classList.remove('btn-danger');
 				//tempUserElement.classList.add('btn-success');
 				if (+JSON.parse(localStorage.getItem("loginData")).user.roles[0].accessLevel){
-					$('#example1').DataTable().columns(4).search("#sign#").draw();
+					//$('#example1').DataTable().columns(4).search("#sign#").draw();
 				}
 				else{
 					tempUserElement= document.getElementById('showToSignOnly');
@@ -666,23 +586,20 @@
 		<?php include 'html/startPageMenu_test.php';?> 
 		
 		<div id="container" class="container-fluid" style="background-color:#cadfc0;padding-bottom: 2em;">
-			<h4 class="text-center">
-			
-			<br><span class="label label-default">Έγγραφα για ψηφιακή υπογραφή</span><br><br>
-			</h4>
-				<?php include 'html/uploadFiles_test.php';?> 
 
-				<?php include 'html/headmasterExtraMenu_test.php';?> 
+			<?php include 'html/uploadFiles_test.php';?> 
+
+			<?php include 'html/headmasterExtraMenu_test.php';?> 
 			
 			<div class="table-responsive" id="soma">
 				<table class="table table-striped" id="example1">
 					<thead>
 					  <tr>
-						<th class="text-right">Έγγραφο προς Υπογραφή</th>
-						<th class="text-right">Εισαγωγή</th>
-						<th class="text-right">Συντάκτης</th>
-						<th class="text-right">Κατάσταση</th>
-						<th class="text-right">Ενέργειες</th>
+						<th id="filename" class="text-right">Έγγραφο προς Υπογραφή</th>
+						<th id="date" class="text-right">Εισαγωγή</th>
+						<th id="author" class="text-right">Συντάκτης</th>
+						<th id="status" class="text-right">Κατάσταση</th>
+						<th id="fileActions" class="text-right">Ενέργειες</th>
 					  </tr>
 					</thead>
 					<tbody>

@@ -1,15 +1,8 @@
-function uploadfile(){
+function uploadfile(){                                               //θα αντικατασταθεί με fetch στο signatureRecord module
 	var files = document.getElementById('selectedFile').files;
 	const numFiles = files.length;
 	var data = new FormData();
 	var k=0;
-	var aped = document.getElementById("apedCheckButton").checked; //23-08-2021
-	aped = document.getElementById("mindigitalCheckButton").checked;
-	if(aped){
-		aped=1;
-	}else{
-		aped=0;
-	}
 	for (i = 0; i < numFiles; i++) {
 		//const file = files[i];
 		data.append('selectedFile'+i, document.getElementById('selectedFile').files[i]);
@@ -19,18 +12,6 @@ function uploadfile(){
 			k+=1;
 		}
 	}
-	
-	//++++++++++28-04-2021
-	var signers = document.getElementById("exactCopySignature").getElementsByTagName("button");
-	var signerId = 0;
-	for (i = 0; i < signers.length; i++) {
-		if (signers[i].classList.contains('btn-success')){
-			signerId = signers[i].id;
-		}
-	}
-	data.append('signerId',signerId);
-	//-----------------------------
-	
 	if (k>1){
 			alert("Έχετε επιλέξει περισσότερα από ένα έγγραφα προς υπογραφή");
 			return;
@@ -43,7 +24,8 @@ function uploadfile(){
 	$("#loading").fadeIn();
 	data.append('authorComment', document.getElementById('authorComment').value);
 	data.append('numFiles',numFiles);
-	data.append('aped',aped);
+	//data.append('aped',aped);                   															-------13-01-2023
+	
 	//for (var pair of data.entries()) {
 		//console.log(pair[0]+ ', ' + pair[1]); 
 	//}
@@ -117,7 +99,6 @@ function uploadfileAdv(){
 	$("#loading").fadeIn();
 	data.append('authorComment', document.getElementById('authorComment').value);
 	data.append('numFiles',numFiles);
-	data.append('aped',aped);
 	data.append('aa', document.getElementById('aa').value);
 	var xmlhttp;
 	if (window.XMLHttpRequest)

@@ -67,8 +67,10 @@
 		<script src="js/jquery-ui.min.js"></script>
 		<script type="text/javascript" src="js/customfunctions.js"></script>  
 		
-		
 		<script type="module" >
+			import {uploadFile,uploadFileTest} from "./modules/uploadFiles.js";
+			document.querySelector("#uploadFileButton").addEventListener("click", uploadFile);
+			window.uploadFileTest = uploadFileTest;
 			
 			
 		</script>  
@@ -250,67 +252,6 @@
 				
 			}
 			
-			//+++30-07-2020 i sinartisi uploadfileold prepei na svistei se ligo kairo metaferthike sto js/customfunctions.js
-
-			function uploadfileold(){
-				var files = document.getElementById('selectedFile').files;
-				const numFiles = files.length;
-				var data = new FormData();
-				var k=0;
-				var aped = document.getElementById("apedCheckButton").checked;
-				if(aped){
-					aped=1;
-				}else{
-					aped=0;
-				}
-				for (i = 0; i < numFiles; i++) {
-					//const file = files[i];
-					data.append('selectedFile'+i, document.getElementById('selectedFile').files[i]);
-					var element = document.getElementById('filebutton_'+i);
-					if (element.classList.contains('btn-success')){
-						data.append('tobeSigned',i);
-						k+=1;
-					}
-				}
-				if (k>1){
-						alert("Έχετε επιλέξει περισσότερα από ένα έγγραφα προς υπογραφή");
-						return;
-				}
-				else if (k==0){
-						alert("Παρακαλώ επιλέξτε το αρχείο που θα υπογράψετε ψηφιακά");
-						return;
-				}
-				$("#loading").fadeIn();
-				data.append('authorComment', document.getElementById('authorComment').value);
-				data.append('numFiles',numFiles);
-				data.append('aped',aped);
-				var xmlhttp;
-				if (window.XMLHttpRequest)
-				{// code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp=new XMLHttpRequest();
-				}
-				else
-				{// code for IE6, IE5
-					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange=function()
-				{
-					if (xmlhttp.readyState==4 && xmlhttp.status==200)
-					{
-						clearInterval() 
-						//document.getElementById("soma").innerHTML=xmlhttp.responseText;
-						var response = xmlhttp.responseText;
-						alert(xmlhttp.responseText);
-						var checkSigned = response.search("@");
-						if (checkSigned != "-1"){
-							//notifyMe(response);
-						}
-						location.reload();
-					}
-				}
-				xmlhttp.open("POST","upload.php");
-				xmlhttp.send(data);	
-			}	
 		
 			function notifyMe(e) {
 				var notification = new Notification(e);

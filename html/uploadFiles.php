@@ -30,7 +30,7 @@
 		?>
 		</div>
 		<br><br>
-		<input type="button" disabled class="btn btn-primary ektos" id="uploadFileButton" onclick="uploadfile()" value="Μεταφόρτωση Αρχείου"/>
+		<input type="button" disabled class="btn btn-primary ektos" id="uploadFileButton"  value="Μεταφόρτωση Αρχείου"/>
 
 		
 	</div>

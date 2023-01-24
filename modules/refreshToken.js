@@ -11,18 +11,15 @@ export default async function refreshToken(){
 			const newJwt = await res.json();
 			loginData.jwt = newJwt;
 			localStorage.setItem("loginData",JSON.stringify(loginData));
+			return 1;
 		}
 		else{	
-			logout();
+			//alert("Ανανέωση εξουσιοδότησης χρήστη απέτυχε");
+			return 0;
 		}
 	}
 	else{
-		logout();
+		//alert("Σφάλμα στην ανανέωση εξουσιοδότησης");
+		return 0;
 	}
-	
-	
-}	
-
-function logout(){
-	window.close();
 }

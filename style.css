@@ -64,10 +64,6 @@ label.titlosMikros{
 	padding-left : 80px;
 }
 
-.navbar{
-	margin : 0 0px;
-	padding : 0 0px;
-}
 
 td a{
 	font-weight:bold;
@@ -98,4 +94,112 @@ td .fa-amilia{
   color: #ffffff;
   background-color: #green;
   border-color: #green;
+}
+
+#loading{
+	display : none;
+}
+
+#signing{
+	display : none;
+}
+
+#rejecting{
+	display : none;
+}
+
+#example1 {
+	margin-top : 2em;	
+}
+
+#headmasterExtraMenuDiv{
+	display : flex;	
+	flex-flow: row no-wrap;
+	gap : 0.5em;
+	padding : 1em;
+	background-color : gray;
+	padding : 15px;
+}
+
+#tableSearchInput {
+	width : 400px;	
+	flex-basis : 0;
+}
+
+#showEmployees{
+	width : 15%;
+}
+
+#showToSignOnly{
+	width : 15%;
+}
+
+#emailButton{
+	width : 5%;
+}
+
+#mindigitalButton{
+	width : 5%;
+}
+
+#uploadFileDiv{
+	background-color : lightblue;
+}
+
+#container {
+	padding-top : 2em;	
+}
+
+#myNavBar {
+	display : flex;	
+	flex-flow: row wrap;
+	gap : 0.5em;
+	padding : 1em;
+	background-color : gray;
+	padding : 5px;	
+	align-items : stretch;
+}
+
+#myNavBar>div {
+	flex-grow : 0;
+}
+
+#myNavBar a:link{
+	color:white;
+}
+#myNavBar a:visited{
+	color:white;
+}
+#myNavBar a{
+	color:white;
+}
+
+#myNavBarLogo{
+	font-size : 0.9em;
+	font-weight : bold;
+	flex-grow:1 !important;
+	display : flex;
+	justify-content : flex-end;
+}
+
+#myNavBarLogoContent{
+	background-color : coral;
+	padding : 10px;
+	border-radius : 5px;
+	font-size : 0.9em;
+	font-weight : bold;
+	flex-grow: 0;
+	display : flex;
+	flex-flow : column nowrap;
+	justify-content : flex-end;
+}
+
+#userRoles {
+	display : flex;	
+	flex-flow: column nowrap;
+	gap : 0.2em;
+	background-color : lightgray;
+	padding : 10px;
+	border-radius : 5px;
+	align-items : stretch;
 }
