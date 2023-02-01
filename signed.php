@@ -16,8 +16,7 @@
 				//	echo "Access restricted";
 				//}
 			}
-			$page = $_SERVER['PHP_SELF'];
-			$sec = "120";
+
 		?>
 		<meta http-equiv="Content-Type" content="text/html; charset=Greek">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">

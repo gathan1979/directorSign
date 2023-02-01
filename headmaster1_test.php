@@ -26,6 +26,7 @@
 				
 		<script type="text/javascript" src="js/customfunctions.js"></script>  
 		<script type="module" src="./modules/signatureRecords.js"></script>
+		<script type="module" src="./modules/createUI.js"></script>
 		
 		<script type="module" >
 			import {getSigRecords,fillTable}  from "./modules/signatureRecords.js";
@@ -38,266 +39,7 @@
 		
 		<script type="text/javascript" defer>
 			
-			function signDocument(aa){
-				$('#signModal').modal('hide');
-				$("#signing").fadeIn();
-				var xmlhttp;
-				if (window.XMLHttpRequest)
-				{// code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp=new XMLHttpRequest();
-				}
-				else
-				{// code for IE6, IE5
-					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange=function()
-				{
-					if (xmlhttp.readyState==4 && xmlhttp.status==200)
-					{
-						var response = xmlhttp.responseText;
-						//console.log(response);
-						location.reload();
-						
-					}
-				}
-				var comment = document.getElementById('signText').value;
-				xmlhttp.open("GET","forward.php?aa="+aa+"&comment="+comment);
-				xmlhttp.send();	
-				
-			}
-			
-			function showOTP(aa , isLast = 0){
-				const button = document.getElementById("createExCopyButton1");
-				button.dataset.whatever = aa;
-				button.onclick = function(){signDocumentMindigital(aa ,isLast);};
-				$('#signModal').modal('hide');
-				$('#otpModal1').modal('show');
-			}
-			
-			function signDocumentMindigital(aa , isLast = 0){
-				let otp = $('#otpText1').val();
-				console.log("entering signDocumentMindigital "+aa+" with OTP "+otp);
-				$('#otpModal1').modal('hide');
-				$("#signing").fadeIn();
-				let xmlhttp;
-				if (window.XMLHttpRequest)
-				{// code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp=new XMLHttpRequest();
-				}
-				else
-				{// code for IE6, IE5
-					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange=function()
-				{
-					if (xmlhttp.readyState==4 && xmlhttp.status==200)
-					{
-						let response = xmlhttp.responseText;
-						console.log(response);
-						location.reload();	
-					}
-				}
-				let comment = document.getElementById('signText').value;
-				xmlhttp.open("GET","forward.php?aa="+aa+"&comment="+comment+"&mindigital=1&otp="+otp+"&isLast="+isLast);
-				xmlhttp.send();	
-			}
-			
-			function signAsLast(aa){
-				$('#signModal').modal('hide');
-				$("#signing").fadeIn();
-				var xmlhttp;
-				if (window.XMLHttpRequest)
-				{// code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp=new XMLHttpRequest();
-				}
-				else
-				{// code for IE6, IE5
-					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange=function()
-				{
-					if (xmlhttp.readyState==4 && xmlhttp.status==200)
-					{
-						var response = xmlhttp.responseText;
-						//console.log(response);
-						location.reload();
-						
-					}
-				}
-				var comment = document.getElementById('signText').value;
-				xmlhttp.open("GET","forward.php?aa="+aa+"&comment="+comment+"&isLast=1");
-				xmlhttp.send();	
-				
-			}
-			
-			function signWithObjectionDocument(aa){
-				$('#signModal').modal('hide');
-				$("#signing").fadeIn();
-				var xmlhttp;
-				if (window.XMLHttpRequest)
-				{// code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp=new XMLHttpRequest();
-				}
-				else
-				{// code for IE6, IE5
-					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange=function()
-				{
-					if (xmlhttp.readyState==4 && xmlhttp.status==200)
-					{
-						var response = xmlhttp.responseText;
-						//console.log(response);
-						location.reload();
-						
-					}
-				}
-				var comment = document.getElementById('signText').value;
-				xmlhttp.open("GET","forward.php?aa="+aa+"&objectionComment="+comment);
-				xmlhttp.send();	
-				
-			}
-			
-			
-			function rejectDocument(aa){
-				$('#rejectModal').modal('hide');
-				$("#rejecting").fadeIn();
-				var xmlhttp;
-				if (window.XMLHttpRequest)
-				{// code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp=new XMLHttpRequest();
-				}
-				else
-				{// code for IE6, IE5
-					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange=function()
-				{
-					if (xmlhttp.readyState==4 && xmlhttp.status==200)
-					{
-						//var response = xmlhttp.responseText;
-						location.reload();
-						
-					}
-				}
-				var comment = document.getElementById('rejectText').value;
-				xmlhttp.open("GET","reject.php?aa="+aa+"&comment="+comment);
-				xmlhttp.send();	
-				
-			}
-			
-			//+++30-07-2020 i sinartisi uploadfileold prepei na svistei se ligo kairo metaferthike sto js/customfunctions.js
-
-			
-		
-			function notifyMe(e) {
-				var notification = new Notification(e);
-				  // Let's check if the browser supports notifications
-				  if (!("Notification" in window)) {
-					alert("This browser does not support desktop notification");
-				  }
-
-				  // Let's check whether notification permissions have already been granted
-				  else if (Notification.permission === "granted") {
-					// If it's okay let's create a notification
-					var notification = new Notification(e);
-				  }
-
-				  // Otherwise, we need to ask the user for permission
-				  else if (Notification.permission !== "denied") {
-					Notification.requestPermission(function (permission) {
-					  // If the user accepts, let's create a notification
-					  if (permission === "granted") {
-						var notification = new Notification(e);
-					  }
-					});
-				  }
-			}
-			
-			
-			
-			function allowDrop(ev) {
-				ev.preventDefault();
-			}
-
-			
-			
-			function drag(ev) {
-				ev.dataTransfer.setData("text", ev.target.id);
-			}
-
-			
-			
-			function drop(ev) {
-				ev.preventDefault();
-				var data = ev.dataTransfer.getData("text");
-				ev.target.innerHTML="";
-				ev.target.appendChild(document.getElementById(data));
-			}
-			
-			
 			$(document).ready(function(){
-				<!-- $('[data-toggle="tooltip"]').tooltip();  -->
-				<!-- $('#example1').DataTable( { -->
-				<!-- "bFilter": true, -->
-				<!-- "paging":   false, -->
-				<!-- "ordering": true, -->
-				<!-- "info":     false, -->
-				<!-- "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]], -->
-				 <!-- "order": [[ 4, "desc" ]], -->
-				<!-- responsive : true, -->
-				<!-- language : { -->
-						<!-- "sDecimal":           ",", -->
-						<!-- "sEmptyTable":        "Δεν υπάρχουν δεδομένα στον πίνακα", -->
-						<!-- "sInfo":              "Εμφανίζονται _START_ έως _END_ από _TOTAL_ εγγραφές", -->
-						<!-- "sInfoEmpty":         "Εμφανίζονται 0 έως 0 από 0 εγγραφές", -->
-						<!-- "sInfoFiltered":      "(φιλτραρισμένες από _MAX_ συνολικά εγγραφές)", -->
-						<!-- "sInfoPostFix":       "", -->
-						<!-- "sInfoThousands":     ".", -->
-						<!-- "sLengthMenu":        "Δείξε _MENU_ εγγραφές", -->
-						<!-- "sLoadingRecords":    "Φόρτωση...", -->
-						<!-- "sProcessing":        "Επεξεργασία...", -->
-						<!-- "sSearch":            "Αναζήτηση:", -->
-						<!-- "sSearchPlaceholder": "Αναζήτηση", -->
-						<!-- "sThousands":         ".", -->
-						<!-- "sUrl":               "", -->
-						<!-- "sZeroRecords":       "Δεν βρέθηκαν εγγραφές που να ταιριάζουν", -->
-						<!-- "oPaginate": { -->
-							<!-- "sFirst":    "Πρώτη", -->
-							<!-- "sPrevious": "Προηγούμενη", -->
-							<!-- "sNext":     "Επόμενη", -->
-							<!-- "sLast":     "Τελευταία" -->
-						<!-- }, -->
-						<!-- "oAria": { -->
-							<!-- "sSortAscending":  ": ενεργοποιήστε για αύξουσα ταξινόμηση της στήλης", -->
-							<!-- "sSortDescending": ": ενεργοποιήστε για φθίνουσα ταξινόμηση της στήλης" -->
-						<!-- } -->
-					<!-- } -->
-				<!-- }); -->
-				
-				
-				$('#showEmployees').click(function() {
-					var user = $('#connectedUser').text();
-					tempUserElement= document.getElementById('showEmployees');
-					if(tempUserElement.classList.contains('btn-danger')){
-						tempUserElement.classList.remove('btn-danger');
-						tempUserElement.classList.add('btn-success');
-						//$('#example1').DataTable().columns(2).search('').draw();
-					}
-					else if(tempUserElement.classList.contains('btn-success')){
-						tempUserElement.classList.remove('btn-success');
-						tempUserElement.classList.add('btn-danger');
-						//$('#example1').DataTable().columns(2).search(user).draw();
-					}
-					tempUserElement1= document.getElementById('showToSignOnly');
-					if(tempUserElement1.classList.contains('btn-danger')){
-						//$('#example1').DataTable().columns(4).search('').draw();
-					}
-					else{
-						//$('#example1').DataTable().columns(4).search('#sign#').draw();
-					}
-					//$('#textbox1').val(this.checked);        
-				});
 				
 				$('#rejectModal').on('show.bs.modal', function (e) {
 					var aa = e.relatedTarget.getAttribute('data-whatever');
@@ -305,16 +47,7 @@
 					
 				});
 				
-				$('#signModal').on('show.bs.modal', function (e) {
-					var aa = e.relatedTarget.getAttribute('data-whatever');
-					$('#signButton').click(function(){signDocument(aa);});
-					$('#signWithObjectionButton').click(function(){signWithObjectionDocument(aa);});
-					$('#signAsLast').click(function(){signAsLast(aa);});
-					$('#signWithMindigital').click(function(){showOTP(aa);});
-					$('#signAsLastMindigital').click(function(){showOTP(aa, 1);});
-					$('#signWithObjectionButtonMindigital').click(function(){signWithObjectionDocument(aa);});
-					
-				});
+				
 				
 				$('#otpModal').on('shown.bs.modal', function (e) {
 					$('#createExCopyButton').prop('disabled', false);
@@ -413,38 +146,6 @@
 				
 			});
 			
-			$(function () {
-				$(".showModal").click(function(e) {
-					e.preventDefault();
-					//$("#loading").fadeIn();
-					var url=$(this).attr("href");
-					setTimeout(function() {
-						setTimeout(function() {$("#loading").fadeIn();},90);
-						window.location=url;
-					},0);
-
-			   });
-			   
-			   $(".cancelModal").click(function(e) {
-					e.preventDefault();
-					//$("#loading").fadeIn();
-					var url=$(this).attr("href");
-					setTimeout(function() {
-						setTimeout(function() {$("#canceling").fadeIn();},90);
-						window.location=url;
-					},0);
-
-			   });
-			});
-
-			
-			function preview_PDF_old(file,id){
-				
-				 //$( "#my-container").dialog({width : 800, height : 800, modal :true});
-				  //var t = PDFObject.embed("/directorSign/uploads/"+file, "#my-container");
-				  window.open("pdfjs/web/viewer.php?file=../../uploads/"+file+"&id="+id+"#zoom=page-fit");
-			}
-			
 			
 			
 		function enableFileLoadButton(){
@@ -486,48 +187,7 @@
 				element.classList.remove('btn-success');
 				element.classList.add('btn-primary');
 			}
-		  };
-		  
-		  function loginHesk(){
-			document.getElementById("heskForm").submit();
 		};
-		
-		function getPresent(){
-			window.open("tetris.php");
-		}
-		
-		function selectDevice(dev){
-			var ulElements = document.getElementById("alldevices").childNodes;
-			for (var i = 0 ; i < ulElements.length; i++) {
-				ulElements[i].classList.remove('active');
-			}
-			var element = document.getElementById("device"+dev);
-			element.classList.add('active');
-			var xmlhttp;
-			if (window.XMLHttpRequest)
-			{// code for IE7+, Firefox, Chrome, Opera, Safari
-				xmlhttp=new XMLHttpRequest();
-			}
-			else
-			{// code for IE6, IE5
-				xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-			}
-			xmlhttp.onreadystatechange=function()
-			{
-				if (xmlhttp.readyState==4 && xmlhttp.status==200)
-				{
-					var response = xmlhttp.responseText;
-					//alert(response);
-				}
-			}
-			//alert(dev);
-			var params = "id="+dev;
-			xmlhttp.open("GET","selectDevice.php?"+params);
-			xmlhttp.send();	
-			
-		}
-		
-		
 		
 		
 		function enableRejectButton(){
@@ -583,35 +243,29 @@
 
 	</head>
 	<body > 
-		<?php include 'html/startPageMenu_test.php';?> 
+		<!--<?php include 'html/startPageMenu_test.php';?> -->
 		
-		<div id="container" class="container-fluid" style="background-color:#cadfc0;padding-bottom: 2em;">
 
-			<?php include 'html/uploadFiles_test.php';?> 
-
-			<?php include 'html/headmasterExtraMenu_test.php';?> 
 			
-			<div class="table-responsive" id="soma">
-				<table class="table table-striped" id="example1">
-					<thead>
-					  <tr>
-						<th id="filename" class="text-right">Έγγραφο προς Υπογραφή</th>
-						<th id="date" class="text-right">Εισαγωγή</th>
-						<th id="author" class="text-right">Συντάκτης</th>
-						<th id="status" class="text-right">Κατάσταση</th>
-						<th id="fileActions" class="text-right">Ενέργειες</th>
-					  </tr>
-					</thead>
-					<tbody>
-				
-					</tbody>
-			  </table>
-			</div>
-			
-			<div style="padding:0.2em;background-color:#cadfc0;width :90%;position:absolute;bottom:0;" id="emailsContainer">
+		<table id="dataToSignTable">
+			<thead>
+			  <tr>
+				<th id="filename" class="text-right">Έγγραφο προς Υπογραφή</th>
+				<th id="date" class="text-right">Εισαγωγή</th>
+				<th id="author" class="text-right">Συντάκτης</th>
+				<th id="status" class="text-right">Κατάσταση</th>
+				<th id="fileActions" class="text-right">Ενέργειες</th>
+			  </tr>
+			</thead>
+			<tbody>
 
-			</div>
-		</div>	
+			</tbody>
+		</table>
+		
+		<div style="padding:0.2em;background-color:#cadfc0;width :90%;position:absolute;bottom:0;" id="emailsContainer">
+
+		</div>
+	
 		<?php
 			//if ($messagesExist){
 				//echo '<script type="text/javascript">notifyMe("Έχετε '.$messagesExist.' Μηνύματα για υπογραφή");</script>';
@@ -736,55 +390,7 @@
 		</div>
 	</div>
 	
-	<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
-	  <div class="modal-dialog modal-lg" role="document" >
-			<div class="modal-content">
-			  <div class="modal-body" id="rejectForm">
-				<div class="input-group mb-3">
-				  <div class="input-group-prepend" style="margin-bottom:2em;"><b>
-					<button id="closeButtonModal" type="button" class="btn btn-primary trn" data-dismiss="modal">Χ</button>
-					<span class="input-group-text" id="basic-addon1" >Υπογραφή Εγγράφου</span></b>
-					<span class="input-group-text" id="basic-addon1" ><br><br><u>Επισήμανση</u><br>
-					    Ν.2693/1999. αρ.25 παρ.5<i>
-						Οι προιστάμενοι όλων των βαθμίδων οφείλουν να προσυπογράφουν τα έγγραφα που ανήκουν στην 
-						αρμοδιότητά τους και εκδίδονται με την υπογραφή του προϊσταμένου τους. Αν διαφωνούν, οφείλουν 
-						να διατυπώσουν εγγράφως τις τυχόν αντιρρήσεις τους. Αν παραλείψουν να προσυπογράψουν το 
-						έγγραφο, θεωρείται ότι το προσυπέγραψαν.</i>
-					</span>
-				  </div>
-				  <textarea id="signText" cols="100" rows="3" size="200" class="form-control" placeholder="Το σχόλιο είναι προαιρετικό" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
-					<div style="margin-top : 0.2em;" class="btn-group" role="group" aria-label="Basic example">
-					  <button type="button" id="selectMiniditalButtons" onclick="mindigitalButtons();" class="btn btn-primary">Mindigital</button>
-					  <button type="button" id="selectSchButtons" onclick="schButtons();" class="btn btn-secondary">sch</button>
-					</div>
-				</div>
-				
-			  <div class="modal-footer">
-				<div style="margin-top:1em;" id="mindigitalBtngroup" class="btn-group" role="group" aria-label="mindigitalGroup">
-					<button id="signWithObjectionButtonMindigital" type="button" class="btn btn-danger trn" style="margin-left:3em;">Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
-					<?php
-						
-						if ($_SESSION['canSignAsLast']=="1"){
-							echo '<button  style="margin-left:0.5em;" id="signAsLastMindigital" type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>';
-						}
-					?>
-					<button id="signWithMindigital" type="button" class="btn btn-success trn" style="margin-left:1.5em;">Mindigital<i style="margin-left:0.2em;" class="fas fa-signature"></i></button>
-				</div>
-				<div style="margin-top:1em;" id="schBtngroup" class="btn-group" role="group" aria-label="schGroup">
-					<button id="signWithObjectionButton" type="button" class="btn btn-danger trn" style="margin-left:3em;">Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
-					<?php
-						
-						if ($_SESSION['canSignAsLast']=="1"){
-							echo '<button style="margin-left:0.5em;" id="signAsLast" type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>';
-						}
-					?>
-					<button id="signButton" type="button" class="btn btn-success trn" style="margin-left:1.5em;">Sch<i style="margin-left:0.2em;" class="fas fa-signature"></i></button>
-				</div>
-			  </div>
-			</div>
-		  </div>
-		</div>		
-	</div>
+
 	
 	<div class="modal fade" id="otpModal" tabindex="-1" role="dialog" aria-labelledby="otpModalLabel" aria-hidden="true">
 	  <div class="modal-dialog modal-lg" role="document" >

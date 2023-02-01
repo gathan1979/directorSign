@@ -16,5 +16,5 @@ export default function getFromLocalStorage(uploadURL="/api/uploadSigFiles.php",
 		alert("Δεν υπάρχουν πληροφορίες ιδιότητας χρήστη");
 		return null;
 	}
-	return {jwt, role};
+	return {jwt, role, loginData};
 }
