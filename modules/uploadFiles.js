@@ -215,3 +215,44 @@ export function uploadfileAdv(){
 	xmlhttp.open("POST","upload.php");
 	xmlhttp.send(data);	
 }
+
+function enableFileLoadButton(){
+	if(document.getElementById("selectedFile").value != "") {
+		document.getElementById("uploadFileButton").disabled = false;
+		const files = document.getElementById('selectedFile').files;
+		const numFiles = files.length;
+		const well = document.getElementById("viewSelectedFiles");
+		document.querySelector("#viewSelectedFiles").innerHTML= "";
+		for (i = 0; i < numFiles; i++) {
+			  let element = document.createElement("BUTTON");
+			  //Assign different attributes to the element. 
+			  element.innerHTML  = files[i].name;
+			  element.id = "filebutton_"+i;
+			  element.className="btn-xs btn-primary";
+			  element.setAttribute("style","margin-right:15px;");
+			  element.addEventListener("click", changeFileState);
+			  if (numFiles===1){
+				element.classList.remove('btn-primary');
+				element.classList.add('btn-success');
+			  }
+			  //Append the element in page (in span).  
+			  well.appendChild(element);
+		}
+		
+	}
+	else{
+		document.getElementById("uploadFileButton").disabled = true;
+	}
+}	
+
+function changeFileState(event) { // Note this is a function
+	const element = event.target;
+	if (element.classList.contains('btn-primary')){
+		element.classList.remove('btn-primary');
+		element.classList.add('btn-success');
+	}
+	else{
+		element.classList.remove('btn-success');
+		element.classList.add('btn-primary');
+	}
+};

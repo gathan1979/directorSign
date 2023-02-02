@@ -14,16 +14,22 @@ const basicUI = `<div id="myNavBar">
 	<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
 </div><!-- /.container-fluid -->
 
-<div id="headmasterExtraMenuDiv">
-	<button class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadDiv"><i class="far fa-plus-square"></i></button>
-	<button class="btn btn-warning btn-sm" id="showEmployees">Έγγρ. Υφισταμένων</button>
-	<button class="btn btn-warning btn-sm" id="showToSignOnly">Έγγρ. Προς Υπογραφή</button>
-	<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
 
-	<button id="emailButton" style="margin-left : 2em;" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Λήψη μηνυμάτων" onclick="connectToEmail();"><i id="faMail" class="far fa-envelope-open"></i></button>
-	<button id="mindigitalButton" style="margin-left : 0.2em;" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Σύνδεση στο mindigital" onclick="showMindigitalModal();"><i class="fas fa-file-signature"></i></button>
+<div id="headmasterExtraMenuDiv">
+	<div class="flexVertical">
+		<button class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadDiv"><i class="far fa-plus-square"></i></button>
+	</div>
+	<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
+	<div class="flexVertical">
+		<button id="emailButton" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Λήψη μηνυμάτων" onclick="connectToEmail();"><i id="faMail" class="far fa-envelope-open"></i></button>
+		<button id="mindigitalButton" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Σύνδεση στο mindigital" onclick="showMindigitalModal();"><i class="fas fa-file-signature"></i></button>
+	</div>
 	<div id="userRoles" ></div>
-	<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
+	<div class="flexHorizontal">
+		<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
+		<button class="btn btn-warning btn-sm" id="showEmployeesBtn">Υφιστ.</button>
+		<button class="btn btn-warning btn-sm" id="showToSignOnlyBtn">Όλα</button>
+	</div>
 	
 </div>
 
@@ -32,7 +38,7 @@ const basicUI = `<div id="myNavBar">
 
 </div>`
 
-document.body.innerHTML = basicUI;
+document.body.insertAdjacentHTML("beforebegin",basicUI);
 
 let loginData = localStorage.getItem("loginData");
 if (loginData === null){
@@ -81,6 +87,21 @@ loginData.user.roles.forEach((role,index)=>{
 loginData.user.roles.forEach((role,index)=>{
 		document.querySelector('#role_'+index+'_btn').addEventListener("click",()=>{setRole(index);}); 
 })
+//create Upload UI
+document.querySelector("#uploadDiv").innerHTML = uploadComponents;
+document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
+
+
+// Να δω τι γίνεται εδώ
+if (+JSON.parse(localStorage.getItem("loginData")).user.roles[0].accessLevel){
+	//$('#example1').DataTable().columns(4).search("#sign#").draw();
+}
+else{
+	const tempUserElement= document.getElementById('showToSignOnlyBtn');
+	tempUserElement.classList.remove('btn-success');
+	tempUserElement.classList.add('btn-danger');
+}
+
 
 function updateRolesUI(){
 	const cRole = localStorage.getItem("currentRole");
@@ -102,28 +123,48 @@ function setRole(index){
 	updateRolesUI();
 }
 
-// $('#showEmployees').click(function() {
-	// var user = $('#connectedUser').text();
-	// tempUserElement= document.getElementById('showEmployees');
-	// if(tempUserElement.classList.contains('btn-danger')){
-		// tempUserElement.classList.remove('btn-danger');
-		// tempUserElement.classList.add('btn-success');
-		////$('#example1').DataTable().columns(2).search('').draw();
-	// }
-	// else if(tempUserElement.classList.contains('btn-success')){
-		// tempUserElement.classList.remove('btn-success');
-		// tempUserElement.classList.add('btn-danger');
-		////$('#example1').DataTable().columns(2).search(user).draw();
-	// }
-	// tempUserElement1= document.getElementById('showToSignOnly');
-	// if(tempUserElement1.classList.contains('btn-danger')){
-		////$('#example1').DataTable().columns(4).search('').draw();
-	// }
-	// else{
-		////$('#example1').DataTable().columns(4).search('#sign#').draw();
-	// }
-	////$('#textbox1').val(this.checked);        
-// });
+document.querySelector('#showEmployeesBtn').addEventListener("click", function() {
+	const user = document.querySelector('#connectedUser').value;
+	const tempUserElement= document.getElementById('showEmployees');
+	if(tempUserElement.classList.contains('btn-danger')){
+		tempUserElement.classList.remove('btn-danger');
+		tempUserElement.classList.add('btn-success');
+		//$('#example1').DataTable().columns(2).search('').draw();
+	}
+	else if(tempUserElement.classList.contains('btn-success')){
+		tempUserElement.classList.remove('btn-success');
+		tempUserElement.classList.add('btn-danger');
+		//$('#example1').DataTable().columns(2).search(user).draw();
+	}
+	tempUserElement1= document.getElementById('showToSignOnlyBtn');
+	if(tempUserElement1.classList.contains('btn-danger')){
+		//$('#example1').DataTable().columns(4).search('').draw();
+	}
+	else{
+		//$('#example1').DataTable().columns(4).search('#sign#').draw();
+	}
+	//$('#textbox1').val(this.checked);        
+});
 
-document.querySelector("#uploadDiv").innerHTML = uploadComponents;
-document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
+document.querySelector('#showToSignOnlyBtn').addEventListener("click", function() {
+	const user = document.querySelector('#connectedUser').value;
+	const tempUserElement= document.getElementById('showToSignOnlyBtn');
+	if(tempUserElement.classList.contains('btn-danger')){
+		tempUserElement.classList.remove('btn-danger');
+		tempUserElement.classList.add('btn-success');
+		//$('#example1').DataTable().columns(4).search("#sign#").draw();
+	}
+	else if(tempUserElement.classList.contains('btn-success')){
+		tempUserElement.classList.remove('btn-success');
+		tempUserElement.classList.add('btn-danger');
+		//$('#example1').DataTable().columns(4).search('').draw();
+	}
+	tempUserElement1= document.getElementById('showEmployees');
+	if(tempUserElement1.classList.contains('btn-danger')){
+		//$('#example1').DataTable().columns(2).search(user).draw();
+	}
+	else{
+		//$('#example1').DataTable().columns(2).search('').draw();
+	}
+	//$('#textbox1').val(this.checked);        
+});

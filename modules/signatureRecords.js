@@ -1,45 +1,135 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
 
-const signModalDiv = 	
-	`<div  id="signModal"  style="position:fixed; top=0px; display: none;">
-		<div class="modal-body" id="rejectForm">
-			<div>
-				<div ><b>
-					<button id="closeButtonModal" type="button" class="btn btn-primary trn">Χ</button>
-					<span class="input-group-text" id="basic-addon1" >Υπογραφή Εγγράφου</span></b>
+const signModalDiv =
+	`<div class="modal fade" id="signModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">Υπογραφή Εγγράφου</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="signForm">
+				<div>
+					<div >
+						<u>Επισήμανση</u>
+							Ν.2693/1999. αρ.25 παρ.5 <i>
+							Οι προιστάμενοι όλων των βαθμίδων οφείλουν να προσυπογράφουν τα έγγραφα που ανήκουν στην 
+							αρμοδιότητά τους και εκδίδονται με την υπογραφή του προϊσταμένου τους. Αν διαφωνούν, οφείλουν 
+							να διατυπώσουν εγγράφως τις τυχόν αντιρρήσεις τους. Αν παραλείψουν να προσυπογράψουν το 
+							έγγραφο, θεωρείται ότι το προσυπέγραψαν.</i>
+					</div>
+					<textarea id="signText" cols="100" rows="3" size="200" class="form-control" placeholder="Το σχόλιο είναι προαιρετικό" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+					<div style="margin-top : 0.2em;" class="btn-group" role="group" aria-label="Basic example">
+					  <button type="button" id="selectMiniditalButtons" onclick="mindigitalButtons();" class="btn btn-primary">Mindigital</button>
+					  <button type="button" id="selectSchButtons" onclick="schButtons();" class="btn btn-secondary">sch</button>
+					</div>
+				</div>
+			
+				<div class="contentFooter">
+					<div style="margin-top:1em;" id="mindigitalBtngroup" aria-label="mindigitalGroup">
+						<button id="signWithObjectionButtonMindigital" type="button" class="btn btn-danger trn" style="margin-left:3em;">Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
+						<button  style="margin-left:0.5em;" id="signAsLastMindigital" type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>
+							
+						<button id="signWithMindigital" type="button" class="btn btn-success trn" style="margin-left:1.5em;">Mindigital<i style="margin-left:0.2em;" class="fas fa-signature"></i></button>
+					</div>
+					<div style="margin-top:1em;" id="schBtngroup" aria-label="schGroup">
+						<button id="signWithObjectionButton" type="button" class="btn btn-danger trn" style="margin-left:3em;">Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
+						<button style="margin-left:0.5em;" id="signAsLast" type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>
+						<button id="signButton" type="button" class="btn btn-success trn" style="margin-left:1.5em;">Sch<i style="margin-left:0.2em;" class="fas fa-signature"></i></button>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			</div>
+		</div>
+	  </div>
+	</div>`;
+	
+const rejectModalDiv =	
+	`<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document" >
+			<div class="modal-content">
+			  <div class="modal-body" id="rejectForm">
+				<div class="input-group mb-3">
+				  <div class="input-group-prepend" style="margin-bottom:2em;"><b>
+					<span class="input-group-text" id="basic-addon1" >Οριστική Απόρριψη Εγγράφου</span></b>
 					<span class="input-group-text" id="basic-addon1" ><br><br><u>Επισήμανση</u><br>
-						Ν.2693/1999. αρ.25 παρ.5<i>
+					    Ν.2693/1999. αρ.25 παρ.5<i>
 						Οι προιστάμενοι όλων των βαθμίδων οφείλουν να προσυπογράφουν τα έγγραφα που ανήκουν στην 
 						αρμοδιότητά τους και εκδίδονται με την υπογραφή του προϊσταμένου τους. Αν διαφωνούν, οφείλουν 
 						να διατυπώσουν εγγράφως τις τυχόν αντιρρήσεις τους. Αν παραλείψουν να προσυπογράψουν το 
 						έγγραφο, θεωρείται ότι το προσυπέγραψαν.</i>
 					</span>
+				  </div>
+				  <textarea onKeyUp="enableRejectButton();" id="rejectText" cols="100" rows="3" size="200" class="form-control" placeholder="Η απόρριψη δεν αφορά σε διαφωνία ως προς το περιεχόμενο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
 				</div>
-				<textarea id="signText" cols="100" rows="3" size="200" class="form-control" placeholder="Το σχόλιο είναι προαιρετικό" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
-				<div style="margin-top : 0.2em;" class="btn-group" role="group" aria-label="Basic example">
-				  <button type="button" id="selectMiniditalButtons" onclick="mindigitalButtons();" class="btn btn-primary">Mindigital</button>
-				  <button type="button" id="selectSchButtons" onclick="schButtons();" class="btn btn-secondary">sch</button>
-				</div>
+				
+			  <div class="modal-footer">
+			  	<button id="rejectButton" type="button" class="btn btn-warning trn" disabled>Απόρριψη</button>
+				<button id="closeButtonModal" type="button" class="btn btn-secondary trn" data-dismiss="modal">Close</button>
+			  </div>
 			</div>
-			
-			<div class="signModalfooter">
-				<div style="margin-top:1em;" id="mindigitalBtngroup" aria-label="mindigitalGroup">
-					<button id="signWithObjectionButtonMindigital" type="button" class="btn btn-danger trn" style="margin-left:3em;">Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
-					<button  style="margin-left:0.5em;" id="signAsLastMindigital" type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>
-						
-					<button id="signWithMindigital" type="button" class="btn btn-success trn" style="margin-left:1.5em;">Mindigital<i style="margin-left:0.2em;" class="fas fa-signature"></i></button>
-				</div>
-				<div style="margin-top:1em;" id="schBtngroup" aria-label="schGroup">
-					<button id="signWithObjectionButton" type="button" class="btn btn-danger trn" style="margin-left:3em;">Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
-					<button style="margin-left:0.5em;" id="signAsLast" type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>
-					<button id="signButton" type="button" class="btn btn-success trn" style="margin-left:1.5em;">Sch<i style="margin-left:0.2em;" class="fas fa-signature"></i></button>
-				</div>
-			</div>
+		  </div>
 		</div>
 	</div>`;
+	
+
+const otpModalsDiv =		
+	`<div class="modal fade" id="otpModal" tabindex="-1" role="dialog" aria-labelledby="otpModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document" >
+			<div class="modal-content">
+			  <div class="modal-body" id="rejectForm">
+				<div class="input-group mb-3">
+				  <div  class="input-group-prepend" style="margin-bottom:2em;"><b>
+					<span class="input-group-text" id="basic-addon2" >Εισαγωγή OTP</span></b><div id="otpTitle"></div>
+					<span class="input-group-text" id="basic-addon2" ><br><br><u>Επισήμανση</u><br>
+						<span id="otpStatus">το ΟTP λαμβάνεται αυτόματα από το email, εφόσον έχετε δηλώσει αυτό τον τρόπο λήψης στο mindigital.</span>
+					</span>
+				  </div>
+				  <textarea id="otpText" cols="100" rows="3" size="200" class="form-control" placeholder="Εισαγωγή OTP" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+				</div>
+				
+			  <div class="modal-footer">
+				<button id="checkEmailButton" type="button" class="btn btn-secondary trn"  style="margin-right:2em;">Επανέλεγχος Email</button>
+				<button id="createExCopyButton" type="button" class="btn btn-warning trn" >Δημιουργία Αντιγράφου</button>
+				<button id="closeButtonModal" type="button" class="btn btn-secondary trn" data-dismiss="modal">Close</button>
+			  </div>
+			</div>
+		  </div>
+		</div>
+	</div>
+	
+	<div class="modal fade" id="otpModal1" tabindex="-1" role="dialog" aria-labelledby="otpModalLabel1" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document" >
+			<div class="modal-content">
+			  <div class="modal-body" id="rejectForm">
+				<div class="input-group mb-3">
+				  <div  class="input-group-prepend" style="margin-bottom:2em;"><b>
+					<span class="input-group-text" id="basic-addon21" >Εισαγωγή OTP</span></b><div id="otpTitle"></div>
+					<span class="input-group-text" id="basic-addon21" ><br><br><u>Επισήμανση</u><br>
+						<span id="otpStatus1">το ΟTP λαμβάνεται αυτόματα από το email, εφόσον έχετε δηλώσει αυτό τον τρόπο λήψης στο mindigital.</span>
+					</span>
+				  </div>
+				  <textarea id="otpText1" cols="100" rows="3" size="200" class="form-control" placeholder="Εισαγωγή OTP" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+				</div>
+				
+			  <div class="modal-footer">
+				<button id="checkEmailButton1" type="button" class="btn btn-secondary trn"  style="margin-right:2em;">Επανέλεγχος Email</button>
+				<button id="createExCopyButton1" type="button" class="btn btn-warning trn" >Υπογραφή Εγγράφου</button>
+				<button id="closeButtonModal1" type="button" class="btn btn-secondary trn" data-dismiss="modal">Close</button>
+			  </div>
+			</div>
+		  </div>
+		</div>
+	</div>`;
+	
+	
 
 document.body.insertAdjacentHTML("beforeend",signModalDiv);
+document.body.insertAdjacentHTML("beforeend",rejectModalDiv);
+document.body.insertAdjacentHTML("beforeend",otpModalsDiv);
 
 // $('#signModal').on('show.bs.modal', function (e) {
 					// var aa = e.relatedTarget.getAttribute('data-whatever');
@@ -115,7 +205,7 @@ export function fillTable(result){
 	//const table = $('#example1').DataTable();
 	//table.clear().draw();
 
-	let table = document.getElementById("dataToSignTable");
+	const table = document.getElementById("dataToSignTable");
 
 	if (localStorage.getItem("loginData") == null){
 		alert("Δεν υπάρχουν πληροφορίες σύνδεσης");
@@ -180,7 +270,7 @@ export function fillTable(result){
 		let historyBtn = "";
 		let rejectBtn = "";
 		if (result[key].diff == 0 && accessLevel==1){
-			signBtn = '<button id="showSignModalBtn" type="button" class="btn btn-success btn-sm" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
+			signBtn = '<button id="showSignModalBtn" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
 		}
 		
 		if (result[key].objection>0){
@@ -198,7 +288,6 @@ export function fillTable(result){
 		c4.innerHTML = temp1[3];
 		c5.innerHTML = temp1[4];		
 		
-		document.querySelector("#showSignModalBtn").addEventListener("click",()=> document.querySelector("#signModal").style.display="flex");
 		document.querySelector("#btn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename']));
 		document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=>viewFile(result[key]['filename']));
 		if (result[key].preview_file_last !==""){
@@ -326,7 +415,7 @@ export async function showOTP(aa , isLast = 0){
 }
 
 
-function rejectDocument(aa){
+export async function rejectDocument(aa){
 	document.querySelector('#rejectModal').modal('hide');
 	document.querySelector("#rejecting").fadeIn();
 	const {jwt,role} = getFromLocalStorage();	
@@ -359,5 +448,119 @@ function rejectDocument(aa){
 	}
 	else {
 		
+	}
+}
+
+document.querySelector('#rejectModal').addEventListener('show.bs.modal', function (e) {
+	const aa = e.relatedTarget.getAttribute('data-whatever');
+	document.querySelector('#rejectButton').addEventListener("click", function(){rejectDocument(aa);});
+});
+
+
+document.querySelector('#otpModal').addEventListener('shown.bs.modal', function (e) {
+	document.querySelector('#createExCopyButton').setAttribute("disabled", false);
+	document.querySelector('#otpText').value="";
+	const otpRes = requestOTP();
+	console.log(otpRes);
+	if (otpRes[0] == 0){
+		document.querySelector('#otpText').value = otpRes[1];
+		document.querySelector('#otpStatus').value = "Εισαγωγή OTP από email";
+		const aa = e.relatedTarget.getAttribute('data-whatever');
+		document.querySelector('#createExCopyButton').addEventListener("click", function(){signMD(aa);}); 
+	}
+	else if (otpRes[0] == 1){
+		document.querySelector('#otpStatus').value = otpRes[1];
+		document.querySelector('#otpText').value = 'Eχει δηλωθεί η χρήση κινητού για λήψη OTP. Eισάγετε το OTP';
+		const aa = e.relatedTarget.getAttribute('data-whatever');
+		document.querySelector('#createExCopyButton').addEventListener("click", function(){signMD(aa);}); 	
+	}
+	else {
+		document.querySelector('#otpStatus').value = otpRes[1];
+		document.querySelector('#createExCopyButton').setAttribute("disabled", true);
+	}
+});
+
+document.querySelector('#otpModal1').addEventListener('shown.bs.modal', function (e) {
+	//console.log(e);
+	document.querySelector('#createExCopyButton1').setAttribute("disabled", false);
+	document.querySelector('#otpText1').value="";
+	const otpRes = requestOTP();
+	console.log(otpRes);
+	if (otpRes[0] == 0){
+		document.querySelector('#otpText1').value = otpRes[1];
+		document.querySelector('#otpStatus1').value = "Εισαγωγή OTP από email";
+	}
+	else if (otpRes[0] == 1){
+		document.querySelector('#otpStatus1').value = otpRes[1];
+		//$('#otpText1').val('Eχει δηλωθεί η χρήση κινητού για λήψη OTP. Eισάγετε το OTP.');
+		//var aa = e.relatedTarget.getAttribute('data-whatever'); 	
+	}
+	else {
+		document.querySelector('#otpStatus1').value = otpRes[1];
+		document.querySelector('#createExCopyButton1').setAttribute("disabled", true);
+	}
+});
+
+
+
+
+
+//document.querySelector("#saveButtonModal").addEventListener("click", function() {
+	 //var interest = $('ul#alldevices').find('li.active').;
+//});
+
+//tempUserElement.classList.remove('btn-danger');
+//tempUserElement.classList.add('btn-success');
+
+
+const element1 = document.getElementById("selectSchButtons");
+const element2 = document.getElementById("schBtngroup");	
+const element3 = document.getElementById("mindigitalBtngroup");
+
+if (element1.classList.contains('btn-secondary')){
+	element2.style.display = "none";
+	element3.style.display = "block";
+} else {
+	element2.style.display = "block";
+	element3.style.display = "none";
+}
+
+function mindigitalButtons(){
+	const element0 = document.getElementById("selectMiniditalButtons");
+	const element1 = document.getElementById("selectSchButtons");
+	if (element0.classList.contains('btn-secondary')){
+		element0.classList.remove('btn-secondary');
+		element0.classList.add('btn-primary');
+		element1.classList.remove('btn-primary');
+		element1.classList.add('btn-secondary');
+	}
+	const element2 = document.getElementById("schBtngroup");	
+	const element3 = document.getElementById("mindigitalBtngroup");
+	if (element1.classList.contains('btn-secondary')){
+		element2.style.display = "none";
+		element3.style.display = "block";
+	} else {
+		element2.style.display = "block";
+		element3.style.display = "none";
+	}
+}
+
+function schButtons(){
+	const element0 = document.getElementById("selectMiniditalButtons");
+	const element1 = document.getElementById("selectSchButtons");
+	if (element1.classList.contains('btn-secondary')){
+		element1.classList.remove('btn-secondary');
+		element1.classList.add('btn-primary');
+		element0.classList.remove('btn-primary');
+		element0.classList.add('btn-secondary');
+	}
+	const element2 = document.getElementById("schBtngroup");	
+	const element3 = document.getElementById("mindigitalBtngroup");
+	if (element1.classList.contains('btn-secondary')){
+		element2.style.display = "none";
+		element3.style.display = "block";
+	} else {
+		element2.style.display = "block";
+		element3.style.display = "none";
 	}
 }
