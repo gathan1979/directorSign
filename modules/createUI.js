@@ -1,4 +1,5 @@
 import {uploadFileTest, uploadComponents} from "./uploadFiles.js";
+import {getSigRecords,fillTable}  from "./signatureRecords.js";
 			
 const basicUI = `<div id="myNavBar">
 	<div  id="prosIpografi" ><a class="active" href="directorSign.php">Προς Υπογραφή</a></div>
@@ -91,6 +92,8 @@ loginData.user.roles.forEach((role,index)=>{
 document.querySelector("#uploadDiv").innerHTML = uploadComponents;
 document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
 
+//Γέμισμα πίνακα με εγγραφές χρήστη
+getRecordsAndFill()
 
 // Να δω τι γίνεται εδώ
 if (+JSON.parse(localStorage.getItem("loginData")).user.roles[0].accessLevel){
@@ -121,6 +124,14 @@ function updateRolesUI(){
 function setRole(index){
 	localStorage.setItem("currentRole",index);									
 	updateRolesUI();
+	getRecordsAndFill()
+}
+
+function getRecordsAndFill(){
+	const records = getSigRecords().then( res => {
+		//const table = $('#example1').DataTable();
+		fillTable(res);
+	});		
 }
 
 document.querySelector('#showEmployeesBtn').addEventListener("click", function() {

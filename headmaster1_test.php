@@ -7,12 +7,11 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=Greek">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 		<title>Ηλεκτρονικές Υπηρεσίες</title>
 		
-		<!-- Bootstrap core CSS -->
+		<!-- Bootstrap core CSS
 		
-		<script src="js/jquery-3.6.3.min.js"></script>
+		<script src="js/jquery-3.6.3.min.js"></script> -->
 		<script src="js/popper.min.js"></script>
 		
 		<link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
@@ -27,39 +26,11 @@
 		<script type="text/javascript" src="js/customfunctions.js"></script>  
 		<script type="module" src="./modules/signatureRecords.js"></script>
 		<script type="module" src="./modules/createUI.js"></script>
-		
-		<script type="module" >
-			import {getSigRecords,fillTable}  from "./modules/signatureRecords.js";
-			
-			const user = getSigRecords().then( res => {
-				//const table = $('#example1').DataTable();
-				fillTable(res);
-			});
-		</script>  
-		
-		<script type="text/javascript" defer>
-			
-		
-
-		
-		
-		
-		function enableRejectButton(){
-			if(document.getElementById("rejectText").value != "") {
-				document.getElementById("rejectButton").disabled = false;
-			}
-			else{
-				document.getElementById("rejectButton").disabled = true;
-			}
-		}
-		
-		
-			
-</script>		
+	
 
 	</head>
 	<body > 
-		<table id="dataToSignTable">
+		<table id="dataToSignTable" class="table">
 			<thead>
 			  <tr>
 				<th id="filename" class="text-right">Έγγραφο προς Υπογραφή</th>
@@ -77,12 +48,6 @@
 		<div style="padding:0.2em;background-color:#cadfc0;width :90%;position:absolute;bottom:0;" id="emailsContainer">
 
 		</div>
-	
-		<?php
-			//if ($messagesExist){
-				//echo '<script type="text/javascript">notifyMe("Έχετε '.$messagesExist.' Μηνύματα για υπογραφή");</script>';
-			//}				
-		?>
 		
 		
 		<div id="loading">
@@ -154,15 +119,5 @@
 			  </div>
 			</div>
 		</div>
-	
-	
-		<?php 
-			//echo '<pre>' . print_r($_SESSION, TRUE) . '</pre>';
-			//var_dump($_SESSION);
-			//echo $_SESSION['canSignAsLast'].'φφφ';
-			//echo $_SESSION['codePage'];
-
-		?>
-		
 	</body>
 </html>

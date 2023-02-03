@@ -114,24 +114,12 @@ td .fa-amilia{
 #dataToSignTable{
 	margin : 2em;
 	width  : calc(100% - 4em);
-	border-bottom: 1px solid #ddd;
-}
-
-#dataToSignTable th{
-	background-color : gray;
-	padding : 0.2em;
-	text-align : center;
-	color : white;
-	padding-bottom : 1em;
 }
 
 #dataToSignTable th:first-child{
 	width : 40% !important;
 }
 
-#dataToSignTable td{
-	text-align : center;
-}
 
 #headmasterExtraMenuDiv{
 	display : flex;	
@@ -218,7 +206,7 @@ td .fa-amilia{
 	color:white;
 	font-size : 1.1em;
 	text-decoration: underline;
-	text-decoration-color: green;
+	text-decoration-color: #ffca2c;
 	text-decoration-thickness: 8px;
 	text-decoration-skip-ink: none;
 }
@@ -298,4 +286,8 @@ td .fa-amilia{
 #tableSearchInput {
 	width : 400px;	
 	flex-basis : auto;
+}
+
+.contentFooter{
+	margin-top : 2em;	
 }
