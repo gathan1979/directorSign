@@ -291,3 +291,19 @@ td .fa-amilia{
 .contentFooter{
 	margin-top : 2em;	
 }
+						
+#signWithObjectionBtn{
+	width : 20%;
+}
+#signAsLastBtn{
+	width : 20%;
+}
+#requestOTPBtn{
+	width : 15%;
+}
+#otpText{
+	width : 15%;
+}
+#signBtn{
+	width : 20%;
+}

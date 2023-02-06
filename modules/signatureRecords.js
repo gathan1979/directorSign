@@ -1,10 +1,10 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
 
-const mindigitalProvider = { name : "MINDIGITAL", otp : 1};
-const schProvider = { name : "SCH", otp : 0};
+const MINDIGITAL = { name : "MINDIGITAL", otp : 1};
+const SCH = { name : "SCH", otp : 0};
 
-const signProviders = { mindigitalProvider, schProvider};
+const signProviders = { MINDIGITAL, SCH};
 Object.freeze(signProviders);
 
 const signModalDiv =
@@ -26,18 +26,21 @@ const signModalDiv =
 							έγγραφο, θεωρείται ότι το προσυπέγραψαν.</i>
 					</div>
 					<textarea id="signText" cols="100" rows="3" size="200" class="form-control" placeholder="Το σχόλιο είναι προαιρετικό" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
-					<div style="margin-top : 0.2em;" class="btn-group" role="group" aria-label="Basic example">
-					  <button type="button" id="selectMindigitalBtn" class="btn btn-secondary">Mindigital</button>
-					  <button type="button" id="selectSchBtn" class="btn btn-secondary">sch</button>
+					<div id="signProvidersBtns" style="margin-top : 0.2em;" class="btn-group" role="group" aria-label="Basic example">
+					  <button type="button" id="selectMindigitalBtn" class="btn btn-secondary" data-provider="MINDIGITAL">Mindigital</button>
+					  <button type="button" id="selectSchBtn" class="btn btn-secondary" data-provider="SCH">sch</button>
 					</div>
 				</div>
 			
 				<div class="contentFooter">
-					<div id="signBtngroup" aria-label="signBtnGroup">
-						<button id="signWithObjectionBtn" type="button" class="btn btn-danger trn" >Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
-						<button id="signAsLastBtn" type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>
-							
-						<button id="signBtn" type="button" class="btn btn-success trn"></button>
+					<div id="signBtngroup" class="flexHorizontal" aria-label="signBtnGroup">
+						<button id="signWithObjectionBtn"  type="button" class="btn btn-danger trn" >Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
+						<button id="signAsLastBtn"  type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>		
+						
+						<button id="requestOTPBtn"  type="button" class="btn btn-success trn">Λήψη OTP</button>
+						<button id="signBtn"  type="button" class="btn btn-success trn"></button>
+						
+						<input id="otpText" cols="10" rows="1" size="200" class="form-control" placeholder="Εισαγωγή OTP"></input>
 					</div>
 				</div>
 			</div>
@@ -544,42 +547,63 @@ document.querySelector('#otpModal1').addEventListener('shown.bs.modal', function
 
 
 function selectSignProvider(providerName){
+	let requiresOTP = 0;
 	//Έλεγχος αν υπάρχει ο συγκεκριμένος provider στη λίστα, αν όχι ορισμός mindigital
 	const providerExists = Object.values(signProviders).reduce((accum, current) =>{
 		if (providerName === current.name){
 			accum+=1;
+			requiresOTP = current.otp
 		}
 		return accum;
 	},0);
 	if (providerExists === 0){
-		providerName = signProviders.mindigitalProvider.name;
+		providerName = signProviders.MINDIGITAL.name;
+		requiresOTP = signProviders.MINDIGITAL.otp;
 	}
 	//-----------------------------------------------------------
 	//Update UI --------------------
-	
-	const element0 = document.getElementById("selectMindigitalBtn");
-	const element1 = document.getElementById("selectSchBtn");
 	const signBtn = document.getElementById("signBtn");
+	const signAsLastBtn = document.getElementById("signAsLastBtn");
+	const signWithObjectionBtn = document.getElementById("signWithObjectionBtn");
 	
-	if (providerName === "MINDIGITAL"){
-		if (element0.classList.contains('btn-secondary')){
-			element0.classList.remove('btn-secondary');
-			element0.classList.add('btn-primary');
-			element1.classList.remove('btn-primary');
-			element1.classList.add('btn-secondary');
-			signBtn.innerHTML = 'Υπογραφή Mindigital<i style="margin-left:0.2em;" class="fas fa-signature"></i>'; 
+	const otpBtn = document.getElementById("requestOTPBtn");
+	const otpText = document.getElementById("otpText");
+	
+	const providersBtns = document.querySelectorAll("#signProvidersBtns>button");
+	Array.from(providersBtns).forEach( btn => {
+		if (providerName === btn.dataset.provider){
+			if (btn.classList.contains('btn-secondary')){
+				btn.classList.remove('btn-secondary');
+				btn.classList.add('btn-primary');
+			}
 		}
-	}
-	else if (providerName === "SCH"){
-		if(element1.classList.contains('btn-secondary')){
-			element1.classList.remove('btn-secondary');
-			element1.classList.add('btn-primary');
-			element0.classList.remove('btn-primary');
-			element0.classList.add('btn-secondary');
-			signBtn.innerHTML = 'Υπογραφή Sch<i style="margin-left:0.2em;" class="fas fa-signature"></i>'; 
+		else{
+			btn.classList.remove('btn-primary');
+			btn.classList.add('btn-secondary');
 		}
+	});
+	signBtn.innerHTML = 'Υπογραφή '+providerName+'<i style="margin-left:0.2em;" class="fas fa-signature"></i>'; 
+	if (signProviders[providerName].otp === 1){  //απαιτείται OTP
+		otpBtn.style.display = "inline-block";	
+		otpText.style.display = "inline-block";	
+		signBtn.style.display = "none";
+		signWithObjectionBtn.style.display = "none";
+		signAsLastBtn.style.display = "none";
 	}
-		//---------------------------------
+	else{
+		otpBtn.style.display = "none";	
+		otpText.style.display = "none";	
+		signBtn.style.display = "inline-block";
+		signWithObjectionBtn.style.display = "inline-block";
+		signAsLastBtn.style.display = "inline-block";
+	}
+	
+	//const element0 = document.getElementById("selectMindigitalBtn");
+	//const element1 = document.getElementById("selectSchBtn");
+	
+
+	
+	//---------------------------------
 	if (localStorage.getItem("signProvider") !==providerName){
 		localStorage.setItem("signProvider",providerName);
 	}
