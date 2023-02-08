@@ -1,54 +1,77 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
 
-const MINDIGITAL = { name : "MINDIGITAL", otp : 1};
-const SCH = { name : "SCH", otp : 0};
 
-const signProviders = { MINDIGITAL, SCH};
+const mindigitallMiddleware = 
+	`<div id="providerHeader" class="flexVertical">
+		<button id="emailButton" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Λήψη μηνυμάτων" onclick="connectToEmail();"><i id="faMail" class="far fa-envelope-open"></i></button>
+		<button id="mindigitalButton" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Σύνδεση στο mindigital" onclick="showMindigitalModal();"><i class="fas fa-file-signature"></i></button>
+	</div>
+	<div id="providerContent" class="flexHorizontal" style="width : 40%;flex-basis: auto; align-items : flex-start;">
+		<button  id="requestOTPBtn"  type="button" class="btn btn-success trn">Λήψη OTP</button>
+		<input   id="otpText" cols="10" rows="1" type="number"  min="100000" max="999999" placeholder="εξαψήφιο OTP" size="200" class="form-control" placeholder="Εισαγωγή OTP"></input>
+	</div>`;
+
+const uploadMiddleware = 
+	`<div class="providerHeader">
+	</div>
+	<div class="providerContent">
+		<input type="file" class="form-control-file" name="selectedSignedFile" id="selectedSignedFile"  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX" />
+	</div>`;
+
+let MINDIGITAL = { name : "MINDIGITAL", middleware : mindigitallMiddleware, params : {otp : {value: null, type : "number", persist : false, errorMsg : "Απαιτείται OTP"}, token :{value : null, type : "string", persist : true, errorMsg : "Απαιτείται σύνδεση στο mindigital"}}}; 
+let SCH = { name : "SCH",  middleware : null, params : {}};
+let UPLOAD = { name : "UPLOAD", middleware : uploadMiddleware,  params : {selectedSignedFile : {value: null, type : "string", persist : false, errorMsg : "Απαιτείται επιλογή αρχείου"}}};
+
+const signProviders = { MINDIGITAL, UPLOAD, SCH};
 Object.freeze(signProviders);
 
 const signModalDiv =
 	`<div class="modal fade" id="signModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="exampleModalLabel">Υπογραφή Εγγράφου</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body" id="signForm">
-				<div>
-					<div >
-						<u>Επισήμανση</u>
-							Ν.2693/1999. αρ.25 παρ.5 <i>
-							Οι προιστάμενοι όλων των βαθμίδων οφείλουν να προσυπογράφουν τα έγγραφα που ανήκουν στην 
-							αρμοδιότητά τους και εκδίδονται με την υπογραφή του προϊσταμένου τους. Αν διαφωνούν, οφείλουν 
-							να διατυπώσουν εγγράφως τις τυχόν αντιρρήσεις τους. Αν παραλείψουν να προσυπογράψουν το 
-							έγγραφο, θεωρείται ότι το προσυπέγραψαν.</i>
+	  	<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Υπογραφή Εγγράφου</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body" id="signForm">
+					<div>
+						<div >
+							<u>Επισήμανση</u>
+								Ν.2693/1999. αρ.25 παρ.5 <i>
+								Οι προιστάμενοι όλων των βαθμίδων οφείλουν να προσυπογράφουν τα έγγραφα που ανήκουν στην 
+								αρμοδιότητά τους και εκδίδονται με την υπογραφή του προϊσταμένου τους. Αν διαφωνούν, οφείλουν 
+								να διατυπώσουν εγγράφως τις τυχόν αντιρρήσεις τους. Αν παραλείψουν να προσυπογράψουν το 
+								έγγραφο, θεωρείται ότι το προσυπέγραψαν.</i>
+						</div>
+						<textarea id="signText" cols="100" rows="3" size="200" class="form-control" placeholder="Το σχόλιο είναι προαιρετικό" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+						<div id="providers" >
+							<div id="signProvidersBtns" class="btn-group" role="group" aria-label="Basic example">
+							
+							</div>
+							<div id="providerMiddleware" class="flexHorizontal" style="height : 100px;">
+				
+							</div>
+						</div>
 					</div>
-					<textarea id="signText" cols="100" rows="3" size="200" class="form-control" placeholder="Το σχόλιο είναι προαιρετικό" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
-					<div id="signProvidersBtns" style="margin-top : 0.2em;" class="btn-group" role="group" aria-label="Basic example">
-					  <button type="button" id="selectMindigitalBtn" class="btn btn-secondary" data-provider="MINDIGITAL">Mindigital</button>
-					  <button type="button" id="selectSchBtn" class="btn btn-secondary" data-provider="SCH">sch</button>
+				
+					<div class="contentFooter">
+						<div id="signBtngroup" class="flexHorizontal" aria-label="signBtnGroup">
+							<button id="signWithObjectionBtn"  type="button" class="btn btn-danger trn" >Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
+							<button id="signAsLastBtn"  type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>		
+							
+						
+							<button id="signBtn"  type="button" class="btn btn-success trn"></button>
+							
+							
+						</div>
 					</div>
 				</div>
-			
-				<div class="contentFooter">
-					<div id="signBtngroup" class="flexHorizontal" aria-label="signBtnGroup">
-						<button id="signWithObjectionBtn"  type="button" class="btn btn-danger trn" >Έγγραφη αντίρρηση<i style="margin-left:0.2em;" class="fas fa-thumbs-down"></i></button>
-						<button id="signAsLastBtn"  type="button" class="btn btn-warning trn">Τελικός υπογράφων<i style="margin-left:0.2em;" class="fas fa-stamp"></i></button>		
-						
-						<button id="requestOTPBtn"  type="button" class="btn btn-success trn">Λήψη OTP</button>
-						<button id="signBtn"  type="button" class="btn btn-success trn"></button>
-						
-						<input id="otpText" cols="10" rows="1" size="200" class="form-control" placeholder="Εισαγωγή OTP"></input>
-					</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 				</div>
 			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-			</div>
-		</div>
-	  </div>
+	  	</div>
 	</div>`;
 	
 const rejectModalDiv =	
@@ -135,28 +158,48 @@ document.body.insertAdjacentHTML("beforeend",signModalDiv);
 document.body.insertAdjacentHTML("beforeend",rejectModalDiv);
 document.body.insertAdjacentHTML("beforeend",otpModalsDiv);
 
+//Δημιουργία επιλογών παρόχου υπογραφής στο modal
+for (const [key, value] of Object.entries(signProviders)) {
+	const btnId = "select"+value['name']+"Btn";
+	const providerBtn = '<button type="button" id="'+btnId+'" class="btn btn-secondary" data-provider="'+value['name']+'">'+value['name']+'</button>';
+	document.querySelector("#signProvidersBtns").innerHTML += providerBtn;	
+}
+Array.from(document.querySelectorAll("#signProvidersBtns>button")).forEach( btn =>{
+	btn.addEventListener("click",() => selectSignProvider(btn.dataset.provider));
+})
 
-document.querySelector("#selectMindigitalBtn").addEventListener("click",()=> selectSignProvider('MINDIGITAL'));
-document.querySelector("#selectSchBtn").addEventListener("click",()=> selectSignProvider('SCH'));
-document.querySelector("#signModal").addEventListener("show.bs.modal",(e)=> {
-				// Εμφάνιση κουμπιού τελικού υπογράφοντα κατά περίπτωση
-				if (+JSON.parse(localStorage.getItem("loginData")).user.roles[localStorage.getItem("currentRole")].canSignAsLast){
-					document.querySelector('#signAsLastBtn').style.display = "inline-block";
-				}else{
-					document.querySelector('#signAsLastBtn').style.display = "none";
-				}
-				//-------------------------------------------------------
-				//Εξέταση αν υπάρχει στην τοπική μνήμη provider, αν όχι ορισμός mindigital
-				(localStorage.getItem("signProvider")==null?localStorage.setItem("signProvider",signProviders.mindigitalProvider.name):localStorage.getItem("signProvider"));
-				let signProvider = localStorage.getItem("signProvider");
-				selectSignProvider(signProvider);
-				const recordAA = e.relatedTarget.getAttribute('data-whatever');
-				//Υπογραφή signDocument(aa, isLast=0, objection=0)
-				document.querySelector('#signBtn').addEventListener("click",function(){signDocument(+recordAA);});
-				document.querySelector('#signWithObjectionBtn').addEventListener("click",function(){signDocument(+recordAA, 0, 1);});
-				document.querySelector('#signAsLastBtn').addEventListener("click",function(){signDocument(+recordAA, 1, 0);});
-			}
-		);
+let signDocumentRef ;
+let signDocumentWithObjRef;
+let signDocumentAsLastRef;
+
+//Ενέργειες κατά την εμφάνιση και εξαφάνιση του modal
+document.querySelector("#signModal").addEventListener("shown.bs.modal",(e)=> {		
+	//Εξέταση αν υπάρχει στην τοπική μνήμη provider, αν όχι ορισμός mindigital
+	(localStorage.getItem("signProvider")==null?localStorage.setItem("signProvider",signProviders.MINDIGITAL.name):localStorage.getItem("signProvider"));
+	//Εξέταση αν οι απαραίτητες τιμές του middleware του provider έχουν οριστεί
+	let signProvider = localStorage.getItem("signProvider");
+	selectSignProvider(signProvider);
+	const recordAA = e.relatedTarget.getAttribute('data-whatever');
+	//Υπογραφή signDocument(aa, isLast=0, objection=0)
+	
+	signDocumentRef = () => signDocument(+recordAA);
+	signDocumentWithObjRef = () => signDocument(+recordAA, 0, 1);
+	signDocumentAsLastRef = () => signDocument(+recordAA, 1, 0);
+
+	document.querySelector('#signBtn').addEventListener("click",signDocumentRef);
+	document.querySelector('#signWithObjectionBtn').addEventListener("click",signDocumentWithObjRef);
+	document.querySelector('#signAsLastBtn').addEventListener("click",signDocumentAsLastRef);
+	document.querySelector("#otpText").addEventListener("keyup",checkOTPLength);
+	document.querySelector("#selectedSignedFile").addEventListener("change",selectFile);
+});
+
+document.querySelector("#signModal").addEventListener("hide.bs.modal",(e)=> {
+	document.querySelector('#signBtn').removeEventListener("click",signDocumentRef);
+	document.querySelector('#signWithObjectionBtn').removeEventListener("click",signDocumentWithObjRef);
+	document.querySelector('#signAsLastBtn').removeEventListener("click",signDocumentAsLastRef);
+	document.querySelector("#otpText").removeEventListener("keyup",checkOTPLength);
+})
+
 
 
 export async function getUserData(){
@@ -387,38 +430,71 @@ async function viewFile(filename){
 export async function signDocument(aa, isLast=0, objection=0){
 	//document.querySelector('#signModal').modal('hide');
 	//$("#signing").fadeIn();
-	const {jwt,role} = getFromLocalStorage();	
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	
-	const providerName = localStorage.getItem("signProvider");
-	if (providerName === null){
-		alert("Δεν υπάρχει πάροχος υπογραφής");
+
+	let providerExists = 0;
+	let providerName = "";
+	let params = {};
+	//Έλεγχος αν υπάρχει πάροχος στη μνήμη
+	if (localStorage.getItem("signProvider")!==null){
+		providerName = localStorage.getItem("signProvider");
+	}
+	else{
+		alert("Δεν υπάρχει πάροχος υπογραφής αποθηκευμένος");
 		return;
 	}
-	let otpActive = 0;
-	const providerExists = Object.values(signProviders).reduce((accum, current) =>{
+
+	//Έλεγχος αν ο πάροχος στη μνήμη ανήκει στους διαθέσιμους (signProviders)
+	providerExists = Object.values(signProviders).reduce((accum, current) =>{
 		if (providerName === current.name){
 			accum+=1;
-			otpActive = current.otp;
+			params = current.params;
 		}
 		return accum;
 	},0);
 	if (providerExists === 0){
-		alert("O πάροχος υπογραφής δεν ανήκει στους διαθέσιμους");
+		alert("Ο συγκεκριμένος πάροχος υπογραφής δε βρέθηκε");
 		return;
 	}
+
+	//Έλεγχος αν οι παράμετροι που πρέπει να είναι στη μνήμη υπάρχουν και φόρτωσή τους
+	//Έλεγχος αν οι παράμετροι όλες έχουν τιμές, όπως πρέπει 
+	const keys = Object.keys(params);
+	keys.forEach( key =>
+	{
+		if (params[key].persist){
+			if(localStorage.getItem(providerName+"_"+key)!==null){
+				signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key);
+			}
+			else{
+				alert("Δεν υπάρχει στη μνήμη τιμή για "+key);
+				return;
+			}
+		}
+		if (params[key].value === null){
+			alert(params[key].errorMsg);
+			return ;
+		}
+	})
+
+	const {jwt,role} = getFromLocalStorage();	
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
 	
 	const comment = document.getElementById('signText').value;
 	let formData = new FormData();
+	// signDocument(aa, isLast=0, objection=0)
+	formData.append("role", role);
 	formData.append("aa", aa);
 	formData.append("comment", comment);
 	formData.append("objection", objection);
 	formData.append("isLast", isLast);
 	formData.append("provider", providerName);
-	formData.append("otp", otpActive);
-	formData.append("role", role);
-	
+	keys.forEach( key => {
+		formData.append(key, signProviders[providerName]["params"][key].value);	
+	});
+
+	return;
+
 	let init = {method: 'POST', headers : myHeaders, body : formData};
 	const res = await fetch("/api/signDoc.php",init); 
 	if (!res.ok){
@@ -547,28 +623,25 @@ document.querySelector('#otpModal1').addEventListener('shown.bs.modal', function
 
 
 function selectSignProvider(providerName){
-	let requiresOTP = 0;
+	let middleware = null;
+	let params = null;
 	//Έλεγχος αν υπάρχει ο συγκεκριμένος provider στη λίστα, αν όχι ορισμός mindigital
 	const providerExists = Object.values(signProviders).reduce((accum, current) =>{
 		if (providerName === current.name){
 			accum+=1;
-			requiresOTP = current.otp
+			middleware = current.middleware;
+			params= current.params;
 		}
 		return accum;
 	},0);
 	if (providerExists === 0){
 		providerName = signProviders.MINDIGITAL.name;
-		requiresOTP = signProviders.MINDIGITAL.otp;
+		middleware = signProviders.MINDIGITAL.middleware;
+		params = signProviders.MINDIGITAL.params;
 	}
 	//-----------------------------------------------------------
 	//Update UI --------------------
-	const signBtn = document.getElementById("signBtn");
-	const signAsLastBtn = document.getElementById("signAsLastBtn");
-	const signWithObjectionBtn = document.getElementById("signWithObjectionBtn");
-	
-	const otpBtn = document.getElementById("requestOTPBtn");
-	const otpText = document.getElementById("otpText");
-	
+	//Ανανέωση εμφάνισης κουμπιών παρόχων εντός του modal
 	const providersBtns = document.querySelectorAll("#signProvidersBtns>button");
 	Array.from(providersBtns).forEach( btn => {
 		if (providerName === btn.dataset.provider){
@@ -582,28 +655,47 @@ function selectSignProvider(providerName){
 			btn.classList.add('btn-secondary');
 		}
 	});
-	signBtn.innerHTML = 'Υπογραφή '+providerName+'<i style="margin-left:0.2em;" class="fas fa-signature"></i>'; 
-	if (signProviders[providerName].otp === 1){  //απαιτείται OTP
-		otpBtn.style.display = "inline-block";	
-		otpText.style.display = "inline-block";	
-		signBtn.style.display = "none";
-		signWithObjectionBtn.style.display = "none";
-		signAsLastBtn.style.display = "none";
-	}
-	else{
-		otpBtn.style.display = "none";	
-		otpText.style.display = "none";	
-		signBtn.style.display = "inline-block";
-		signWithObjectionBtn.style.display = "inline-block";
-		signAsLastBtn.style.display = "inline-block";
-	}
-	
-	//const element0 = document.getElementById("selectMindigitalBtn");
-	//const element1 = document.getElementById("selectSchBtn");
-	
+	//---------------------------------------------------------------
+	const signBtn = document.getElementById("signBtn");
+	const signAsLastBtn = document.getElementById("signAsLastBtn");
+	const signWithObjectionBtn = document.getElementById("signWithObjectionBtn");
 
+	signBtn.innerHTML = 'Υπογραφή '+providerName+'<i style="margin-left:0.2em;" class="fas fa-signature"></i>'; 
+
+	const otpBtn = document.getElementById("requestOTPBtn");
+	const otpText = document.getElementById("otpText");
+	const providerDiv = document.getElementById("providerMiddleware");
+
+	//Εμφάνιση κουμπιών παρόχου και φόρτωση μεταβλητών από μνήμη, όπου απαιτείται και αν υπάρχουν
+	if (middleware !== null){  //απαιτείται ενδιάμεσο βήμα
+		//otpBtn.style.display = "inline-block";	
+		//otpText.style.display = "inline-block";
+		providerDiv.innerHTML = middleware;  //Εμφάνιση κουμπιών παρόχου 
 	
-	//---------------------------------
+		const keys = Object.keys(params);    //φόρτωση μεταβλητών από μνήμη
+		keys.forEach( key =>
+		{
+			if (params[key].persist){
+				if (localStorage.getItem(providerName+"_"+key)!==null){
+					signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key)
+				}
+				else{
+					alert(params[key].errorMsg);
+				}
+			}
+		})
+	}
+	else{  // απευθείας εμφάνιση κουμπιών υπογραφής
+		providerDiv.innerHTML = "";
+	}
+
+	// Εμφάνιση κουμπιού τελικού υπογράφοντα κατά περίπτωση
+	if (+JSON.parse(localStorage.getItem("loginData")).user.roles[localStorage.getItem("currentRole")].canSignAsLast){
+		document.querySelector('#signAsLastBtn').style.display = "inline-block";
+	}else{
+		document.querySelector('#signAsLastBtn').style.display = "none";
+	}
+
 	if (localStorage.getItem("signProvider") !==providerName){
 		localStorage.setItem("signProvider",providerName);
 	}
@@ -617,4 +709,14 @@ function enableRejectButton(){
 	else{
 		document.getElementById("rejectButton").disabled = true;
 	}
+}
+
+function checkOTPLength(event){
+	signProviders.MINDIGITAL.params.otp.value = event.target.value;
+	console.log(signProviders.MINDIGITAL);
+}
+
+function selectFile(event){
+	signProviders.UPLOAD.params.selectedSignedFile.value = event.target.value;
+	console.log(signProviders.UPLOAD);
 }

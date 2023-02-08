@@ -17,7 +17,7 @@
 		<link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
 		<script src="bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>
 		
-		<link rel="stylesheet" type="text/css" href="style.css" />
+		<link rel="stylesheet" type="text/css" href="css/custom.css" />
 
 		<!--fontawesome-->
 		<link href="css/all.css" rel="stylesheet">
