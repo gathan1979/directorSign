@@ -1,27 +1,9 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
 
-
-const mindigitallMiddleware = 
-	`<div id="providerHeader" class="flexVertical">
-		<button id="emailButton" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Λήψη μηνυμάτων" onclick="connectToEmail();"><i id="faMail" class="far fa-envelope-open"></i></button>
-		<button id="mindigitalButton" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Σύνδεση στο mindigital" onclick="showMindigitalModal();"><i class="fas fa-file-signature"></i></button>
-	</div>
-	<div id="providerContent" class="flexHorizontal" style="width : 40%;flex-basis: auto; align-items : flex-start;">
-		<button  id="requestOTPBtn"  type="button" class="btn btn-success trn">Λήψη OTP</button>
-		<input   id="otpText" cols="10" rows="1" type="number"  min="100000" max="999999" placeholder="εξαψήφιο OTP" size="200" class="form-control" placeholder="Εισαγωγή OTP"></input>
-	</div>`;
-
-const uploadMiddleware = 
-	`<div class="providerHeader">
-	</div>
-	<div class="providerContent">
-		<input type="file" class="form-control-file" name="selectedSignedFile" id="selectedSignedFile"  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX" />
-	</div>`;
-
-let MINDIGITAL = { name : "MINDIGITAL", middleware : mindigitallMiddleware, params : {otp : {value: null, type : "number", persist : false, errorMsg : "Απαιτείται OTP"}, token :{value : null, type : "string", persist : true, errorMsg : "Απαιτείται σύνδεση στο mindigital"}}}; 
+let MINDIGITAL = { name : "MINDIGITAL", middleware : () => mindigitallMiddleware(), params : {otp : {value: null, type : "number", persist : false, errorMsg : "Απαιτείται OTP"}, token :{value : null, type : "string", persist : true, errorMsg : "Απαιτείται σύνδεση στο mindigital"}}}; 
 let SCH = { name : "SCH",  middleware : null, params : {}};
-let UPLOAD = { name : "UPLOAD", middleware : uploadMiddleware,  params : {selectedSignedFile : {value: null, type : "string", persist : false, errorMsg : "Απαιτείται επιλογή αρχείου"}}};
+let UPLOAD = { name : "UPLOAD", middleware : () => uploadMiddleware(),  params : {selectedSignedFile : {value: null, type : "string", persist : false, errorMsg : "Απαιτείται επιλογή αρχείου"}}};
 
 const signProviders = { MINDIGITAL, UPLOAD, SCH};
 Object.freeze(signProviders);
@@ -49,7 +31,7 @@ const signModalDiv =
 							<div id="signProvidersBtns" class="btn-group" role="group" aria-label="Basic example">
 							
 							</div>
-							<div id="providerMiddleware" class="flexHorizontal" style="height : 100px;">
+							<div id="providerMiddleware" class="flexHorizontal" >
 				
 							</div>
 						</div>
@@ -103,60 +85,8 @@ const rejectModalDiv =
 	</div>`;
 	
 
-const otpModalsDiv =		
-	`<div class="modal fade" id="otpModal" tabindex="-1" role="dialog" aria-labelledby="otpModalLabel" aria-hidden="true">
-	  <div class="modal-dialog modal-lg" role="document" >
-			<div class="modal-content">
-			  <div class="modal-body" id="rejectForm">
-				<div class="input-group mb-3">
-				  <div  class="input-group-prepend" style="margin-bottom:2em;"><b>
-					<span class="input-group-text" id="basic-addon2" >Εισαγωγή OTP</span></b><div id="otpTitle"></div>
-					<span class="input-group-text" id="basic-addon2" ><br><br><u>Επισήμανση</u><br>
-						<span id="otpStatus">το ΟTP λαμβάνεται αυτόματα από το email, εφόσον έχετε δηλώσει αυτό τον τρόπο λήψης στο mindigital.</span>
-					</span>
-				  </div>
-				  <textarea id="otpText" cols="100" rows="3" size="200" class="form-control" placeholder="Εισαγωγή OTP" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
-				</div>
-				
-			  <div class="modal-footer">
-				<button id="checkEmailButton" type="button" class="btn btn-secondary trn"  style="margin-right:2em;">Επανέλεγχος Email</button>
-				<button id="createExCopyButton" type="button" class="btn btn-warning trn" >Δημιουργία Αντιγράφου</button>
-				<button id="closeButtonModal" type="button" class="btn btn-secondary trn" data-dismiss="modal">Close</button>
-			  </div>
-			</div>
-		  </div>
-		</div>
-	</div>
-	
-	<div class="modal fade" id="otpModal1" tabindex="-1" role="dialog" aria-labelledby="otpModalLabel1" aria-hidden="true">
-	  <div class="modal-dialog modal-lg" role="document" >
-			<div class="modal-content">
-			  <div class="modal-body" id="rejectForm">
-				<div class="input-group mb-3">
-				  <div  class="input-group-prepend" style="margin-bottom:2em;"><b>
-					<span class="input-group-text" id="basic-addon21" >Εισαγωγή OTP</span></b><div id="otpTitle"></div>
-					<span class="input-group-text" id="basic-addon21" ><br><br><u>Επισήμανση</u><br>
-						<span id="otpStatus1">το ΟTP λαμβάνεται αυτόματα από το email, εφόσον έχετε δηλώσει αυτό τον τρόπο λήψης στο mindigital.</span>
-					</span>
-				  </div>
-				  <textarea id="otpText1" cols="100" rows="3" size="200" class="form-control" placeholder="Εισαγωγή OTP" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
-				</div>
-				
-			  <div class="modal-footer">
-				<button id="checkEmailButton1" type="button" class="btn btn-secondary trn"  style="margin-right:2em;">Επανέλεγχος Email</button>
-				<button id="createExCopyButton1" type="button" class="btn btn-warning trn" >Υπογραφή Εγγράφου</button>
-				<button id="closeButtonModal1" type="button" class="btn btn-secondary trn" data-dismiss="modal">Close</button>
-			  </div>
-			</div>
-		  </div>
-		</div>
-	</div>`;
-	
-	
-
 document.body.insertAdjacentHTML("beforeend",signModalDiv);
 document.body.insertAdjacentHTML("beforeend",rejectModalDiv);
-document.body.insertAdjacentHTML("beforeend",otpModalsDiv);
 
 //Δημιουργία επιλογών παρόχου υπογραφής στο modal
 for (const [key, value] of Object.entries(signProviders)) {
@@ -189,15 +119,24 @@ document.querySelector("#signModal").addEventListener("shown.bs.modal",(e)=> {
 	document.querySelector('#signBtn').addEventListener("click",signDocumentRef);
 	document.querySelector('#signWithObjectionBtn').addEventListener("click",signDocumentWithObjRef);
 	document.querySelector('#signAsLastBtn').addEventListener("click",signDocumentAsLastRef);
-	document.querySelector("#otpText").addEventListener("keyup",checkOTPLength);
-	document.querySelector("#selectedSignedFile").addEventListener("change",selectFile);
+
 });
 
 document.querySelector("#signModal").addEventListener("hide.bs.modal",(e)=> {
 	document.querySelector('#signBtn').removeEventListener("click",signDocumentRef);
 	document.querySelector('#signWithObjectionBtn').removeEventListener("click",signDocumentWithObjRef);
 	document.querySelector('#signAsLastBtn').removeEventListener("click",signDocumentAsLastRef);
-	document.querySelector("#otpText").removeEventListener("keyup",checkOTPLength);
+	if (localStorage.getItem("signProvider")!==null){
+		const provider = localStorage.getItem("signProvider");
+		switch (provider){
+			case "MINDIGITAL" :
+				document.querySelector("#otpText").removeEventListener("keyup",checkOTPLength);
+				break;
+			case "UPLOAD" :
+				document.querySelector("#selectedSignedFile").removeEventListener("change",selectFile);
+				break;
+		} 
+	}
 })
 
 
@@ -466,7 +405,7 @@ export async function signDocument(aa, isLast=0, objection=0){
 				signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key);
 			}
 			else{
-				alert("Δεν υπάρχει στη μνήμη τιμή για "+key);
+				alert("Δεν υπάρχει στη μνήμη τιμή για mindigital "+key);
 				return;
 			}
 		}
@@ -519,14 +458,6 @@ export async function signDocument(aa, isLast=0, objection=0){
 	}
 }
 
-export async function showOTP(aa , isLast = 0){
-	const otpbutton = document.getElementById("createExCopyButton1");
-	otpbutton.dataset.whatever = aa;
-	otpbutton.addEventListener("click",function(){signDocumentMindigital(aa ,isLast);});
-	document.querySelector('#signModal').modal('hide');
-	document.querySelector('#otpModal1').modal('show');
-}
-
 
 export async function rejectDocument(aa){
 	document.querySelector('#rejectModal').modal('hide');
@@ -563,64 +494,6 @@ export async function rejectDocument(aa){
 		
 	}
 }
-
-document.querySelector('#rejectModal').addEventListener('show.bs.modal', function (e) {
-	const aa = e.relatedTarget.getAttribute('data-whatever');
-	document.querySelector('#rejectButton').addEventListener("click", function(){rejectDocument(aa);});
-});
-
-
-document.querySelector('#otpModal').addEventListener('shown.bs.modal', function (e) {
-	document.querySelector('#createExCopyButton').setAttribute("disabled", false);
-	document.querySelector('#otpText').value="";
-	const otpRes = requestOTP();
-	console.log(otpRes);
-	if (otpRes[0] == 0){
-		document.querySelector('#otpText').value = otpRes[1];
-		document.querySelector('#otpStatus').value = "Εισαγωγή OTP από email";
-		const aa = e.relatedTarget.getAttribute('data-whatever');
-		document.querySelector('#createExCopyButton').addEventListener("click", function(){signMD(aa);}); 
-	}
-	else if (otpRes[0] == 1){
-		document.querySelector('#otpStatus').value = otpRes[1];
-		document.querySelector('#otpText').value = 'Eχει δηλωθεί η χρήση κινητού για λήψη OTP. Eισάγετε το OTP';
-		const aa = e.relatedTarget.getAttribute('data-whatever');
-		document.querySelector('#createExCopyButton').addEventListener("click", function(){signMD(aa);}); 	
-	}
-	else {
-		document.querySelector('#otpStatus').value = otpRes[1];
-		document.querySelector('#createExCopyButton').setAttribute("disabled", true);
-	}
-});
-
-document.querySelector('#otpModal1').addEventListener('shown.bs.modal', function (e) {
-	//console.log(e);
-	document.querySelector('#createExCopyButton1').setAttribute("disabled", false);
-	document.querySelector('#otpText1').value="";
-	const otpRes = requestOTP();
-	console.log(otpRes);
-	if (otpRes[0] == 0){
-		document.querySelector('#otpText1').value = otpRes[1];
-		document.querySelector('#otpStatus1').value = "Εισαγωγή OTP από email";
-	}
-	else if (otpRes[0] == 1){
-		document.querySelector('#otpStatus1').value = otpRes[1];
-		//$('#otpText1').val('Eχει δηλωθεί η χρήση κινητού για λήψη OTP. Eισάγετε το OTP.');
-		//var aa = e.relatedTarget.getAttribute('data-whatever'); 	
-	}
-	else {
-		document.querySelector('#otpStatus1').value = otpRes[1];
-		document.querySelector('#createExCopyButton1').setAttribute("disabled", true);
-	}
-});
-
-//document.querySelector("#saveButtonModal").addEventListener("click", function() {
-	 //var interest = $('ul#alldevices').find('li.active').;
-//});
-
-//tempUserElement.classList.remove('btn-danger');
-//tempUserElement.classList.add('btn-success');
-
 
 function selectSignProvider(providerName){
 	let middleware = null;
@@ -665,29 +538,25 @@ function selectSignProvider(providerName){
 	const otpBtn = document.getElementById("requestOTPBtn");
 	const otpText = document.getElementById("otpText");
 	const providerDiv = document.getElementById("providerMiddleware");
-
-	//Εμφάνιση κουμπιών παρόχου και φόρτωση μεταβλητών από μνήμη, όπου απαιτείται και αν υπάρχουν
+	providerDiv.innerHTML = "";
+	//Εμφάνιση κουμπιών παρόχου
 	if (middleware !== null){  //απαιτείται ενδιάμεσο βήμα
-		//otpBtn.style.display = "inline-block";	
-		//otpText.style.display = "inline-block";
-		providerDiv.innerHTML = middleware;  //Εμφάνιση κουμπιών παρόχου 
-	
-		const keys = Object.keys(params);    //φόρτωση μεταβλητών από μνήμη
-		keys.forEach( key =>
-		{
-			if (params[key].persist){
-				if (localStorage.getItem(providerName+"_"+key)!==null){
-					signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key)
-				}
-				else{
-					alert(params[key].errorMsg);
-				}
+		signProviders[providerName].middleware();
+	}
+
+	// φόρτωση μεταβλητών από μνήμη, όπου απαιτείται και αν υπάρχουν. Μορφή πάροχος_παράμετρος
+	const keys = Object.keys(params);   
+	keys.forEach( key =>
+	{
+		if (params[key].persist){
+			if (localStorage.getItem(providerName+"_"+key)!==null){
+				signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key)
 			}
-		})
-	}
-	else{  // απευθείας εμφάνιση κουμπιών υπογραφής
-		providerDiv.innerHTML = "";
-	}
+			else{
+				alert(params[key].errorMsg);
+			}
+		}
+	})
 
 	// Εμφάνιση κουμπιού τελικού υπογράφοντα κατά περίπτωση
 	if (+JSON.parse(localStorage.getItem("loginData")).user.roles[localStorage.getItem("currentRole")].canSignAsLast){
@@ -719,4 +588,174 @@ function checkOTPLength(event){
 function selectFile(event){
 	signProviders.UPLOAD.params.selectedSignedFile.value = event.target.value;
 	console.log(signProviders.UPLOAD);
+}
+
+function mindigitallMiddleware(){
+	const providerDiv = document.getElementById("providerMiddleware");
+	providerDiv.innerHTML = 
+		`<div id="providerHeader" class="flexHorizontal">
+			<div id="emailConnection" class="flexVertical">
+				<div id="emailTitle"  style="font-weight:bold;text-align:center;">
+					Email
+				</div>
+				<div id="emailConnectionDiv" class="flexHorizontal">
+					<div id="emailStatusDiv"  class="flexVertical">
+						<button id="emailConnectionButton" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Σύνδεση στο email" onclick="connectToEmail();"><i id="faMail" class="far fa-envelope-open"></i></button>
+						<button  disabled id="requestOTPBtn"  type="button" class="btn btn-success btn-sm">OTP</button>
+					</div>
+					<div id="emailConnectionBtns"  class="flexVertical">
+						<input class="form-control form-control-sm" type="text" id="emailUsername" placeholder="email username"/>
+						<input class="form-control form-control-sm" type="password" id="emailPassword" placeholder="email password"/>
+					</div>
+				</div>
+			</div>
+			<div id="mindigitalConnection" class="flexVertical">
+				<div id="mindigitalTitle" style="font-weight:bold; text-align:center;">
+					Mindigital
+				</div>
+				<div id="mindigitalConnectionDiv" class="flexHorizontal">
+					<div id="mindigitalStatusDiv"  class="flexVertical">
+						<button id="mindigitalConnectionButton" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Σύνδεση στο mindigital"><i class="fas fa-file-signature"></i></button>
+					</div>
+					<div id="mindigitalConnectionBtns"  class="flexVertical">
+						<input class="form-control form-control-sm" type="text" id="mindigitalUsername" placeholder="mindigital username"/>
+						<input class="form-control form-control-sm" type="password" id="mindigitalPassword" placeholder="mindigital password"/>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="providerContent" class="flexHorizontal" style="width : 40%;flex-basis: auto; align-items : flex-start;">
+			<div id="otpDiv"  class="flexHorizontal">
+				<input   id="otpText" cols="10" rows="1" type="number"  min="100000" max="999999" placeholder="εξαψήφιο OTP" size="200" class="form-control form-control-sm" placeholder="Εισαγωγή OTP"></input>
+			</div>		
+		</div>`;
+	document.querySelector("#otpText").addEventListener("keyup",checkOTPLength);
+	document.querySelector("#mindigitalConnectionButton").addEventListener("click",() => 
+								connectToMindigital(document.querySelector("#mindigitalUsername").value,document.querySelector("#mindigitalPassword").value)
+	);
+	if (localStorage.getItem("MINDIGITAL_token")!==null){
+		document.querySelector("#mindigitalConnectionButton").classList.remove('btn-danger');
+		document.querySelector("#mindigitalConnectionButton").classList.add('btn-success');
+		document.querySelector("#mindigitalUsername").value ="";
+		document.querySelector("#mindigitalPassword").value ="";
+		document.querySelector("#mindigitalUsername").style.display = "none";
+		document.querySelector("#mindigitalPassword").style.display = "none";
+	}
+	document.querySelector("#emailConnectionButton").addEventListener("click",() => connectToEmail());
+}
+
+function uploadMiddleware(){
+	const providerDiv = document.getElementById("providerMiddleware");
+	providerDiv.innerHTML = 
+		`<div class="providerHeader">
+		</div>
+		<div class="providerContent">
+			<input type="file" class="form-control-file" name="selectedSignedFile" id="selectedSignedFile"  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX" />
+		</div>`;
+	document.querySelector("#selectedSignedFile").addEventListener("change",selectFile);
+}
+
+
+async function connectToEmail(){
+	$.ajax({
+	   type: "post",
+	   data: {"username" : $('#userSch').val(),"password" : $('#passSch').val()},
+	   url: "connectToEmail.php",
+	   success: function(msg){
+		    $("#emailConnectModal").modal("hide");
+			var element1 = document.getElementById("emailButton");
+			var element2 = document.getElementById("faMail");
+		    if (msg=="outcome 0"){
+			   if (element1.classList.contains('btn-success')){
+					element1.classList.remove('btn-success');
+					element1.classList.add('btn-danger');
+				}
+				if (element2.classList.contains('fa-envelope-open')){
+					element2.classList.remove('fa-envelope-open');
+					element2.classList.add('fa-envelope');
+				}
+			   alert("αποτυχία σύνδεσης");
+		    }
+		    else {
+				if (element1.classList.contains('btn-danger')){
+					element1.classList.remove('btn-danger');
+					element1.classList.add('btn-success');
+				}
+				if (element2.classList.contains('fa-envelope')){
+					element2.classList.remove('fa-envelope');
+					element2.classList.add('fa-envelope-open');
+				}
+				$('#emailsContainer').empty();
+				$('#emailsContainer').append(msg);
+		    }
+	   }
+	});	  	
+}
+
+async function connectToMindigital(username, password){
+	const mindigitalStatusBtn = document.getElementById("mindigitalConnectionButton");
+
+	if(localStorage.getItem("MINDIGITAL_token") !==null){
+		let ans = confirm("Αποσύνδεση;");
+		if(ans){
+			localStorage.removeItem("MINDIGITAL_token");
+			mindigitalStatusBtn.classList.remove('btn-success');
+			mindigitalStatusBtn.classList.add('btn-danger');
+			document.querySelector("#mindigitalUsername").value ="";
+			document.querySelector("#mindigitalPassword").value ="";
+			document.querySelector("#mindigitalUsername").style.display = "inline-block";
+			document.querySelector("#mindigitalPassword").style.display = "inline-block";
+			return;
+		}
+	}
+	if (username === "" || password ===""){
+		alert("Συμπληρώστε τα πεδία σύνδεσης");
+		return;
+	}
+	
+	const {jwt,role} = getFromLocalStorage();	
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+
+	let formData = new FormData();
+	formData.append("username",username);
+	formData.append("password", password);
+	
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+	const res = await fetch("/api/saveMindigitalCred.php",init); 
+	if (!res.ok){
+		if (res.status ==  401){
+			if (await res.json() !== "mindigitalError"){
+				const resRef = await refreshToken();
+				if (resRef ===1){
+					connectToMindigital(username, password);
+				}
+				else{
+					alert("σφάλμα εξουσιοδότησης");	
+				}
+			}
+			else{
+				alert("Λάθος κωδικός ή όνομα χρήστη");
+			}
+		}
+		else if (res.status==403){
+			window.open('unAuthorized.html', '_blank');
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		mindigitalStatusBtn.classList.remove('btn-success');
+		mindigitalStatusBtn.classList.add('btn-danger');
+	}
+	else {
+		const token = await res.json();
+		localStorage.setItem("MINDIGITAL_token", token);
+		mindigitalStatusBtn.classList.remove('btn-danger');
+		mindigitalStatusBtn.classList.add('btn-success');
+		document.querySelector("#mindigitalUsername").value ="";
+		document.querySelector("#mindigitalPassword").value ="";
+		document.querySelector("#mindigitalUsername").style.display = "none";
+		document.querySelector("#mindigitalPassword").style.display = "none";
+		alert("Επιτυχής σύνδεση");
+	}
 }

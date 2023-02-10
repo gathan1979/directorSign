@@ -269,7 +269,7 @@ td .fa-amilia{
 	padding : 10px;
 	border-radius : 5px;
 	align-items : stretch;
-	flex-basis : 0;
+	flex-basis : auto;
 }
 
 .flexHorizontal{
@@ -280,7 +280,7 @@ td .fa-amilia{
 	padding : 10px;
 	border-radius : 5px;
 	align-items : stretch;
-	flex-basis : 0;
+	flex-basis : auto;
 }
 
 #tableSearchInput {
@@ -306,3 +306,34 @@ td .fa-amilia{
 #providerhelperBtns{
 	margin-top : 0.3em;	
 }
+
+#providerHeader{
+	width : 60%;
+}
+
+#providerContent{
+	width : 40%;
+}
+
+#mindigitalConnectionDiv>input{
+	width : 15em;
+}
+
+#emailConnectionDiv>input{
+	width : 15em;
+}
+
+#otpText{
+	width : 12em;
+}
+
+#otpDiv{
+	align-items: flex-start;
+}
+
+#mindigitalConnection,#emailConnection{
+	border-radius : 10px;
+	border-left : blue solid;
+	border-right : blue solid;
+}
+
