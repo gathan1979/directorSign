@@ -1,6 +1,23 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
 
+const entityMap = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	"'": '&#39;',
+	'/': '&#x2F;',
+	'`': '&#x60;',
+	'=': '&#x3D;'
+  };
+  
+function escapeHtml (string) {
+	return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+		return entityMap[s];
+	});
+}
+
 let MINDIGITAL = { name : "MINDIGITAL", middleware : () => mindigitallMiddleware(), params : {otp : {value: null, type : "number", persist : false, errorMsg : "Απαιτείται OTP"}, token :{value : null, type : "string", persist : true, errorMsg : "Απαιτείται σύνδεση στο mindigital"}}}; 
 let SCH = { name : "SCH",  middleware : null, params : {}};
 let UPLOAD = { name : "UPLOAD", middleware : () => uploadMiddleware(),  params : {selectedSignedFile : {value: null, type : "string", persist : false, errorMsg : "Απαιτείται επιλογή αρχείου"}}};
@@ -600,7 +617,7 @@ function mindigitallMiddleware(){
 				</div>
 				<div id="emailConnectionDiv" class="flexHorizontal">
 					<div id="emailStatusDiv"  class="flexVertical">
-						<button id="emailConnectionButton" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Σύνδεση στο email" onclick="connectToEmail();"><i id="faMail" class="far fa-envelope-open"></i></button>
+						<button id="emailConnectionButton" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Σύνδεση στο email"><i id="faMail" class="far fa-envelope-open"></i></button>
 						<button  disabled id="requestOTPBtn"  type="button" class="btn btn-success btn-sm">OTP</button>
 					</div>
 					<div id="emailConnectionBtns"  class="flexVertical">
@@ -631,8 +648,15 @@ function mindigitallMiddleware(){
 		</div>`;
 	document.querySelector("#otpText").addEventListener("keyup",checkOTPLength);
 	document.querySelector("#mindigitalConnectionButton").addEventListener("click",() => 
-								connectToMindigital(document.querySelector("#mindigitalUsername").value,document.querySelector("#mindigitalPassword").value)
+								connectToMindigital(escapeHtml(document.querySelector("#mindigitalUsername").value),escapeHtml(document.querySelector("#mindigitalPassword").value))
 	);
+	document.querySelector("#emailConnectionButton").addEventListener("click",() => 
+								connectToEmail(escapeHtml(document.querySelector("#emailUsername").value),escapeHtml(document.querySelector("#emailPassword").value))
+	);
+	document.querySelector("#requestOTPBtn").addEventListener("click",() =>
+								requestOTP()
+	);
+
 	if (localStorage.getItem("MINDIGITAL_token")!==null){
 		document.querySelector("#mindigitalConnectionButton").classList.remove('btn-danger');
 		document.querySelector("#mindigitalConnectionButton").classList.add('btn-success');
@@ -641,7 +665,16 @@ function mindigitallMiddleware(){
 		document.querySelector("#mindigitalUsername").style.display = "none";
 		document.querySelector("#mindigitalPassword").style.display = "none";
 	}
-	document.querySelector("#emailConnectionButton").addEventListener("click",() => connectToEmail());
+	if (localStorage.getItem("EMAIL_token")!==null){
+		document.querySelector("#emailConnectionButton").classList.remove('btn-danger');
+		document.querySelector("#emailConnectionButton").classList.add('btn-success');
+		document.querySelector("#emailUsername").value ="";
+		document.querySelector("#emailPassword").value ="";
+		document.querySelector("#emailUsername").style.display = "none";
+		document.querySelector("#emailPassword").style.display = "none";
+		document.querySelector("#requestOTPBtn").removeAttribute("disabled");
+	}
+	
 }
 
 function uploadMiddleware(){
@@ -656,43 +689,78 @@ function uploadMiddleware(){
 }
 
 
-async function connectToEmail(){
-	$.ajax({
-	   type: "post",
-	   data: {"username" : $('#userSch').val(),"password" : $('#passSch').val()},
-	   url: "connectToEmail.php",
-	   success: function(msg){
-		    $("#emailConnectModal").modal("hide");
-			var element1 = document.getElementById("emailButton");
-			var element2 = document.getElementById("faMail");
-		    if (msg=="outcome 0"){
-			   if (element1.classList.contains('btn-success')){
-					element1.classList.remove('btn-success');
-					element1.classList.add('btn-danger');
+async function connectToEmail(username,password){
+	const mindigitalStatusBtn = document.getElementById("emailConnectionButton");
+
+	if(localStorage.getItem("EMAIL_token") !==null){
+		let ans = confirm("Αποσύνδεση;");
+		if(ans){
+			localStorage.removeItem("EMAIL_token");
+			emailConnectionButton.classList.remove('btn-success');
+			emailConnectionButton.classList.add('btn-danger');
+			document.querySelector("#emailUsername").value ="";
+			document.querySelector("#emailPassword").value ="";
+			document.querySelector("#emailUsername").style.display = "inline-block";
+			document.querySelector("#emailPassword").style.display = "inline-block";
+			document.querySelector("#requestOTPBtn").setAttribute("disabled",true);
+			return;
+		}
+	}
+	if (username === "" || password ===""){
+		alert("Συμπληρώστε τα πεδία σύνδεσης");
+		return;
+	}
+
+	const {jwt,role} = getFromLocalStorage();	
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+
+	let formData = new FormData();
+	formData.append("username",username);
+	formData.append("password", password);
+	
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+	const res = await fetch("/api/saveEmailCred.php",init); 
+	if (!res.ok){
+		if (res.status ==  401){
+			if (await res.json() !== "remote Error"){
+				const resRef = await refreshToken();
+				if (resRef ===1){
+					connectToEmail(username, password);
 				}
-				if (element2.classList.contains('fa-envelope-open')){
-					element2.classList.remove('fa-envelope-open');
-					element2.classList.add('fa-envelope');
+				else{
+					alert("σφάλμα εξουσιοδότησης");	
 				}
-			   alert("αποτυχία σύνδεσης");
-		    }
-		    else {
-				if (element1.classList.contains('btn-danger')){
-					element1.classList.remove('btn-danger');
-					element1.classList.add('btn-success');
-				}
-				if (element2.classList.contains('fa-envelope')){
-					element2.classList.remove('fa-envelope');
-					element2.classList.add('fa-envelope-open');
-				}
-				$('#emailsContainer').empty();
-				$('#emailsContainer').append(msg);
-		    }
-	   }
-	});	  	
+			}
+			else{
+				alert("Λάθος κωδικός ή όνομα χρήστη");
+			}
+		}
+		else if (res.status==403){
+			window.open('unAuthorized.html', '_blank');
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		emailConnectionButton.classList.remove('btn-success');
+		emailConnectionButton.classList.add('btn-danger');
+	}
+	else {
+		const token = await res.json();
+		localStorage.setItem("EMAIL_token", token);
+		emailConnectionButton.classList.remove('btn-danger');
+		emailConnectionButton.classList.add('btn-success');
+		document.querySelector("#emailUsername").value ="";
+		document.querySelector("#emailPassword").value ="";
+		document.querySelector("#emailUsername").style.display = "none";
+		document.querySelector("#emailPassword").style.display = "none";
+		document.querySelector("#requestOTPBtn").removeAttribute("disabled");
+		alert("Επιτυχής σύνδεση");
+	}
 }
 
 async function connectToMindigital(username, password){
+	
 	const mindigitalStatusBtn = document.getElementById("mindigitalConnectionButton");
 
 	if(localStorage.getItem("MINDIGITAL_token") !==null){
@@ -712,7 +780,7 @@ async function connectToMindigital(username, password){
 		alert("Συμπληρώστε τα πεδία σύνδεσης");
 		return;
 	}
-	
+
 	const {jwt,role} = getFromLocalStorage();	
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -725,7 +793,7 @@ async function connectToMindigital(username, password){
 	const res = await fetch("/api/saveMindigitalCred.php",init); 
 	if (!res.ok){
 		if (res.status ==  401){
-			if (await res.json() !== "mindigitalError"){
+			if (await res.json() !== "remote Error"){
 				const resRef = await refreshToken();
 				if (resRef ===1){
 					connectToMindigital(username, password);
@@ -744,18 +812,86 @@ async function connectToMindigital(username, password){
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
 		}
-		mindigitalStatusBtn.classList.remove('btn-success');
-		mindigitalStatusBtn.classList.add('btn-danger');
+		mindigitalConnectionButton.classList.remove('btn-success');
+		mindigitalConnectionButton.classList.add('btn-danger');
 	}
 	else {
 		const token = await res.json();
 		localStorage.setItem("MINDIGITAL_token", token);
-		mindigitalStatusBtn.classList.remove('btn-danger');
-		mindigitalStatusBtn.classList.add('btn-success');
+		mindigitalConnectionButton.classList.remove('btn-danger');
+		mindigitalConnectionButton.classList.add('btn-success');
 		document.querySelector("#mindigitalUsername").value ="";
 		document.querySelector("#mindigitalPassword").value ="";
 		document.querySelector("#mindigitalUsername").style.display = "none";
 		document.querySelector("#mindigitalPassword").style.display = "none";
 		alert("Επιτυχής σύνδεση");
+	}
+}
+
+async function requestOTP(){
+	document.querySelector('#otpText').value = "";
+
+	const {jwt,role} = getFromLocalStorage();	
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+
+	let formData = new FormData();
+	if (localStorage.getItem("EMAIL_token")==null || localStorage.getItem("MINDIGITAL_token")==null){
+		alert("Δεν υπάρχουν διαπιστευτήρια");
+	}
+	formData.append("EMAIL_token",localStorage.getItem("EMAIL_token"));
+	formData.append("MINDIGITAL_token", localStorage.getItem("MINDIGITAL_token"));
+	
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+	const res = await fetch("/api/getLastOTP.php",init); 
+	const resDec = await res.json();
+	if (!res.ok){
+		if (res.status ==  400){
+			if (resDec === "email"){
+				localStorage.removeItem("EMAIL_token");
+				mindigitallMiddleware();
+			}
+			else if (resDec === "mindigital"){
+				console.log("mindigital error ")
+				localStorage.removeItem("MINDIGITAL_token");
+				mindigitallMiddleware();
+			}
+		}
+		if (res.status ==  401){
+			if (resDec !== "remote Error"){
+				const resRef = await refreshToken();
+				if (resRef ===1){
+					requestOTP(username, password);
+				}
+				else{
+					alert("σφάλμα εξουσιοδότησης");	
+				}
+			}
+			else{
+				alert("Λάθος κωδικός ή όνομα χρήστη");
+			}
+		}
+		else if (res.status==403){
+			window.open('unAuthorized.html', '_blank');
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		else if (res.status>=500){
+			alert("πρόβλημα server");
+		}
+	}
+	else {
+		if (Array.isArray(resDec)){
+			if(resDec[0]===0){
+				document.querySelector("#otpText").value = resDec[1];	
+			}	
+			else if(resDec[0]===1){
+				alert("Το OTP λαμβάνεται μέσω κινητού");	
+			}
+			else{
+				alert(resDec[2]);	
+			}	
+		}
 	}
 }

@@ -23,7 +23,6 @@
 		<link href="css/all.css" rel="stylesheet">
 		<!--fontawesome-->
 				
-		<script type="text/javascript" src="js/customfunctions.js"></script>  
 		<script type="module" src="./modules/signatureRecords.js"></script>
 		<script type="module" src="./modules/createUI.js"></script>
 	
