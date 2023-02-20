@@ -20,9 +20,10 @@ function escapeHtml (string) {
 
 let MINDIGITAL = { name : "MINDIGITAL", middleware : () => mindigitallMiddleware(), params : {otp : {value: null, type : "number", persist : false, errorMsg : "Απαιτείται OTP"}, token :{value : null, type : "string", persist : true, errorMsg : "Απαιτείται σύνδεση στο mindigital"}}}; 
 let SCH = { name : "SCH",  middleware : null, params : {}};
-let UPLOAD = { name : "UPLOAD", middleware : () => uploadMiddleware(),  params : {selectedSignedFile : {value: null, type : "string", persist : false, errorMsg : "Απαιτείται επιλογή αρχείου"}}};
+let FF = { name : "FF",  middleware : null, params : {}};
+let UPLOAD = { name : "UPLOAD", middleware : () => uploadMiddleware(),  params : {selectedSignedFile : {field: "selectedSignedFile", type : "file", persist : false, errorMsg : "Απαιτείται επιλογή αρχείου"}}};
 
-const signProviders = { MINDIGITAL, UPLOAD, SCH};
+const signProviders = { MINDIGITAL, UPLOAD, FF, SCH};
 Object.freeze(signProviders);
 
 const signModalDiv =
@@ -445,11 +446,24 @@ export async function signDocument(aa, isLast=0, objection=0){
 	formData.append("objection", objection);
 	formData.append("isLast", isLast);
 	formData.append("provider", providerName);
-	keys.forEach( key => {
-		formData.append(key, signProviders[providerName]["params"][key].value);	
+	const extraFieldsStatus =keys.every( key => {
+		if (params[key].type === "file"){ 
+			const fileInput = document.querySelector("#"+signProviders[providerName]["params"][key].field);
+			if (fileInput.files.length !==0){
+				formData.append(key, fileInput.files[0]);
+				return true;
+			}
+			else{
+				alert("επιλέξτε υπογεγραμμένο αρχείο");	
+				return false;
+			}
+		}
+		else{
+			formData.append(key, signProviders[providerName]["params"][key].value);	
+			return true;
+		}
 	});
-
-	return;
+	if (!extraFieldsStatus) return;
 
 	let init = {method: 'POST', headers : myHeaders, body : formData};
 	const res = await fetch("/api/signDoc.php",init); 
@@ -884,7 +898,8 @@ async function requestOTP(){
 	else {
 		if (Array.isArray(resDec)){
 			if(resDec[0]===0){
-				document.querySelector("#otpText").value = resDec[1];	
+				document.querySelector("#otpText").value = resDec[1];
+				MINDIGITAL.params.otp.value = resDec[1];
 			}	
 			else if(resDec[0]===1){
 				alert("Το OTP λαμβάνεται μέσω κινητού");	
