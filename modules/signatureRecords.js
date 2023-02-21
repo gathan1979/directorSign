@@ -468,13 +468,19 @@ export async function signDocument(aa, isLast=0, objection=0){
 	let init = {method: 'POST', headers : myHeaders, body : formData};
 	const res = await fetch("/api/signDoc.php",init); 
 	if (!res.ok){
+		const resdec = res.json();
 		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ==1){
-				signDocument(aa, isLast, objection);
+			if (resdec === "mindigital"){
+				alert("Αποσυνδεθείτε και επανασυνδεθείτε στο σύστημα υπογραφών Mindigital");
 			}
 			else{
-				alert("σφάλμα εξουσιοδότησης");	
+				const resRef = await refreshToken();
+				if (resRef ==1){
+					signDocument(aa, isLast, objection);
+				}
+				else{
+					alert("σφάλμα εξουσιοδότησης");	
+				}
 			}
 		}
 		else if (res.status==403){
@@ -482,6 +488,9 @@ export async function signDocument(aa, isLast=0, objection=0){
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
+		}
+		else{
+			alert("Σφάλμα!!!");
 		}
 	}
 	else {
