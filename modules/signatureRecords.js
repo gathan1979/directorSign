@@ -18,10 +18,33 @@ function escapeHtml (string) {
 	});
 }
 
-let MINDIGITAL = { name : "MINDIGITAL", middleware : () => mindigitallMiddleware(), params : {otp : {value: null, type : "number", persist : false, errorMsg : "Απαιτείται OTP"}, token :{value : null, type : "string", persist : true, errorMsg : "Απαιτείται σύνδεση στο mindigital"}}}; 
-let SCH = { name : "SCH",  middleware : null, params : {}};
-let FF = { name : "FF",  middleware : null, params : {}};
-let UPLOAD = { name : "UPLOAD", middleware : () => uploadMiddleware(),  params : {selectedSignedFile : {field: "selectedSignedFile", type : "file", persist : false, errorMsg : "Απαιτείται επιλογή αρχείου"}}};
+let MINDIGITAL = { 	
+					name : "MINDIGITAL", 
+					middleware : () => mindigitallMiddleware(), 
+					params : {
+						otp : {value: null, type : "number", persist : false, errorMsg : "Απαιτείται OTP"}, 
+						token :{value : null, type : "string", persist : true, errorMsg : "Απαιτείται σύνδεση στο mindigital"}
+					}
+				}; 
+let SCH	= 		{ 
+					name : "SCH",  
+					middleware : () => schMiddleware(), 
+					params : {
+						signature : {value: null, type : "string", persist : false, errorMsg : "Απαιτείται όνομα υπογραφής sch"}
+					}
+				};
+let FF = 		{ 
+					name : "FF",  
+					middleware : null, 
+					params : {}
+				};
+let UPLOAD = 	{ 
+					name : "UPLOAD", 
+					middleware : () => uploadMiddleware(),  
+					params : {
+						selectedSignedFile : {field: "selectedSignedFile", type : "file", persist : false, errorMsg : "Απαιτείται επιλογή αρχείου"}
+					}
+				};
 
 const signProviders = { MINDIGITAL, UPLOAD, FF, SCH};
 Object.freeze(signProviders);
@@ -62,6 +85,9 @@ const signModalDiv =
 							
 						
 							<button id="signBtn"  type="button" class="btn btn-success trn"></button>
+							<div id="signSpinner" class="spinner-border text-success" role="status">
+								<span class="visually-hidden">Loading...</span>
+							</div>
 							
 							
 						</div>
@@ -105,6 +131,11 @@ const rejectModalDiv =
 
 document.body.insertAdjacentHTML("beforeend",signModalDiv);
 document.body.insertAdjacentHTML("beforeend",rejectModalDiv);
+document.querySelector("#signSpinner").style.display = 'none';
+
+const loginData = JSON.parse(localStorage.getItem("loginData"));
+const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
+signProviders.SCH.params.signature.value = loginData.user.roles[currentRole].signature;
 
 //Δημιουργία επιλογών παρόχου υπογραφής στο modal
 for (const [key, value] of Object.entries(signProviders)) {
@@ -385,8 +416,8 @@ async function viewFile(filename){
 }
 
 export async function signDocument(aa, isLast=0, objection=0){
-	//document.querySelector('#signModal').modal('hide');
-	//$("#signing").fadeIn();
+	document.querySelector('#signBtn').setAttribute("disabled",true);
+	document.querySelector('#signSpinner').style.display = "inline-block";
 
 	let providerExists = 0;
 	let providerName = "";
@@ -397,6 +428,8 @@ export async function signDocument(aa, isLast=0, objection=0){
 	}
 	else{
 		alert("Δεν υπάρχει πάροχος υπογραφής αποθηκευμένος");
+		document.querySelector('#signBtn').removeAttribute("disabled");
+		document.querySelector('#signSpinner').style.display = "none";
 		return;
 	}
 
@@ -410,28 +443,38 @@ export async function signDocument(aa, isLast=0, objection=0){
 	},0);
 	if (providerExists === 0){
 		alert("Ο συγκεκριμένος πάροχος υπογραφής δε βρέθηκε");
+		document.querySelector('#signBtn').removeAttribute("disabled");
+		document.querySelector('#signSpinner').style.display = "none";
 		return;
 	}
 
 	//Έλεγχος αν οι παράμετροι που πρέπει να είναι στη μνήμη υπάρχουν και φόρτωσή τους
 	//Έλεγχος αν οι παράμετροι όλες έχουν τιμές, όπως πρέπει 
 	const keys = Object.keys(params);
-	keys.forEach( key =>
-	{
-		if (params[key].persist){
-			if(localStorage.getItem(providerName+"_"+key)!==null){
-				signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key);
+
+	let errorMsgs = keys.reduce((prev,key, index) =>
+		{
+			if (params[key].persist){
+				if(localStorage.getItem(providerName+"_"+key)!==null){
+					signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key);
+					return prev;
+				}
+				else{
+					return prev+signProviders[providerName]["params"][key].errorMsg+". ";
+				}
 			}
-			else{
-				alert("Δεν υπάρχει στη μνήμη τιμή για mindigital "+key);
-				return;
-			}
-		}
-		if (params[key].value === null){
-			alert(params[key].errorMsg);
-			return ;
-		}
-	})
+			if (params[key].value === null || params[key].value === ""){
+				return prev+signProviders[providerName]["params"][key].errorMsg+". ";
+			}	
+			return prev;
+				
+		},"");
+	if (errorMsgs !==""){
+		alert("Δεν έχουν οριστεί οι παράμετροι της υπογραφής. "+ errorMsgs);
+		document.querySelector('#signBtn').removeAttribute("disabled");
+		document.querySelector('#signSpinner').style.display = "none";
+		return;
+	}
 
 	const {jwt,role} = getFromLocalStorage();	
 	const myHeaders = new Headers();
@@ -463,11 +506,16 @@ export async function signDocument(aa, isLast=0, objection=0){
 			return true;
 		}
 	});
-	if (!extraFieldsStatus) return;
+	if (!extraFieldsStatus){ 
+		document.querySelector('#signBtn').removeAttribute("disabled");
+		document.querySelector('#signSpinner').style.display = "none";
+		return;
+	};
 
 	let init = {method: 'POST', headers : myHeaders, body : formData};
 	const res = await fetch("/api/signDoc.php",init); 
 	if (!res.ok){
+		document.querySelector('#signBtn').removeAttribute("disabled");
 		const resdec = res.json();
 		if (res.status ==  401){
 			if (resdec === "mindigital"){
@@ -494,7 +542,8 @@ export async function signDocument(aa, isLast=0, objection=0){
 		}
 	}
 	else {
-		
+		document.querySelector('#signBtn').removeAttribute("disabled");
+		document.querySelector('#signSpinner').style.display = "none";
 	}
 }
 
@@ -593,7 +642,7 @@ function selectSignProvider(providerName){
 				signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key)
 			}
 			else{
-				alert(params[key].errorMsg);
+				//alert(params[key].errorMsg);
 			}
 		}
 	})
@@ -622,12 +671,17 @@ function enableRejectButton(){
 
 function checkOTPLength(event){
 	signProviders.MINDIGITAL.params.otp.value = event.target.value;
-	console.log(signProviders.MINDIGITAL);
+	//console.log(signProviders.MINDIGITAL);
+}
+
+function checkSchName(event){
+	signProviders.SCH.params.signature.value = event.target.value;
+	//console.log(signProviders.SCH);
 }
 
 function selectFile(event){
 	signProviders.UPLOAD.params.selectedSignedFile.value = event.target.value;
-	console.log(signProviders.UPLOAD);
+	//console.log(signProviders.UPLOAD);
 }
 
 function mindigitallMiddleware(){
@@ -637,6 +691,9 @@ function mindigitallMiddleware(){
 			<div id="emailConnection" class="flexVertical">
 				<div id="emailTitle"  style="font-weight:bold;text-align:center;">
 					Email
+					<div id="emailSpinner" class="spinner-border spinner-border-sm" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
 				</div>
 				<div id="emailConnectionDiv" class="flexHorizontal">
 					<div id="emailStatusDiv"  class="flexVertical">
@@ -652,6 +709,9 @@ function mindigitallMiddleware(){
 			<div id="mindigitalConnection" class="flexVertical">
 				<div id="mindigitalTitle" style="font-weight:bold; text-align:center;">
 					Mindigital
+					<div id="mindigitalSpinner" class="spinner-border spinner-border-sm" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
 				</div>
 				<div id="mindigitalConnectionDiv" class="flexHorizontal">
 					<div id="mindigitalStatusDiv"  class="flexVertical">
@@ -666,7 +726,7 @@ function mindigitallMiddleware(){
 		</div>
 		<div id="providerContent" class="flexHorizontal" style="width : 40%;flex-basis: auto; align-items : flex-start;">
 			<div id="otpDiv"  class="flexHorizontal">
-				<input   id="otpText" cols="10" rows="1" type="number"  min="100000" max="999999" placeholder="εξαψήφιο OTP" size="200" class="form-control form-control-sm" placeholder="Εισαγωγή OTP"></input>
+				<input   id="otpText" cols="10" rows="1" type="number"  min="100000" max="999999" placeholder="εξαψήφιο OTP" size="200" class="form-control form-control-sm"></input>
 			</div>		
 		</div>`;
 	document.querySelector("#otpText").addEventListener("keyup",checkOTPLength);
@@ -697,7 +757,20 @@ function mindigitallMiddleware(){
 		document.querySelector("#emailPassword").style.display = "none";
 		document.querySelector("#requestOTPBtn").removeAttribute("disabled");
 	}
-	
+	document.querySelector("#emailSpinner").style.display = 'none';
+	document.querySelector("#mindigitalSpinner").style.display = 'none';
+}
+
+function schMiddleware(){
+	const providerDiv = document.getElementById("providerMiddleware");
+	providerDiv.innerHTML = `
+		<div id="providerContent" class="flexHorizontal" style="width : 40%;flex-basis: auto; align-items : flex-start;">
+			<div id="schNameDiv"  class="flexHorizontal">
+				<input   id="schNameText" cols="20" rows="1" type="text"  placeholder="ονομασία υπογραφής" size="200" class="form-control form-control-sm"></input>
+			</div>		
+		</div>`;
+	document.querySelector("#schNameText").addEventListener("keyup",checkSchName);
+	document.querySelector("#schNameText").value = signProviders.SCH.params.signature.value;
 }
 
 function uploadMiddleware(){
@@ -713,6 +786,7 @@ function uploadMiddleware(){
 
 
 async function connectToEmail(username,password){
+	document.querySelector("#emailSpinner").style.display = 'inline-block';
 	const mindigitalStatusBtn = document.getElementById("emailConnectionButton");
 
 	if(localStorage.getItem("EMAIL_token") !==null){
@@ -726,11 +800,13 @@ async function connectToEmail(username,password){
 			document.querySelector("#emailUsername").style.display = "inline-block";
 			document.querySelector("#emailPassword").style.display = "inline-block";
 			document.querySelector("#requestOTPBtn").setAttribute("disabled",true);
+			document.querySelector("#emailSpinner").style.display = 'none';
 			return;
 		}
 	}
 	if (username === "" || password ===""){
 		alert("Συμπληρώστε τα πεδία σύνδεσης");
+		document.querySelector("#emailSpinner").style.display = 'inline-block';
 		return;
 	}
 
@@ -745,6 +821,7 @@ async function connectToEmail(username,password){
 	let init = {method: 'POST', headers : myHeaders, body : formData};
 	const res = await fetch("/api/saveEmailCred.php",init); 
 	if (!res.ok){
+		document.querySelector("#emailSpinner").style.display = 'none';
 		if (res.status ==  401){
 			if (await res.json() !== "remote Error"){
 				const resRef = await refreshToken();
@@ -779,11 +856,12 @@ async function connectToEmail(username,password){
 		document.querySelector("#emailPassword").style.display = "none";
 		document.querySelector("#requestOTPBtn").removeAttribute("disabled");
 		alert("Επιτυχής σύνδεση");
+		document.querySelector("#emailSpinner").style.display = 'none';
 	}
 }
 
 async function connectToMindigital(username, password){
-	
+	document.querySelector("#mindigitalSpinner").style.display = 'inline-block';
 	const mindigitalStatusBtn = document.getElementById("mindigitalConnectionButton");
 
 	if(localStorage.getItem("MINDIGITAL_token") !==null){
@@ -796,11 +874,13 @@ async function connectToMindigital(username, password){
 			document.querySelector("#mindigitalPassword").value ="";
 			document.querySelector("#mindigitalUsername").style.display = "inline-block";
 			document.querySelector("#mindigitalPassword").style.display = "inline-block";
+			document.querySelector("#mindigitalSpinner").style.display = 'none';
 			return;
 		}
 	}
 	if (username === "" || password ===""){
 		alert("Συμπληρώστε τα πεδία σύνδεσης");
+		document.querySelector("#mindigitalSpinner").style.display = 'none';
 		return;
 	}
 
@@ -815,6 +895,7 @@ async function connectToMindigital(username, password){
 	let init = {method: 'POST', headers : myHeaders, body : formData};
 	const res = await fetch("/api/saveMindigitalCred.php",init); 
 	if (!res.ok){
+		document.querySelector("#mindigitalSpinner").style.display = 'none';
 		if (res.status ==  401){
 			if (await res.json() !== "remote Error"){
 				const resRef = await refreshToken();
@@ -848,11 +929,14 @@ async function connectToMindigital(username, password){
 		document.querySelector("#mindigitalUsername").style.display = "none";
 		document.querySelector("#mindigitalPassword").style.display = "none";
 		alert("Επιτυχής σύνδεση");
+		document.querySelector("#mindigitalSpinner").style.display = 'none';
 	}
 }
 
 async function requestOTP(){
+	document.querySelector("#emailSpinner").style.display = 'inline-block';
 	document.querySelector('#otpText').value = "";
+	document.querySelector('#requestOTPBtn').setAttribute('disabled',true);
 
 	const {jwt,role} = getFromLocalStorage();	
 	const myHeaders = new Headers();
@@ -860,6 +944,8 @@ async function requestOTP(){
 
 	let formData = new FormData();
 	if (localStorage.getItem("EMAIL_token")==null || localStorage.getItem("MINDIGITAL_token")==null){
+		document.querySelector("#emailSpinner").style.display = 'none';
+		document.querySelector('#requestOTPBtn').removeAttribute('disabled');
 		alert("Δεν υπάρχουν διαπιστευτήρια");
 	}
 	formData.append("EMAIL_token",localStorage.getItem("EMAIL_token"));
@@ -869,6 +955,8 @@ async function requestOTP(){
 	const res = await fetch("/api/getLastOTP.php",init); 
 	const resDec = await res.json();
 	if (!res.ok){
+		document.querySelector("#emailSpinner").style.display = 'none';
+		document.querySelector('#requestOTPBtn').removeAttribute('disabled');
 		if (res.status ==  400){
 			if (resDec === "email"){
 				localStorage.removeItem("EMAIL_token");
@@ -905,6 +993,8 @@ async function requestOTP(){
 		}
 	}
 	else {
+		document.querySelector("#emailSpinner").style.display = 'none';
+		document.querySelector('#requestOTPBtn').removeAttribute('disabled');
 		if (Array.isArray(resDec)){
 			if(resDec[0]===0){
 				document.querySelector("#otpText").value = resDec[1];

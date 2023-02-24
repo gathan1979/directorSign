@@ -74,7 +74,8 @@
 					$role['departmentName'] =$d[0];
 					$role['prime'] = $k['prime'];
 					$role['aa_role'] = $k['roleAA'];
-		
+					$role['signature'] = $k['signature'];
+					
 					$role['device'] ="";
 					array_push($user['roles'],$role);
 					
