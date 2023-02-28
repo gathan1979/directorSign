@@ -1,5 +1,5 @@
 import {uploadFileTest, uploadComponents} from "./uploadFiles.js";
-import {getSigRecords,fillTable}  from "./signatureRecords.js";
+import {getSigRecords,fillTable, filterTable}  from "./signatureRecords.js";
 			
 const basicUI = `<div id="myNavBar">
 	<div  id="prosIpografi" ><a class="active" href="directorSign.php">Προς Υπογραφή</a></div>
@@ -25,8 +25,8 @@ const basicUI = `<div id="myNavBar">
 	<div id="userRoles" ></div>
 	<div class="flexHorizontal">
 		<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
-		<button class="btn btn-warning btn-sm" id="showEmployeesBtn">Υφιστ.</button>
-		<button class="btn btn-warning btn-sm" id="showToSignOnlyBtn">Όλα</button>
+		<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
+		<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
 	</div>
 	
 </div>
@@ -129,50 +129,65 @@ function getRecordsAndFill(){
 		//const table = $('#example1').DataTable();
 		fillTable(res);
 	});		
+	createSearch();
 }
 
-document.querySelector('#showEmployeesBtn').addEventListener("click", function() {
-	const user = document.querySelector('#connectedUser').value;
-	const tempUserElement= document.getElementById('showEmployees');
-	if(tempUserElement.classList.contains('btn-danger')){
-		tempUserElement.classList.remove('btn-danger');
-		tempUserElement.classList.add('btn-success');
-		//$('#example1').DataTable().columns(2).search('').draw();
-	}
-	else if(tempUserElement.classList.contains('btn-success')){
-		tempUserElement.classList.remove('btn-success');
-		tempUserElement.classList.add('btn-danger');
-		//$('#example1').DataTable().columns(2).search(user).draw();
-	}
-	tempUserElement1= document.getElementById('showToSignOnlyBtn');
-	if(tempUserElement1.classList.contains('btn-danger')){
-		//$('#example1').DataTable().columns(4).search('').draw();
-	}
-	else{
-		//$('#example1').DataTable().columns(4).search('#sign#').draw();
-	}
-	//$('#textbox1').val(this.checked);        
-});
+document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
+document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
+document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
 
-document.querySelector('#showToSignOnlyBtn').addEventListener("click", function() {
-	const user = document.querySelector('#connectedUser').value;
-	const tempUserElement= document.getElementById('showToSignOnlyBtn');
-	if(tempUserElement.classList.contains('btn-danger')){
-		tempUserElement.classList.remove('btn-danger');
-		tempUserElement.classList.add('btn-success');
-		//$('#example1').DataTable().columns(4).search("#sign#").draw();
+function createSearch(event) {
+	const user = loginData.user.user;
+	const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
+	const showEmployeesBtn = document.getElementById('showEmployeesBtn');
+	const tableSearchInput = document.getElementById('tableSearchInput');
+
+	let  filterObject = {dataKeys : {author :null , diff : null} , searchString : null};
+
+	if (event !== undefined){
+		if(event.target.dataset.active == "0"){
+			event.target.classList.remove('btn-danger');
+			event.target.classList.add('btn-success');
+			event.target.dataset.active = "1";
+		}
+		else if(event.target.dataset.active == "1"){
+			event.target.classList.remove('btn-success');
+			event.target.classList.add('btn-danger');
+			event.target.dataset.active = "0";
+		}
 	}
-	else if(tempUserElement.classList.contains('btn-success')){
-		tempUserElement.classList.remove('btn-success');
-		tempUserElement.classList.add('btn-danger');
-		//$('#example1').DataTable().columns(4).search('').draw();
-	}
-	tempUserElement1= document.getElementById('showEmployees');
-	if(tempUserElement1.classList.contains('btn-danger')){
-		//$('#example1').DataTable().columns(2).search(user).draw();
+
+	if (showToSignOnlyBtn.dataset.active == 1){
+		filterObject.dataKeys.diff = null;
 	}
 	else{
-		//$('#example1').DataTable().columns(2).search('').draw();
+		filterObject.dataKeys.diff = 0;
 	}
-	//$('#textbox1').val(this.checked);        
-});
+	if (showEmployeesBtn.dataset.active == 1){
+		filterObject.dataKeys.author = user;
+	}
+	else{
+		filterObject.dataKeys.author = null;
+	}
+	if (tableSearchInput.value != ""){
+		filterObject.searchString = tableSearchInput.value;
+	}
+	else{
+		filterObject.searchString = null;
+	}
+
+	const debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
+	debouncedFilter();
+}
+
+
+
+
+var timer;
+
+function debounce(func, timeout = 500){
+	return (...args) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => { func.apply(this, args); }, timeout);
+	};
+}

@@ -285,6 +285,9 @@ export function fillTable(result){
 		let c4 = row.insertCell(3);
 		let c5 = row.insertCell(4);
 		
+		row.dataset.diff = result[key].diff;
+		row.dataset.author = result[key].fullName;
+
 		let temp1=[];
 		let filenameBtn = "";
 		
@@ -1009,3 +1012,42 @@ async function requestOTP(){
 		}
 	}
 }
+
+export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}  
+															// diff = 0 είναι για υπογραφή στο τμήμα
+	const table = document.querySelector("#"+tableName);
+
+	console.log(searchObject)
+	for (const tempRow of Array.from(table.rows)){                       			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
+		if (tempRow.dataset.author && tempRow.dataset.diff){   	// απορρίπτει γραμμές του header, footer
+			let hide = false;
+			for(const [key,value] of Object.entries(searchObject.dataKeys)){
+				console.log(key,value,tempRow.dataset[key] );
+				if (value != null){
+					if (tempRow.dataset[key] != value){
+						hide = true;
+					}
+				}
+			}
+			let findTextInRow = true;
+			if (searchObject.searchString !== "" && searchObject.searchString !==null){
+				findTextInRow = false;
+				for (const cell of tempRow.cells){
+					if (cell.textContent.indexOf(searchObject.searchString) !== -1){
+						findTextInRow = true;
+						console.log("το κείμενο βρέθηκε στη γραμμή ")
+					}
+				}
+			}
+			if (hide || !findTextInRow){
+				tempRow.setAttribute("hidden","hidden");
+			}
+			else{
+				tempRow.removeAttribute("hidden");
+			}
+		}
+	}
+}
+
+
+
