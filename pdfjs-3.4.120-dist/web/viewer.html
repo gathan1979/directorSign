@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+	<html>
+	<head>
+	  <meta charset="UTF-8">
+	  <title>Filename</title>
+	</head>
+
+
+	<script src="../build/pdf.js"></script>
+
+	<script type="module">
+		import refreshToken from "../../modules/refreshToken.js"
+	 
+		pdfjsLib.GlobalWorkerOptions.workerSrc = '../build/pdf.worker.js';
+		
+		let pdf = null;
+		let pageNum = 1;
+		let pageRendering = false;
+		let pageNumPending = null;
+		let scale = 1;
+		const canvas = document.getElementById('the-canvas');
+		const cursorCanvas = document.getElementById('cursorLayer');
+		const ctx = canvas.getContext('2d');
+		const cursorCtx = cursorCanvas.getContext('2d');
+		
+		
+		let Xabs, Yabs,Xpercent,Ypercent;
+		let lastPage =1;
+		let viewerWidth;
+		let viewerHeight;
+		let leftBorder;
+		let topBorder;
+		let goneas;
+		
+		const queryString = window.location.search;
+		const urlParams = new URLSearchParams(queryString);
+		const filename = urlParams.get('file');
+		const id = urlParams.get('id');
+		
+		if (filename !==null && id !==null){
+			initCode();	
+		}
+		else{
+			alert("Δεν υπάρχουν παράμετροι του αρχείου");	
+		}
+
+
+		// Opening PDF by passing its binary data as a string. It is still preferable
+		// to use Uint8Array, but string or array-like structure will work too.
+	 
+		async function initCode() {
+
+			let fileData = await viewFileBase64(filename);
+			fileData = atob(JSON.parse(fileData));
+			
+			var loadingTask = pdfjsLib.getDocument({ data: fileData });
+		  
+			pdf = await loadingTask.promise;
+			// Fetch the first page.
+			
+		    document.getElementById('page_count').textContent = pdf.numPages;
+		    // Initial/first page rendering
+		    renderPage(pageNum);
+
+			// var page = await pdf.getPage(1);
+			// console.log(page.view);
+			// var scale = 1.5;
+			// var viewport = page.getViewport({ scale: scale, });
+			
+			// var outputScale = window.devicePixelRatio || 1;
+
+			// var canvas = document.getElementById('the-canvas');
+			// var context = canvas.getContext('2d');
+
+			// canvas.width = Math.floor(viewport.width * outputScale);
+			// canvas.height = Math.floor(viewport.height * outputScale);
+			// canvas.style.width = Math.floor(viewport.width) + "px";
+			// canvas.style.height =  Math.floor(viewport.height) + "px";
+
+			// var transform = outputScale !== 1
+			  // ? [outputScale, 0, 0, outputScale, 0, 0]
+			  // : null;
+
+			// var renderContext = {
+			  // canvasContext: context,
+			  // transform,
+			  // viewport,
+			// };
+			// page.render(renderContext);
+		};
+	  
+	  
+		async function viewFileBase64(filename){ 
+			//console.log(filename);
+			const loginData = JSON.parse(localStorage.getItem("loginData"));
+			const urlpar = new URLSearchParams({filename : encodeURIComponent(filename)});
+			const jwt = loginData.jwt;
+			const myHeaders = new Headers();
+			myHeaders.append('Authorization', jwt);
+			let init = {method: 'GET', headers : myHeaders};
+			
+			const res = await fetch("/api/viewFileBase64.php?"+urlpar,init); 
+			if (!res.ok){
+				if (res.status ==  401){
+					const resRef = await refreshToken();
+					if (resRef ===1){
+						viewFileBase64(filename);
+					}
+					else{
+						alert("σφάλμα εξουσιοδότησης");	
+					}
+				}
+				else if (res.status==403){
+					window.open('unAuthorized.html', '_blank');
+				}
+				else if (res.status==404){
+					alert("το αρχείο δε βρέθηκε");
+				}
+			}
+			else {
+				const blob = await res.text();
+				return blob;
+			}
+		}
+		
+		async function renderPage(num) {
+			pageRendering = true;
+			// Using promise to fetch the page
+			pdf.getPage(num).then(function(page) {
+				console.log("page loaded");
+				var viewport = page.getViewport({scale: scale});
+				canvas.height = viewport.height;
+				canvas.width = viewport.width;
+				
+				cursorCanvas.height = viewport.height;
+				cursorCanvas.width = viewport.width;
+
+				// Render PDF page into canvas context
+				var renderContext = {
+				  canvasContext: ctx,
+				  viewport: viewport
+				};
+				var renderTask = page.render(renderContext);
+
+				// Wait for rendering to finish
+				renderTask.promise.then(function() {
+					console.log("page rendered");
+					 pageRendering = false;
+					if (pageNumPending !== null) {
+						// New page rendering is pending
+						renderPage(pageNumPending);
+						pageNumPending = null;
+					}
+				});
+			});
+
+		  // Update page counters
+		  document.getElementById('page_num').textContent = num;
+		}
+		
+
+		/**
+		 * If another page rendering in progress, waits until the rendering is
+		 * finised. Otherwise, executes rendering immediately.
+		 */
+		async function queueRenderPage(num) {
+			if (pageRendering) {
+				console.log("page rendering");
+				pageNumPending = num;
+			} else {
+				await renderPage(num);
+				console.log("page rendered");
+			}
+		}
+
+		/**
+		 * Displays previous page.
+		 */
+		function onPrevPage() {
+		  if (pageNum <= 1) {
+			return;
+		  }
+		  pageNum--;
+		  queueRenderPage(pageNum);
+		}
+		document.getElementById('prevPageBtn').addEventListener('click', onPrevPage);
+
+		/**
+		 * Displays next page.
+		 */
+		function onNextPage() {
+		  if (pageNum >= pdf.numPages) {
+			return;
+		  }
+		  pageNum++;
+		  queueRenderPage(pageNum);
+		}
+		document.getElementById('nextPageBtn').addEventListener('click', onNextPage);
+		document.getElementById('cursorLayer').addEventListener('click', clickPosition);
+
+			
+		async function clickPosition(){
+			console.log(pageRendering);
+			var leftBorder = document.querySelector("#the-canvas").offsetLeft;
+			var topBorder = document.querySelector("#the-canvas").offsetTop;
+			var viewerWidth = document.querySelector("#the-canvas").offsetWidth;
+			var viewerHeight = document.querySelector("#the-canvas").offsetHeight;
+					
+			//ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			console.log("----------------sintetagmenes --------------------------");
+			Xabs = (event.clientX - leftBorder);
+			Yabs = (event.clientY - topBorder);
+			console.log(" xclick : "+ event.clientX + " entosPage : " + Xabs);
+			console.log(" yclick : "+ event.clientY + " entosPage : " + Yabs);
+			Xpercent = Xabs/viewerWidth;
+			Ypercent = Yabs/viewerHeight;
+			//alert("x = "+Xabs+"y = "+Yabs);
+			
+			//var canvas = document.getElementById("page"+PDFViewerApplication.pdfViewer.currentPageNumber);
+			
+			//var ctx = canvas.getContext("2d");
+			cursorCtx.clearRect(0, 0, canvas.width, canvas.height);
+			cursorCtx.beginPath();
+			cursorCtx.lineWidth = 2;
+			cursorCtx.strokeStyle = "red";
+			cursorCtx.rect(Xabs - 60, Yabs-60, 100, 50);
+			//ctx.rect(viewerWidth-40, viewerHeight-40, 20, 20);
+			cursorCtx.stroke();
+		}
+		
+		function goToPage(a,Xabs,Yabs){
+			var numPages =  pdf.numPages;
+			//console.log("go to :"+typeof(a));
+			setTimeout(function(){drawRect(a,Xabs,Yabs);}, 1000);
+		}
+		
+		function drawRect(a,Xabs,Yabs){
+			var leftBorder = document.getElementsByClassName('page')[0].offsetLeft;
+			var topBorder = document.getElementsByClassName('page')[0].offsetTop;
+			var viewerWidth = document.getElementsByClassName('page')[0].offsetWidth;
+			var viewerHeight = document.getElementsByClassName('page')[0].offsetHeight;
+			var elementExists = document.getElementById("cursorLayer");
+			console.log(elementExists);
+			if (elementExists !== null) {
+					elementExists.remove();
+			}
+			var canvas = document.createElement('canvas');
+			canvas.id = "cursorLayer";
+			canvas.width = viewerWidth;
+			canvas.height = viewerHeight;
+			canvas.style.zIndex = 20;
+			canvas.style.position = "absolute";
+			canvas.style.top = 0;
+			canvas.style.left = 0;
+			canvas.style.border = "1px solid";
+			//goneas = document.getElementsByClassName("canvasWrapper");
+			//console.log(goneas[0]);
+			//goneas[PDFViewerApplication.pdfViewer.currentPageNumber-1].appendChild(canvas);
+			var selida = parseInt(document.getElementById('pageNumber').value);
+			var parentElement = document.getElementById("page"+selida).parentElement;
+			//console.log(document.getElementById("page"+selida).parentElement);
+			
+			//goneas[selida-1].appendChild(canvas);
+			parentElement.appendChild(canvas);
+			//console.log(selida);
+			//goneas[selida-1].appendChild(canvas);
+			
+			//goneas[document.getElementById('pageNumber').value].appendChild(canvas);
+			cursorLayer = document.getElementById("cursorLayer");
+			//console.log(cursorLayer);
+
+			// below is optional
+
+			var ctx = canvas.getContext("2d");
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.beginPath();
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = "red";
+			ctx.rect(Xabs - 60, Yabs-60, 100, 50);
+			ctx.stroke();
+		}
+		
+		async function savePosition(){
+			//console.log(filename);
+			const loginData = JSON.parse(localStorage.getItem("loginData"));
+			const urlpar = new URLSearchParams({page : pageNum, posX : Xpercent, posY : Ypercent, id});
+			const jwt = loginData.jwt;
+			const myHeaders = new Headers();
+			myHeaders.append('Authorization', jwt);
+			let init = {method: 'GET', headers : myHeaders};
+			
+			const res = await fetch("/api/saveSigPosition.php?"+urlpar,init); 
+			if (!res.ok){
+				if (res.status ==  401){
+					const resRef = await refreshToken();
+					if (resRef ===1){
+						savePosition();
+					}
+					else{
+						alert("σφάλμα εξουσιοδότησης");	
+					}
+				}
+				else if (res.status==403){
+					window.open('unAuthorized.html', '_blank');
+				}
+				else if (res.status==404){
+					alert("το αρχείο δε βρέθηκε");
+				}
+			}
+			else {
+				window.close();
+			}
+		}
+		
+		async function getPosition(){
+			//console.log(filename);
+			const loginData = JSON.parse(localStorage.getItem("loginData"));
+			const urlpar = new URLSearchParams({id});
+			const jwt = loginData.jwt;
+			const myHeaders = new Headers();
+			myHeaders.append('Authorization', jwt);
+			let init = {method: 'GET', headers : myHeaders};
+			
+			const res = await fetch("/api/getSigPosition.php?"+urlpar,init); 
+			if (!res.ok){
+				if (res.status ==  401){
+					const resRef = await refreshToken();
+					if (resRef ===1){
+						savePosition();
+					}
+					else{
+						alert("σφάλμα εξουσιοδότησης");	
+					}
+				}
+				else if (res.status==403){
+					window.open('unAuthorized.html', '_blank');
+				}
+				else if (res.status==404){
+					alert("το αρχείο δε βρέθηκε");
+				}
+			}
+			else {
+				const obj = res.json();
+				Xpercent = obj[0]['posX'];
+				Ypercent = obj[0]['posY'];
+				page = obj[0]['page'];
+				console.log("σελίδα υπογραφής :"+page);
+				console.log("Οριζόντια θέση υπογραφής :"+Xpercent);
+				console.log("Κατακόρυφη θέση υπογραφής :"+Ypercent);
+				  
+				const leftBorder = document.getElementsByClassName('page')[0].offsetLeft;
+				const topBorder = document.getElementsByClassName('page')[0].offsetTop;
+				const viewerWidth = document.getElementsByClassName('page')[0].offsetWidth;
+				const viewerHeight = document.getElementsByClassName('page')[0].offsetHeight;
+				//console.log("ar : "+leftBorder+" pano : "+topBorder+" platos : "+viewerWidth+" ipsos : "+viewerHeight);
+				Xabs = Xpercent * viewerWidth;
+				Yabs = Ypercent * viewerHeight;
+				goToPage(page,Xabs,Yabs);
+			}	
+		}
+	</script>
+
+	<body>
+		<canvas id="the-canvas" style="border: 1px solid black; direction: ltr; position:absolute;"></canvas>
+		<canvas id="cursorLayer" style="border: 1px solid black; direction: ltr; position:absolute;"></canvas>
+		<div id="btnsDiv" style="display:flex;flex-flow:row nowrap; gap:10px;position:fixed;height:20px;top:20px;right:50px;background-color:orange;border-radius:10px;padding:10px;">
+			<button id="prevPageBtn">Προηγ. σελ.</button>
+			<button id="nextPageBtn">Επόμ. σελ.</button>
+			<button id="savePosBtn">Αποθ.</button>
+			<div style="align-self:stretch">
+				<span>Σελίδα: <span id="page_num"></span> / <span id="page_count"></span></span>
+			</div>
+		</div>
+		
+	</body>
+</html>

@@ -1,4 +1,4 @@
-import {uploadFileTest, uploadComponents} from "./uploadFiles.js";
+import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./uploadFiles.js";
 import {getSigRecords,fillTable, filterTable}  from "./signatureRecords.js";
 			
 const basicUI = `<div id="myNavBar">
@@ -85,8 +85,10 @@ loginData.user.roles.forEach((role,index)=>{
 loginData.user.roles.forEach((role,index)=>{
 		document.querySelector('#role_'+index+'_btn').addEventListener("click",()=>{setRole(index);}); 
 })
+
 //create Upload UI
 document.querySelector("#uploadDiv").innerHTML = uploadComponents;
+document.querySelector("#selectedFile").addEventListener("change",() => enableFileLoadButton());
 document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
 
 //Γέμισμα πίνακα με εγγραφές χρήστη

@@ -2,7 +2,7 @@ import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
 
 export const uploadComponents = `<div class="col-md-12" style="padding-left:1em;">
-		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX" onchange="enableFileLoadButton();"/><br>
+		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/><br>
 		</div>
 		<div class="col-md-12" id="viewSelectedFiles"></div>
 		<div class="form-group" style="padding:1em;">
@@ -216,14 +216,14 @@ export function uploadfileAdv(){
 	xmlhttp.send(data);	
 }
 
-function enableFileLoadButton(){
+export function enableFileLoadButton(){
 	if(document.getElementById("selectedFile").value != "") {
-		document.getElementById("uploadFileButton").disabled = false;
+		document.getElementById("uploadFileButton").removeAttribute("disabled");
 		const files = document.getElementById('selectedFile').files;
 		const numFiles = files.length;
 		const well = document.getElementById("viewSelectedFiles");
 		document.querySelector("#viewSelectedFiles").innerHTML= "";
-		for (i = 0; i < numFiles; i++) {
+		for (let i = 0; i < numFiles; i++) {
 			  let element = document.createElement("BUTTON");
 			  //Assign different attributes to the element. 
 			  element.innerHTML  = files[i].name;

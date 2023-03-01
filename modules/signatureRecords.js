@@ -345,7 +345,9 @@ export function fillTable(result){
 		c5.innerHTML = temp1[4];		
 		
 		document.querySelector("#btn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename']));
-		document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=>viewFile(result[key]['filename']));
+		//document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=>viewFile(result[key]['filename']));
+		document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['filename']+"&id="+result[key].aa+"#zoom=page-fit"));
+
 		if (result[key].preview_file_last !==""){
 			document.querySelector("#btn_"+result[key]['aa']+"_lastFile").addEventListener("click",()=>viewFile(result[key]['preview_file_last']));
 		}

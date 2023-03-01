@@ -36,14 +36,14 @@ See https://github.com/adobe-type-tools/cmap-resources
 			}
 			
 	?>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="google" content="notranslate">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>PDF.js viewer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="google" content="notranslate">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>PDF.js viewer</title>
 
 
-    <link rel="stylesheet" href="viewer.css">
+  <link rel="stylesheet" href="viewer.css">
 	<link href="css/all.min.css" rel="stylesheet"> <!--load all styles -->
 
 	<!-- This snippet is used in production (included from viewer.html) -->
@@ -52,7 +52,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 	<script src="jquery.js"></script>
 
 
-    <script src="viewer.js"></script>
+  <script src="viewer.js"></script>
 	<script text="javascript">
 		var Xabs, Yabs,Xpercent,Ypercent;
 		var lastPage =1;
