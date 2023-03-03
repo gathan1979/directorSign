@@ -1,5 +1,6 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
+import { createSearch } from "./createUI.js";
 
 const entityMap = {
 	'&': '&amp;',
@@ -549,6 +550,13 @@ export async function signDocument(aa, isLast=0, objection=0){
 	else {
 		document.querySelector('#signBtn').removeAttribute("disabled");
 		document.querySelector('#signSpinner').style.display = "none";
+		document.querySelector("#otpText").value = "";
+		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
+		const records = getSigRecords().then( res => {
+			//const table = $('#example1').DataTable();
+			fillTable(res);
+		});		
+		createSearch();
 	}
 }
 

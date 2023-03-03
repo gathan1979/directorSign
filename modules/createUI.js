@@ -92,7 +92,7 @@ document.querySelector("#selectedFile").addEventListener("change",() => enableFi
 document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
 
 //Γέμισμα πίνακα με εγγραφές χρήστη
-getRecordsAndFill()
+getRecordsAndFill();
 
 // Να δω τι γίνεται εδώ
 if (+JSON.parse(localStorage.getItem("loginData")).user.roles[0].accessLevel){
@@ -138,7 +138,7 @@ document.querySelector('#tableSearchInput').addEventListener("keyup", createSear
 document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
 document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
 
-function createSearch(event) {
+export function createSearch(event) {
 	const user = loginData.user.user;
 	const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
 	const showEmployeesBtn = document.getElementById('showEmployeesBtn');
