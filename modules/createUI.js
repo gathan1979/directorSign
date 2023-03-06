@@ -128,10 +128,10 @@ function setRole(index){
 
 function getRecordsAndFill(){
 	const records = getSigRecords().then( res => {
-		//const table = $('#example1').DataTable();
 		fillTable(res);
+		createSearch();
 	});		
-	createSearch();
+	
 }
 
 document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
@@ -139,12 +139,16 @@ document.querySelector('#showEmployeesBtn').addEventListener("click", createSear
 document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
 
 export function createSearch(event) {
+	const loginData = JSON.parse(localStorage.getItem("loginData"));
+	const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
+	const department = loginData.user.roles[currentRole].department;
 	const user = loginData.user.user;
+
 	const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
 	const showEmployeesBtn = document.getElementById('showEmployeesBtn');
 	const tableSearchInput = document.getElementById('tableSearchInput');
 
-	let  filterObject = {dataKeys : {author :null , diff : null} , searchString : null};
+	let  filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
 
 	if (event !== undefined){
 		if(event.target.dataset.active == "0"){
@@ -160,10 +164,10 @@ export function createSearch(event) {
 	}
 
 	if (showToSignOnlyBtn.dataset.active == 1){
-		filterObject.dataKeys.diff = null;
+		filterObject.dataKeys.currentDep = null;
 	}
 	else{
-		filterObject.dataKeys.diff = 0;
+		filterObject.dataKeys.currentDep = department;
 	}
 	if (showEmployeesBtn.dataset.active == 1){
 		filterObject.dataKeys.author = user;
@@ -177,7 +181,7 @@ export function createSearch(event) {
 	else{
 		filterObject.searchString = null;
 	}
-
+	console.log(filterObject)
 	const debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
 	debouncedFilter();
 }

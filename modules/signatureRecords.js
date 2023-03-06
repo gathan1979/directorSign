@@ -288,6 +288,7 @@ export function fillTable(result){
 		
 		row.dataset.diff = result[key].diff;
 		row.dataset.author = result[key].fullName;
+		row.dataset.currentDep = result[key].currentDep;
 
 		let temp1=[];
 		let filenameBtn = "";
@@ -326,7 +327,7 @@ export function fillTable(result){
 		let signBtn = "";
 		let historyBtn = "";
 		let rejectBtn = "";
-		if (result[key].diff == 0 && accessLevel==1){
+		if (result[key].currentDep == department && accessLevel==1){
 			signBtn = '<button id="showSignModalBtn" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
 		}
 		
@@ -1027,7 +1028,7 @@ export function filterTable (tableName, searchObject){   	// searchObject exampl
 															// diff = 0 είναι για υπογραφή στο τμήμα
 	const table = document.querySelector("#"+tableName);
 
-	console.log(searchObject)
+	//console.log(searchObject)
 	for (const tempRow of Array.from(table.rows)){                       			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
 		if (tempRow.dataset.author && tempRow.dataset.diff){   	// απορρίπτει γραμμές του header, footer
 			let hide = false;
