@@ -128,7 +128,7 @@
 					$userData["ip"] = $_SERVER['REMOTE_ADDR'];
 					$merge = array_merge($data, $userData);
 					$jwtHeader = JWT::encode($data,$secretKey,'HS512');	
-					setcookie("rToken", $jwtHeader, time()+24000, "/",$_SESSION["server_address"], 1, 1);
+					setcookie("rToken", $jwtHeader, time()+28800, "/",$_SESSION["server_address"], 1, 1);
 					$query = 'INSERT INTO `refreshtokens`(`rToken`, `user`) VALUES ("'.$jwtHeader.'",'.$_SESSION["aa_staff"].')';
 					$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 
 					//break;

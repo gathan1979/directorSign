@@ -216,6 +216,7 @@ export async function getUserData(){
 	}
 }	
 
+
 export async function getSigRecords(){
 	const {jwt,role} = getFromLocalStorage();	
 	const myHeaders = new Headers();
@@ -233,9 +234,15 @@ export async function getSigRecords(){
 			const reqToken = await refreshToken();
 			if (reqToken ==1){
 				getSigRecords();
+				const error = new Error("token expired")
+				error.code = "400"
+				throw error;
 			}
 			else{
 				alert('σφάλμα εξουσιοδότησης');
+				const error = new Error("token invalid")
+				error.code = "400"
+				throw error;
 			}
 		}
 		else{
@@ -246,7 +253,8 @@ export async function getSigRecords(){
 	}
 	else{
 		//return res;
-		return await res.json();
+		fillTable(await res.json());
+		return "ok";
 	}
 }
 
@@ -289,6 +297,7 @@ export function fillTable(result){
 		row.dataset.diff = result[key].diff;
 		row.dataset.author = result[key].fullName;
 		row.dataset.currentDep = result[key].currentDep;
+		row.dataset.isExactCopy = result[key].isExactCopy;
 
 		let temp1=[];
 		let filenameBtn = "";
@@ -302,11 +311,21 @@ export function fillTable(result){
 			}
 		}						
 		
-		if (result[key].preview_file_last==""){
-			filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
+		if (!result[key].isExactCopy){
+			if (result[key].preview_file_last==""){
+				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
+			}
+			else{
+				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
+			}
 		}
 		else{
-			filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
+			if (result[key].preview_file_last==""){
+				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
+			}
+			else{
+				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
+			}
 		}
 		
 		temp1[0] = filenameBtn;
@@ -314,13 +333,18 @@ export function fillTable(result){
 		temp1[2] = result[key].fullName;
 		
 		let recordStatus = "";
-		for (let i=0;i<result[key].levels;i++){
-			if (i<result[key].diff){
-				recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-success btn-sm"><i class="fas fa-calendar-check"></i></button>';
+		if (!result[key].isExactCopy){
+			for (let i=0;i<result[key].levels;i++){
+				if (i<result[key].diff){
+					recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-success btn-sm"><i class="fas fa-calendar-check"></i></button>';
+				}
+				else{
+					recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-secondary btn-sm"><i class="fas fa-calendar-times"></i></button>';
+				}	
 			}
-			else{
-				recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-secondary btn-sm"><i class="fas fa-calendar-times"></i></button>';
-			}	
+		}
+		else{
+			recordStatus = "Ακριβές Αντίγραφο";
 		}
 		temp1[3] =  recordStatus;
 		

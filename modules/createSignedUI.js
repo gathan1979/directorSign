@@ -1,9 +1,8 @@
-import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./uploadFiles.js";
-import {getSigRecords, filterTable}  from "./signatureRecords.js";
+import {getSignedRecords, filterTable}  from "./signedRecords.js";
 			
 const basicUI = `<div id="myNavBar">
-	<div  id="prosIpografi" ><a class="active" href="directorSign.php">Προς Υπογραφή</a></div>
-	<div  id="ipogegrammena" ><a href="signed.php">Διεκπεραιωμένα</a></div>
+	<div  id="prosIpografi" ><a href="directorSign.php">Προς Υπογραφή</a></div>
+	<div  id="ipogegrammena" ><a class="active"  href="signed.php">Διεκπεραιωμένα</a></div>
 		
 	<div ><a target="_blank" rel="opener" href="../nocc-1.9.8/protocol/editTable1.php?tn=book"><span id="protocolAppText"></span></a></div>	
 	<div ><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
@@ -17,9 +16,7 @@ const basicUI = `<div id="myNavBar">
 
 
 <div id="headmasterExtraMenuDiv">
-	<div class="flexVertical">
-		<button class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadDiv"><i class="far fa-plus-square"></i></button>
-	</div>
+	
 	<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
 
 	<div id="userRoles" ></div>
@@ -29,11 +26,6 @@ const basicUI = `<div id="myNavBar">
 		<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
 	</div>
 	
-</div>
-
-<div id="uploadDiv" class="collapse">
-	
-
 </div>`
 
 document.body.insertAdjacentHTML("beforebegin",basicUI);
@@ -86,10 +78,6 @@ loginData.user.roles.forEach((role,index)=>{
 		document.querySelector('#role_'+index+'_btn').addEventListener("click",()=>{setRole(index);}); 
 })
 
-//create Upload UI
-document.querySelector("#uploadDiv").innerHTML = uploadComponents;
-document.querySelector("#selectedFile").addEventListener("change",() => enableFileLoadButton());
-document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
 
 //Γέμισμα πίνακα με εγγραφές χρήστη
 getRecordsAndFill();
@@ -127,7 +115,7 @@ function setRole(index){
 }
 
 function getRecordsAndFill(){
-	const records = getSigRecords().then( res => {
+	const records = getSignedRecords().then( res => {
 		createSearch();
 	}, rej => {});		
 	
@@ -184,8 +172,6 @@ export function createSearch(event) {
 	const debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
 	debouncedFilter();
 }
-
-
 
 
 var timer;
