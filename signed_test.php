@@ -35,6 +35,7 @@
 				<th id="filename" class="text-right">Διεκπεραιωμένο Έγγραφο</th>
 				<th id="date" class="text-right">Εισαγωγή</th>
 				<th id="author" class="text-right">Συντάκτης</th>
+				<th id="files" class="text-right">Αρχεία</th>
 				<th id="fileActions" class="text-right">Ενέργειες</th>
 			  </tr>
 			</thead>

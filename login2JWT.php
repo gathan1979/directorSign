@@ -117,7 +117,7 @@
 					$userData["aa_user"] = $user["aa_user"];
 					$merge = array_merge($data, $userData);
 					$jwtHeader = JWT::encode($merge,$secretKey,'HS512');	
-					setcookie("rToken", $jwtHeader, time()+24000, "/",$settings["server_address"], 1, 1);
+					setcookie("rToken", $jwtHeader, time()+28800, "/",$settings["server_address"], 1, 1);
 					$query = 'INSERT INTO `refreshtokens`(`rToken`, `user`) VALUES ("'.$jwtHeader.'",'.$user["aa_staff"].')';
 					$result=mysqli_query($con,$query) or die('database error'.mysqli_error($con)); 
 					//break;

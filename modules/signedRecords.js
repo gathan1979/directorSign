@@ -99,15 +99,11 @@ export function fillTable(result){
 		let c4 = row.insertCell(3);
 		let c5 = row.insertCell(4);
 
-		if(result[key].nextLevel == -2){
-			row.dataset.rejected = 1;
-		}
-		else{
-			row.dataset.rejected = 0;
-		}
+		const rejected =(result[key].nextLevel == -2?1:0);
+		row.dataset.rejected = rejected;
+	
 
 		row.dataset.author = result[key].fullName;
-
 		let temp1=[];
 		let filenameBtn = "";
 		
@@ -116,24 +112,24 @@ export function fillTable(result){
 		let relevantDocsElement = "&nbsp&nbsp&nbsp";
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
-				relevantDocsElement +='<i id="rel_btn_'+result[key]['aa']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>&nbsp';		
+				relevantDocsElement +='<i id="rel_btn_'+result[key]['revisionId']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>&nbsp';		
 			}
 		}						
 		
-		if (!result[key].isExactCopy){
+		if (!rejected){
 			if (result[key].preview_file_last==""){
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
+				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-success btn-sm" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
 			}
 			else{
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
+				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-success btn-sm" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
 			}
 		}
 		else{
 			if (result[key].preview_file_last==""){
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
+				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-danger btn-sm" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
 			}
 			else{
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
+				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-danger btn-sm" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
 			}
 		}
 		
@@ -141,37 +137,29 @@ export function fillTable(result){
 		temp1[1] = result[key].date;
 		temp1[2] = result[key].fullName;
 		
-		let recordStatus = "";
-		if (!result[key].isExactCopy){
-			for (let i=0;i<result[key].levels;i++){
-				if (i<result[key].diff){
-					recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-success btn-sm"><i class="fas fa-calendar-check"></i></button>';
-				}
-				else{
-					recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-secondary btn-sm"><i class="fas fa-calendar-times"></i></button>';
-				}	
-			}
+		let recordStatus = '<button id="signedBtn_'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-download" data-toggle="tooltip" title="Υπογεγραμμένο για αρχειοθέτηση" data-whatever="'+result[key].aa+'"></i>'+"</button>";
+
+
+		if (!rejected){
+			temp1[3] =  recordStatus;
 		}
 		else{
-			recordStatus = "Ακριβές Αντίγραφο";
+			temp1[3] ="";
 		}
-		temp1[3] =  recordStatus;
 		
-		let signBtn = "";
 		let historyBtn = "";
-		let rejectBtn = "";
-		if (result[key].currentDep == department && accessLevel==1){
-			signBtn = '<button id="showSignModalBtn" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
-		}
+		let reqExactCopyBtn = "";
 		
-		if (result[key].objection>0){
-			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i>'+"<span class='glyphicon glyphicon-flash' style='font-size: 20px;' aria-hidden='true' data-toggle='tooltip'></span></a>";
+		//if (result[key].objection>0){
+			//historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].revisionId+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i>'+"<span class='glyphicon glyphicon-flash' style='font-size: 20px;' aria-hidden='true' data-toggle='tooltip'></span></a>";
+		//}
+		//else{
+			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].revisionId+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
+		//}
+		if (!rejected){
+			reqExactCopyBtn = '<button id="reqExactCopyBtn_'+result[key]['revisionId']+'" type="button" class="btn btn-info btn-sm" data-whatever="'+result[key].revisionId+'">'+'<i class="fas fa-bell" data-toggle="tooltip" title="Αίτημα Ακριβούς Αντιγράφου" data-whatever="'+result[key].revisionId+'"></i>'+"</button>";
 		}
-		else{
-			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
-		}
-		rejectBtn = '<button id="showRejectModal" type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#rejectModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
-		temp1[4] = 	'<div class="recordButtons">'+signBtn+historyBtn+rejectBtn+'</div>';	
+		temp1[4] = 	'<div class="recordButtons">'+reqExactCopyBtn+historyBtn+'</div>';	
 		
 		c1.innerHTML = temp1[0];
 		c2.innerHTML = temp1[1];
@@ -179,18 +167,66 @@ export function fillTable(result){
 		c4.innerHTML = temp1[3];
 		c5.innerHTML = temp1[4];		
 		
-		document.querySelector("#btn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename']));
+		if (!rejected){
+			document.querySelector("#reqExactCopyBtn_"+result[key]['revisionId']).addEventListener("click",(event)=>{
+				requestExactCopy(event).then((msg)=>{alert(msg)},(msg)=>{alert(msg)})
+			});
+		}
+		document.querySelector("#btn_"+result[key]['revisionId']).addEventListener("click",()=>viewFile(result[key]['filename']));
 		//document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=>viewFile(result[key]['filename']));
-		document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['filename']+"&id="+result[key].aa+"#zoom=page-fit"));
+		//document.querySelector("#btn_"+result[key]['revisionId']+"_firstFile").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['filename']+"&id="+result[key].aa+"#zoom=page-fit"));
 
 		if (result[key].preview_file_last !==""){
-			document.querySelector("#btn_"+result[key]['aa']+"_lastFile").addEventListener("click",()=>viewFile(result[key]['preview_file_last']));
+			//document.querySelector("#btn_"+result[key]['revisionId']+"_lastFile").addEventListener("click",()=>viewFile(result[key]['preview_file_last']));
 		}
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
-				document.querySelector("#rel_btn_"+result[key]['aa']+"_"+l).addEventListener("click",()=>viewFile(relevantDocsArray[l]));
+				//document.querySelector("#rel_btn_"+result[key]['revisionId']+"_"+l).addEventListener("click",()=>viewFile(relevantDocsArray[l]));
 			}
 		}						
+	}
+}
+
+async function requestExactCopy(event){
+	//console.log(filename);
+	const loginData = JSON.parse(localStorage.getItem("loginData"));
+	const jwt = loginData.jwt;
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let formData = new FormData();
+	formData.append("record",event.target.dataset.whatever);
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+	
+	const res = await fetch("/api/requestExactCopy.php?",init); 
+	if (!res.ok){
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ===1){
+				requestExactCopy(event);
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");	
+			}
+			throw Error("My error");
+		}
+		else if (res.status==403){
+			window.open('unAuthorized.html', '_blank');
+		}
+		else if (res.status==404){
+			//alert("το αρχείο δε βρέθηκε");
+			throw Error("το αρχείο δε βρέθηκε");
+		}
+		else if (res.status==409){
+			//alert("Υπάρχει αίτημα σε εκκρεμότητα");
+			throw Error("Υπάρχει αίτημα σε εκκρεμότητα");
+		}
+		else{
+			//alert("γενικό σφάλμα");
+			throw Error("My error");
+		}
+	}
+	else {
+		return("Το αίτημα έχει καταχωρηθεί");
 	}
 }
 
