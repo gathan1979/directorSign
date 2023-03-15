@@ -1,5 +1,7 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
+import { getSigRecords } from "./signatureRecords.js";
+import { createSearch } from "./createUI.js";
 
 export const uploadComponents = `<div class="col-md-12" style="padding-left:1em;">
 		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/><br>
@@ -15,12 +17,13 @@ export const uploadComponents = `<div class="col-md-12" style="padding-left:1em;
 		</div>`;
 		
 
+
 export function uploadFile(){                                               //θα αντικατασταθεί από το παρακάτω ΤΕΣΤ
 	var files = document.getElementById('selectedFile').files;
 	const numFiles = files.length;
 	var data = new FormData();
 	var k=0;
-	for (i = 0; i < numFiles; i++) {
+	for (let i = 0; i < numFiles; i++) {
 		//const file = files[i];
 		data.append('selectedFile'+i, document.getElementById('selectedFile').files[i]);
 		var element = document.getElementById('filebutton_'+i);
@@ -73,7 +76,7 @@ export function uploadFile(){                                               //θ
 	
 	xmlhttp.open("POST","upload.php");
 	xmlhttp.send(data);	
-}	
+}
 
 export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadNo = 0){
 	//$("#loading").fadeIn();
@@ -142,7 +145,9 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 		}
 	}
 	else {
-		
+		const records = getSigRecords().then( res => {
+			createSearch();
+		}, rej => {});	
 	}
 }
 

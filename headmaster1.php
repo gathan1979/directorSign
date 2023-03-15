@@ -68,11 +68,9 @@
 		<script type="text/javascript" src="js/customfunctions.js"></script>  
 		
 		<script type="module" >
-			import {uploadFile,uploadFileTest} from "./modules/uploadFiles.js";
+			import {uploadFile} from "./modules/uploadFiles.js";
 			document.querySelector("#uploadFileButton").addEventListener("click", uploadFile);
-			window.uploadFileTest = uploadFileTest;
-			
-			
+			//window.uploadFileTest = uploadFileTest;
 		</script>  
 		
 		<script type="text/javascript" defer>

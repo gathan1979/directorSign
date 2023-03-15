@@ -81,10 +81,10 @@ const signModalDiv =
 
 					<div class="contentFooter">
 						<div id="signBtngroup" class="flexHorizontal" aria-label="signBtnGroup">
-							<button id="signWithObjectionBtn"  type="button" class="btn btn-danger trn" >Έγγραφη αντίρρηση</button>
-							<button id="signAsLastBtn"  type="button" class="btn btn-warning trn">Τελικός υπογράφων</button>
-							<button id="signBtn"  type="button" class="btn btn-success trn">Υπογραφή</button>
-							<button id="signExactCopyBtn"  type="button" class="btn btn-success trn">Υπογραφή Aκριβούς Aντιγράφου</button>
+							<button id="signWithObjectionBtn"  type="button" class="btn btn-danger btn-sm" >Έγγραφη αντίρρηση</button>
+							<button id="signAsLastBtn"  type="button" class="btn btn-warning btn-sm">Τελικός υπογράφων</button>
+							<button id="signBtn"  type="button" class="btn btn-success btn-sm">Υπογραφή</button>
+							<button id="signExactCopyBtn"  type="button" class="btn btn-success btn-sm">Υπογραφή Aκριβούς Aντιγράφου</button>
 							<div id="signSpinner" class="spinner-border text-success" role="status">
 								<span class="visually-hidden">Loading...</span>
 							</div>
@@ -485,6 +485,8 @@ async function viewFile(filename){
 	}
 }
 
+
+//ΥΠΟΓΡΑΦΗ ΑΚΡΙΒΟΥΣ ΑΝΤΙΓΡΑΦΟΥ
 export async function signExactCopy(aa){
 	document.querySelector('#signExactCopyBtn').setAttribute("disabled",true);
 	document.querySelector('#signSpinner').style.display = "inline-block";
@@ -619,13 +621,12 @@ export async function signExactCopy(aa){
 		document.querySelector("#otpText").value = "";
 		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
-			//const table = $('#example1').DataTable();
-			fillTable(res);
-		});
-		createSearch();
+			createSearch();
+		}, rej => {});
 	}
 }
 
+//ΥΠΟΓΡΑΦΗ ΕΓΓΡΑΦΟΥ
 export async function signDocument(aa, isLast=0, objection=0){
 	document.querySelector('#signBtn').setAttribute("disabled",true);
 	document.querySelector('#signSpinner').style.display = "inline-block";
@@ -726,6 +727,7 @@ export async function signDocument(aa, isLast=0, objection=0){
 	let init = {method: 'POST', headers : myHeaders, body : formData};
 	const res = await fetch("/api/signDoc.php",init);
 	if (!res.ok){
+		document.querySelector('#signSpinner').style.display = "none";
 		document.querySelector('#signBtn').removeAttribute("disabled");
 		const resdec = res.json();
 		if (res.status ==  401){
@@ -755,13 +757,14 @@ export async function signDocument(aa, isLast=0, objection=0){
 	else {
 		document.querySelector('#signBtn').removeAttribute("disabled");
 		document.querySelector('#signSpinner').style.display = "none";
-		document.querySelector("#otpText").value = "";
+		if(providerName === "MINDIGITAL"){
+			document.querySelector("#otpText").value = "";
+		}
+		document.querySelector("#signModal").hide();
 		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
-			//const table = $('#example1').DataTable();
-			fillTable(res);
-		});
-		createSearch();
+			createSearch();
+		}, rej => {});
 	}
 }
 

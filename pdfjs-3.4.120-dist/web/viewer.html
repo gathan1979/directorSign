@@ -317,7 +317,8 @@
 			}
 			else {
 				const obj = await res.json();
-				if (obj.lenght !==0){
+				console.log(obj);
+				if (obj.length !==0){
 					sigXpercent = obj[0].posX;
 					sigYpercent = obj[0].posY;
 					sigPage = obj[0].page;

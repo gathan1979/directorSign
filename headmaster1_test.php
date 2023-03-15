@@ -24,7 +24,10 @@
 		<!--fontawesome-->
 				
 		<script type="module" src="./modules/signatureRecords.js"></script>
-		<script type="module" src="./modules/createUI.js"></script>
+		<script type="module" >
+			import {createUIstartUp} from "./modules/createUI.js";
+			createUIstartUp();
+		</script>
 	
 
 	</head>
