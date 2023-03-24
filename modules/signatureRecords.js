@@ -1,6 +1,5 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
-import { createSearch } from "./createUI.js";
 
 const entityMap = {
 	'&': '&amp;',
@@ -80,15 +79,7 @@ const signModalDiv =
 					</div>
 
 					<div class="contentFooter">
-						<div id="signBtngroup" class="flexHorizontal" aria-label="signBtnGroup">
-							<button id="signWithObjectionBtn"  type="button" class="btn btn-danger btn-sm" >Έγγραφη αντίρρηση</button>
-							<button id="signAsLastBtn"  type="button" class="btn btn-warning btn-sm">Τελικός υπογράφων</button>
-							<button id="signBtn"  type="button" class="btn btn-success btn-sm">Υπογραφή</button>
-							<button id="signExactCopyBtn"  type="button" class="btn btn-success btn-sm">Υπογραφή Aκριβούς Aντιγράφου</button>
-							<div id="signSpinner" class="spinner-border text-success" role="status">
-								<span class="visually-hidden">Loading...</span>
-							</div>
-						</div>
+						
 					</div>
 				</div>
 				<div class="modal-footer">
@@ -100,27 +91,37 @@ const signModalDiv =
 
 const rejectModalDiv =
 	`<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
+	  	<div class="modal-dialog modal-lg" role="document" >
+			<div class="modal-content">
+				<div class="modal-header">
+					<b>Οριστική Απόρριψη Εγγράφου</b>
+				</div>
+			 	<div class="modal-body" id="rejectForm">
+				  	<textarea id="rejectText" cols="100" rows="3" size="200" class="form-control" placeholder="το κείμενο είναι απαραίτητο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+				</div>
+				<div class="modal-footer">
+			  		<button id="rejectButton" type="button" class="btn btn-danger" disabled>Απόρριψη</button>
+					<button id="closeRejectModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			 	</div>
+			</div>
+		  </div>
+		</div>
+	</div>`;
+
+const returnModalDiv =
+	`<div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-labelledby="returnModalLabel" aria-hidden="true">
 	  <div class="modal-dialog modal-lg" role="document" >
 			<div class="modal-content">
-			  <div class="modal-body" id="rejectForm">
-				<div class="input-group mb-3">
-				  <div class="input-group-prepend" style="margin-bottom:2em;"><b>
-					<span class="input-group-text" id="basic-addon1" >Οριστική Απόρριψη Εγγράφου</span></b>
-					<span class="input-group-text" id="basic-addon1" ><br><br><u>Επισήμανση</u><br>
-					    Ν.2693/1999. αρ.25 παρ.5<i>
-						Οι προιστάμενοι όλων των βαθμίδων οφείλουν να προσυπογράφουν τα έγγραφα που ανήκουν στην
-						αρμοδιότητά τους και εκδίδονται με την υπογραφή του προϊσταμένου τους. Αν διαφωνούν, οφείλουν
-						να διατυπώσουν εγγράφως τις τυχόν αντιρρήσεις τους. Αν παραλείψουν να προσυπογράψουν το
-						έγγραφο, θεωρείται ότι το προσυπέγραψαν.</i>
-					</span>
-				  </div>
-				  <textarea onKeyUp="enableRejectButton();" id="rejectText" cols="100" rows="3" size="200" class="form-control" placeholder="Η απόρριψη δεν αφορά σε διαφωνία ως προς το περιεχόμενο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+				<div class="modal-header"> 
+					<b>Επιστροφή Εγγράφου</b>
 				</div>
-
-			  <div class="modal-footer">
-			  	<button id="rejectButton" type="button" class="btn btn-warning trn" disabled>Απόρριψη</button>
-				<button id="closeButtonModal" type="button" class="btn btn-secondary trn" data-dismiss="modal">Close</button>
-			  </div>
+			 	<div class="modal-body" id="returnForm">
+				  	<textarea id="returnText" cols="100" rows="3" size="200" class="form-control" placeholder="το κείμενο είναι απαραίτητο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+				</div>
+			  	<div class="modal-footer">
+			  		<button id="returnButton" type="button" class="btn btn-warning" disabled>Επιστροφή</button>
+					<button id="closeReturnModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			  	</div>
 			</div>
 		  </div>
 		</div>
@@ -129,11 +130,11 @@ const rejectModalDiv =
 
 document.body.insertAdjacentHTML("beforeend",signModalDiv);
 document.body.insertAdjacentHTML("beforeend",rejectModalDiv);
-document.querySelector("#signSpinner").style.display = 'none';
+document.body.insertAdjacentHTML("beforeend",returnModalDiv);
 
 const loginData = JSON.parse(localStorage.getItem("loginData"));
 const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
-signProviders.SCH.params.signature.value = loginData.user.roles[currentRole].signature;
+signProviders.SCH.params.signature.value = loginData?.user.roles[currentRole]?.signature;
 
 //Δημιουργία επιλογών παρόχου υπογραφής στο modal
 for (const [key, value] of Object.entries(signProviders)) {
@@ -145,13 +146,28 @@ Array.from(document.querySelectorAll("#signProvidersBtns>button")).forEach( btn 
 	btn.addEventListener("click",() => selectSignProvider(btn.dataset.provider));
 })
 
-let signDocumentRef ;
-let signDocumentWithObjRef;
-let signDocumentAsLastRef;
-let signExactCopyRef;
+//let signDocumentRef ;
+//let signDocumentWithObjRef;
+//let signDocumentAsLastRef;
+//let signExactCopyRef;
+//let rejectDocumentRef;
+//let returnDocumentRef;
 
 //Ενέργειες κατά την εμφάνιση και εξαφάνιση του modal
 document.querySelector("#signModal").addEventListener("show.bs.modal",(e)=> {
+	const modalButtonsDivContent = `<div id="signBtngroup" class="flexHorizontal" aria-label="signBtnGroup">
+							<button id="signWithObjectionBtn"  type="button" class="btn btn-danger btn-sm" >Έγγραφη αντίρρηση</button>
+							<button id="signAsLastBtn"  type="button" class="btn btn-warning btn-sm">Τελικός υπογράφων</button>
+							<button id="signBtn"  type="button" class="btn btn-success btn-sm">Υπογραφή</button>
+							<button id="signExactCopyBtn"  type="button" class="btn btn-success btn-sm">Υπογραφή Aκριβούς Aντιγράφου</button>
+							<div id="signSpinner" class="spinner-border text-success" role="status">
+								<span class="visually-hidden">Loading...</span>
+							</div>
+						</div>`;
+	
+	document.querySelector("#signModal .contentFooter").innerHTML = modalButtonsDivContent;
+	document.querySelector("#signSpinner").style.display = 'none';
+	
 	const recordAA = e.relatedTarget.getAttribute('data-whatever');
 	const isExactCopy = e.relatedTarget.getAttribute('data-isexactcopy');
 	document.querySelector("#signModal").dataset.isexactcopy = isExactCopy;
@@ -190,16 +206,16 @@ document.querySelector("#signModal").addEventListener("show.bs.modal",(e)=> {
 	//Υπογραφή signDocument(aa, isLast=0, objection=0, isExactCopy=0)
 
 	if (+isExactCopy){
-		signExactCopyRef = () => signExactCopy(+recordAA);
-		document.querySelector('#signExactCopyBtn').addEventListener("click",signExactCopyRef);
+		//signExactCopyRef = () => signExactCopy(+recordAA);
+		document.querySelector('#signExactCopyBtn').addEventListener("click",() => signExactCopy(+recordAA));
 	}
 	else{
-		signDocumentRef = () => signDocument(+recordAA);
-		signDocumentWithObjRef = () => signDocument(+recordAA, 0, 1);
-		signDocumentAsLastRef = () => signDocument(+recordAA, 1, 0);
-		document.querySelector('#signBtn').addEventListener("click",signDocumentRef);
-		document.querySelector('#signWithObjectionBtn').addEventListener("click",signDocumentWithObjRef);
-		document.querySelector('#signAsLastBtn').addEventListener("click",signDocumentAsLastRef);
+		//signDocumentRef = () => signDocument(+recordAA);
+		//signDocumentWithObjRef = () => signDocument(+recordAA, 0, 1);
+		//signDocumentAsLastRef = () => signDocument(+recordAA, 1, 0);
+		document.querySelector('#signBtn').addEventListener("click",() => signDocument(+recordAA));
+		document.querySelector('#signWithObjectionBtn').addEventListener("click",() => signDocument(+recordAA, 0, 1));
+		document.querySelector('#signAsLastBtn').addEventListener("click",() => signDocument(+recordAA, 1, 0));
 	}
 	
 
@@ -207,28 +223,46 @@ document.querySelector("#signModal").addEventListener("show.bs.modal",(e)=> {
 
 document.querySelector("#signModal").addEventListener("hide.bs.modal",(e)=> {
 	const isExactCopy = e.target.dataset.isexactcopy;
-	if (+isExactCopy){
-		document.querySelector('#signExactCopyBtn').removeEventListener("click",signExactCopyRef);
-	}
-	else{
-		document.querySelector('#signBtn').removeEventListener("click",signDocumentRef);
-		document.querySelector('#signWithObjectionBtn').removeEventListener("click",signDocumentWithObjRef);
-		document.querySelector('#signAsLastBtn').removeEventListener("click",signDocumentAsLastRef);
-	}
-	if (localStorage.getItem("signProvider")!==null){
-		const provider = localStorage.getItem("signProvider");
-		switch (provider){
-			case "MINDIGITAL" :
-				document.querySelector("#otpText").removeEventListener("keyup",checkOTPLength);
-				break;
-			case "UPLOAD" :
-				document.querySelector("#selectedSignedFile").removeEventListener("change",selectFile);
-				break;
-		}
-	}
+	// if (+isExactCopy){
+	// 	document.querySelector('#signExactCopyBtn').removeEventListener("click",signExactCopyRef);
+	// }
+	// else{
+	// 	document.querySelector('#signBtn').removeEventListener("click",signDocumentRef);
+	// 	document.querySelector('#signWithObjectionBtn').removeEventListener("click",signDocumentWithObjRef);
+	// 	document.querySelector('#signAsLastBtn').removeEventListener("click",signDocumentAsLastRef);
+	// }
+	// if (localStorage.getItem("signProvider")!==null){
+	// 	const provider = localStorage.getItem("signProvider");
+	// 	switch (provider){
+	// 		case "MINDIGITAL" :
+	// 			document.querySelector("#otpText").removeEventListener("keyup",checkOTPLength);
+	// 			break;
+	// 		case "UPLOAD" :
+	// 			document.querySelector("#selectedSignedFile").removeEventListener("change",selectFile);
+	// 			break;
+	// 	}
+	// }
 })
 
+document.querySelector("#rejectModal").addEventListener("show.bs.modal",(e)=> {
+	const recordAA = e.relatedTarget.getAttribute('data-whatever');
+	const relevantBtn = document.querySelector("#rejectButton");
+	const relevantText = document.querySelector("#rejectText");
+	
+	relevantText.addEventListener("keyup",()=> {if(relevantText.value != ""){relevantBtn.removeAttribute("disabled")}else{relevantBtn.setAttribute("disabled",true)} });
+	relevantBtn.addEventListener("click",() => rejectDocument(+recordAA));
+});
 
+document.querySelector("#returnModal").addEventListener("show.bs.modal",(e)=> {
+	const recordAA = e.relatedTarget.getAttribute('data-whatever');
+	const relevantBtn = document.querySelector("#returnButton");
+	const relevantText = document.querySelector("#returnText");
+	
+	relevantText.addEventListener("keyup",()=> {if(relevantText.value != ""){relevantBtn.removeAttribute("disabled")}else{relevantBtn.setAttribute("disabled",true)} });
+	relevantBtn.addEventListener("click",() => returnDocument(+recordAA));
+});
+
+//------------------------------------------------------ΑΠΟ ΕΔΩ ΚΑΙ ΚΑΤΩ ΜΕΘΟΔΟΙ ---------------------------------------------------------------------------------
 
 export async function getUserData(){
 	// const loginData = JSON.parse(localStorage.getItem("loginData"));
@@ -387,11 +421,13 @@ export function fillTable(result){
 		}
 		temp1[3] =  recordStatus;
 
-		let signBtn = "";
+		let signModalBtn = "";
 		let historyBtn = "";
 		let rejectBtn = "";
+		let returnBtn = "";
 		if (result[key].currentDep == department && accessLevel==1){
-			signBtn = '<button id="showSignModalBtn" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
+			signModalBtn = '<button id="showSignModalBtn" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
+			returnBtn = '<button id="showReturnModal" type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-arrow-down" data-toggle="tooltip" title="Επιστροφή Εγγράφου"></i>'+"</button>";
 		}
 
 		if (result[key].objection>0){
@@ -400,8 +436,8 @@ export function fillTable(result){
 		else{
 			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
 		}
-		rejectBtn = '<button id="showRejectModal" type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#rejectModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
-		temp1[4] = 	'<div class="recordButtons">'+signBtn+historyBtn+rejectBtn+'</div>';
+		rejectBtn = '<button id="showRejectModal" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
+		temp1[4] = 	'<div class="recordButtons">'+signModalBtn+returnBtn+historyBtn+rejectBtn+'</div>';
 
 		c1.innerHTML = temp1[0];
 		c2.innerHTML = temp1[1];
@@ -422,6 +458,7 @@ export function fillTable(result){
 			}
 		}
 	}
+	createSearch();
 }
 
 
@@ -446,7 +483,7 @@ async function viewFile(filename){
 			}
 		}
 		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
@@ -486,7 +523,8 @@ async function viewFile(filename){
 }
 
 
-//ΥΠΟΓΡΑΦΗ ΑΚΡΙΒΟΥΣ ΑΝΤΙΓΡΑΦΟΥ
+//-------------------------------------------------------ΥΠΟΓΡΑΦΗ ΑΚΡΙΒΟΥΣ ΑΝΤΙΓΡΑΦΟΥ-------------------------------------------------------------------------
+
 export async function signExactCopy(aa){
 	document.querySelector('#signExactCopyBtn').setAttribute("disabled",true);
 	document.querySelector('#signSpinner').style.display = "inline-block";
@@ -606,7 +644,7 @@ export async function signExactCopy(aa){
 			}
 		}
 		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
@@ -626,7 +664,8 @@ export async function signExactCopy(aa){
 	}
 }
 
-//ΥΠΟΓΡΑΦΗ ΕΓΓΡΑΦΟΥ
+//-----------------------------------------------------ΥΠΟΓΡΑΦΗ ΕΓΓΡΑΦΟΥ ΚΑΙ ΛΟΙΠΑ------------------------------------------------------------------------------
+
 export async function signDocument(aa, isLast=0, objection=0){
 	document.querySelector('#signBtn').setAttribute("disabled",true);
 	document.querySelector('#signSpinner').style.display = "inline-block";
@@ -745,7 +784,7 @@ export async function signDocument(aa, isLast=0, objection=0){
 			}
 		}
 		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
@@ -760,7 +799,9 @@ export async function signDocument(aa, isLast=0, objection=0){
 		if(providerName === "MINDIGITAL"){
 			document.querySelector("#otpText").value = "";
 		}
-		document.querySelector("#signModal").hide();
+		const myModalEl = document.querySelector("#signModal");
+		const modal = bootstrap.Modal.getInstance(myModalEl)
+		modal.hide();
 		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
 			createSearch();
@@ -770,8 +811,9 @@ export async function signDocument(aa, isLast=0, objection=0){
 
 
 export async function rejectDocument(aa){
-	document.querySelector('#rejectModal').modal('hide');
-	document.querySelector("#rejecting").fadeIn();
+	console.log("rejecting ..."+aa);
+	//return;
+	
 	const {jwt,role} = getFromLocalStorage();
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -779,6 +821,7 @@ export async function rejectDocument(aa){
 	const comment = document.getElementById('rejectText').value;
 	let formData = new FormData();
 	formData.append("aa",aa);
+	formData.append("role", role);
 	formData.append("comment", comment);
 
 	let init = {method: 'POST', headers : myHeaders, body : formData};
@@ -787,21 +830,75 @@ export async function rejectDocument(aa){
 		if (res.status ==  401){
 			const resRef = await refreshToken();
 			if (resRef ===1){
-				signDocument(aa);
+				rejectDocument(aa);
 			}
 			else{
 				alert("σφάλμα εξουσιοδότησης");
 			}
 		}
+		else if(res.status==400){
+			alert("σφάλμα κλήσης");
+		}
 		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
 		}
+		else{
+			alert("σφάλμα κλήσης");
+		}
 	}
 	else {
+		const myModalEl = document.querySelector("#rejectModal");
+		const modal = bootstrap.Modal.getInstance(myModalEl)
+		modal.hide();
+	}
+}
 
+export async function returnDocument(aa){
+	const {jwt,role} = getFromLocalStorage();
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+
+	const comment = document.getElementById('returnText').value;
+	let formData = new FormData();
+	formData.append("aa",aa);
+	formData.append("comment", comment);
+
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+	const res = await fetch("/api/returnDoc.php",init);
+	if (!res.ok){
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ===1){
+				returnDocument(aa);
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");
+			}
+		}
+		else if (res.status==400){
+			alert("σφάλμα αιτήματος");
+		}
+		else if (res.status==403){
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		else{
+			alert("γενικό σφάλμα");
+		}
+	}
+	else {
+		const myModalEl = document.querySelector("#returnModal");
+		const modal = bootstrap.Modal.getInstance(myModalEl);
+		modal.hide();
+		alert("Το έγγραφο έχει επιστραφεί! Μάλλον...");
+		const records = getSigRecords().then( res => {
+			createSearch();
+		}, rej => {});
 	}
 }
 
@@ -876,10 +973,19 @@ function selectSignProvider(providerName){
 
 function enableRejectButton(){
 	if(document.getElementById("rejectText").value != "") {
-		document.getElementById("rejectButton").disabled = false;
+		document.getElementById("rejectButton").removeAttribute("disabled");
 	}
 	else{
-		document.getElementById("rejectButton").disabled = true;
+		document.getElementById("rejectButton").setAttribute("disabled",true);
+	}
+}
+
+function enableReturnButton(){
+	if(document.getElementById("returnText").value != "") {
+		document.getElementById("returnButton").removeAttribute("disabled");
+	}
+	else{
+		document.getElementById("returnButton").setAttribute("disabled",true);
 	}
 }
 
@@ -1060,7 +1166,7 @@ async function connectToEmail(username,password){
 			}
 		}
 		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
@@ -1134,7 +1240,7 @@ async function connectToMindigital(username, password){
 			}
 		}
 		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
@@ -1206,7 +1312,7 @@ async function requestOTP(){
 			}
 		}
 		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
@@ -1267,6 +1373,63 @@ export function filterTable (tableName, searchObject){   	// searchObject exampl
 			}
 		}
 	}
+}
+
+export function createSearch(event) {
+	const loginData = JSON.parse(localStorage.getItem("loginData"));
+	const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
+	const department = loginData.user.roles[currentRole].department;
+	const user = loginData.user.user;
+
+	const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
+	const showEmployeesBtn = document.getElementById('showEmployeesBtn');
+	const tableSearchInput = document.getElementById('tableSearchInput');
+
+	let  filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
+
+	if (event !== undefined){
+		if(event.target.dataset.active == "0"){
+			event.target.classList.remove('btn-danger');
+			event.target.classList.add('btn-success');
+			event.target.dataset.active = "1";
+		}
+		else if(event.target.dataset.active == "1"){
+			event.target.classList.remove('btn-success');
+			event.target.classList.add('btn-danger');
+			event.target.dataset.active = "0";
+		}
+	}
+
+	if (showToSignOnlyBtn.dataset.active == 1){
+		filterObject.dataKeys.currentDep = null;
+	}
+	else{
+		filterObject.dataKeys.currentDep = department;
+	}
+	if (showEmployeesBtn.dataset.active == 1){
+		filterObject.dataKeys.author = user;
+	}
+	else{
+		filterObject.dataKeys.author = null;
+	}
+	if (tableSearchInput.value != ""){
+		filterObject.searchString = tableSearchInput.value;
+	}
+	else{
+		filterObject.searchString = null;
+	}
+	console.log(filterObject)
+	const debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
+	debouncedFilter();
+}
+
+var timer;
+
+function debounce(func, timeout = 500){
+	return (...args) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => { func.apply(this, args); }, timeout);
+	};
 }
 
 

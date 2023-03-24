@@ -228,7 +228,7 @@
 						echo '<br><br> SQL6    '.$sql6;
 						$rslt6= mysqli_query($con,$sql6) or die ("apotyxia erotimatas 1".mysql_error());
 						$sigResult = mysqli_fetch_array($rslt6, MYSQLI_BOTH);
-						include "createSendFile.php";
+						//include "createSendFile.php";
 						
 					 }
 					

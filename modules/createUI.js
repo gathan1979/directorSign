@@ -1,5 +1,5 @@
-import {uploadFile, uploadComponents,enableFileLoadButton} from "./uploadFiles.js";
-import {getSigRecords, filterTable}  from "./signatureRecords.js";
+import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./uploadFiles.js";
+import {getSigRecords, createSearch}  from "./signatureRecords.js";
 let loginData = null;
 
 export function createUIstartUp(){
@@ -69,7 +69,8 @@ export function createUIstartUp(){
 		const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
 		//document.querySelector("#userRoles").innerHTML = basicBtns;
 		document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
-		document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning" onclick="logout();" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button></div>';	
+		document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button></div>';
+		document.querySelector("#logoutBtn").addEventListener("click",logout);	
 	}
 
 	//create Roles UI	
@@ -92,7 +93,7 @@ export function createUIstartUp(){
 	//create Upload UI
 	document.querySelector("#uploadDiv").innerHTML = uploadComponents;
 	document.querySelector("#selectedFile").addEventListener("change",() => enableFileLoadButton());
-	document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFile());
+	document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
 
 	//Γέμισμα πίνακα με εγγραφές χρήστη
 	getRecordsAndFill();
@@ -131,71 +132,16 @@ function updateRolesUI(){
 function setRole(index){
 	localStorage.setItem("currentRole",index);									
 	updateRolesUI();
-	getRecordsAndFill()
+	getRecordsAndFill();
 }
 
 function getRecordsAndFill(){
 	const records = getSigRecords().then( res => {
-		createSearch();
+		//createSearch();
 	}, rej => {});		
-	
 }
 
-
-
-export function createSearch(event) {
-	const loginData = JSON.parse(localStorage.getItem("loginData"));
-	const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
-	const department = loginData.user.roles[currentRole].department;
-	const user = loginData.user.user;
-
-	const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
-	const showEmployeesBtn = document.getElementById('showEmployeesBtn');
-	const tableSearchInput = document.getElementById('tableSearchInput');
-
-	let  filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
-
-	if (event !== undefined){
-		if(event.target.dataset.active == "0"){
-			event.target.classList.remove('btn-danger');
-			event.target.classList.add('btn-success');
-			event.target.dataset.active = "1";
-		}
-		else if(event.target.dataset.active == "1"){
-			event.target.classList.remove('btn-success');
-			event.target.classList.add('btn-danger');
-			event.target.dataset.active = "0";
-		}
-	}
-
-	if (showToSignOnlyBtn.dataset.active == 1){
-		filterObject.dataKeys.currentDep = null;
-	}
-	else{
-		filterObject.dataKeys.currentDep = department;
-	}
-	if (showEmployeesBtn.dataset.active == 1){
-		filterObject.dataKeys.author = user;
-	}
-	else{
-		filterObject.dataKeys.author = null;
-	}
-	if (tableSearchInput.value != ""){
-		filterObject.searchString = tableSearchInput.value;
-	}
-	else{
-		filterObject.searchString = null;
-	}
-	console.log(filterObject)
-	const debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
-	debouncedFilter();
-}
-
-var timer;
-
-function debounce(func, timeout = 500){
-	return (...args) => {
-		clearTimeout(timer);
-		timer = setTimeout(() => { func.apply(this, args); }, timeout);
-	};
+function logout(){
+	localStorage.clear();
+	location.href = "/directorSign/"
 }

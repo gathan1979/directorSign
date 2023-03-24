@@ -1,7 +1,6 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
-import { getSigRecords } from "./signatureRecords.js";
-import { createSearch } from "./createUI.js";
+import { getSigRecords} from "./signatureRecords.js";
 
 export const uploadComponents = `<div class="col-md-12" style="padding-left:1em;">
 		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/><br>
@@ -128,7 +127,7 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 	
 	const res = await fetch(uploadURL,init); 
 	if (!res.ok){
-		if (res.status>=400 && res.status <= 401){
+		if (res.status == 401){
 			const resRef = await refreshToken();
 			if (resRef ===1){
 				uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadNo);
@@ -143,10 +142,13 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
 		}
+		else{
+			alert("Σφάλμα!!!");
+		}
 	}
 	else {
 		const records = getSigRecords().then( res => {
-			createSearch();
+			//createSearch();
 		}, rej => {});	
 	}
 }
