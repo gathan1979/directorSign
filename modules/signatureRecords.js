@@ -100,7 +100,8 @@ const rejectModalDiv =
 				  	<textarea id="rejectText" cols="100" rows="3" size="200" class="form-control" placeholder="το κείμενο είναι απαραίτητο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
 				</div>
 				<div class="modal-footer">
-			  		<button id="rejectButton" type="button" class="btn btn-danger" disabled>Απόρριψη</button>
+					<div class="otherContentFooter">
+			  		</div>
 					<button id="closeRejectModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 			 	</div>
 			</div>
@@ -119,7 +120,8 @@ const returnModalDiv =
 				  	<textarea id="returnText" cols="100" rows="3" size="200" class="form-control" placeholder="το κείμενο είναι απαραίτητο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
 				</div>
 			  	<div class="modal-footer">
-			  		<button id="returnButton" type="button" class="btn btn-warning" disabled>Επιστροφή</button>
+				  	<div class="otherContentFooter">
+				 	 </div>
 					<button id="closeReturnModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 			  	</div>
 			</div>
@@ -245,6 +247,8 @@ document.querySelector("#signModal").addEventListener("hide.bs.modal",(e)=> {
 })
 
 document.querySelector("#rejectModal").addEventListener("show.bs.modal",(e)=> {
+	const contentFooterDivContent = `<button id="rejectButton" type="button" class="btn btn-danger" disabled>Απόρριψη</button>`;
+	document.querySelector("#rejectModal .otherContentFooter").innerHTML = contentFooterDivContent;
 	const recordAA = e.relatedTarget.getAttribute('data-whatever');
 	const relevantBtn = document.querySelector("#rejectButton");
 	const relevantText = document.querySelector("#rejectText");
@@ -254,6 +258,8 @@ document.querySelector("#rejectModal").addEventListener("show.bs.modal",(e)=> {
 });
 
 document.querySelector("#returnModal").addEventListener("show.bs.modal",(e)=> {
+	const contentFooterDivContent = `<button id="returnButton" type="button" class="btn btn-warning" disabled>Επιστροφή</button>`;
+	document.querySelector("#returnModal .otherContentFooter").innerHTML = contentFooterDivContent;
 	const recordAA = e.relatedTarget.getAttribute('data-whatever');
 	const relevantBtn = document.querySelector("#returnButton");
 	const relevantText = document.querySelector("#returnText");
