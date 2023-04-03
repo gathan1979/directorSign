@@ -81,8 +81,8 @@ td .fa-paperclip{
 	font-size: 1.2em;
 }	
 
-td .fa-amilia{
-	color :red;
+td .fa-crosshairs{
+	color :rgb(235, 23, 23);
 	font-size: 1.2em;
 }
 
@@ -237,7 +237,8 @@ td .fa-amilia{
 .filenameDiv{
 	display : flex;	
 	flex-flow: row nowrap;
-	align-items : center;
+	align-items: center;
+	gap: 10px;
 }
 
 .recordButtons {
@@ -326,3 +327,10 @@ td .fa-amilia{
 	border-right : blue solid;
 }
 
+.isButton {
+	cursor : pointer;
+}
+
+.isGreen {
+	color : #198754;
+}

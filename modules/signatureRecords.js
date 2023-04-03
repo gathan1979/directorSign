@@ -377,13 +377,14 @@ export function fillTable(result){
 		row.dataset.author = result[key].fullName;
 		row.dataset.currentDep = result[key].currentDep;
 		row.dataset.isExactCopy = result[key].isExactCopy;
+		row.dataset.isReturned = result[key].isReturned;
 
 		let temp1=[];
 		let filenameBtn = "";
 
 		let relevantDocs = result[key].relevantDocs;
 		let relevantDocsArray = relevantDocs.split("*");
-		let relevantDocsElement = "&nbsp&nbsp&nbsp";
+		let relevantDocsElement = "";
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
 				relevantDocsElement +='<i id="rel_btn_'+result[key]['aa']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>&nbsp';
@@ -392,18 +393,18 @@ export function fillTable(result){
 
 		if (!result[key].isExactCopy){
 			if (result[key].preview_file_last==""){
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
+				filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_firstFile" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
 			}
 			else{
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
+				filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_firstFile" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'<i  id="btn_'+result[key]['aa']+'_lastFile" class="isButton fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i></div>';
 			}
 		}
 		else{
 			if (result[key].preview_file_last==""){
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
+				filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_firstFile" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
 			}
 			else{
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
+				filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_firstFile" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'<i  id="btn_'+result[key]['aa']+'_lastFile" class="isButton fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i></div>';
 			}
 		}
 
@@ -420,6 +421,9 @@ export function fillTable(result){
 				else{
 					recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-secondary btn-sm"><i class="fas fa-calendar-times"></i></button>';
 				}
+			}
+			if(result[key].isReturned){
+				recordStatus += '<i style="margin-left:3px;color : orange;" class="fas fa-undo"></i>';
 			}
 		}
 		else{
@@ -817,9 +821,8 @@ export async function signDocument(aa, isLast=0, objection=0){
 
 
 export async function rejectDocument(aa){
-	console.log("rejecting ..."+aa);
+	//console.log("rejecting ..."+aa);
 	//return;
-	
 	const {jwt,role} = getFromLocalStorage();
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -859,6 +862,10 @@ export async function rejectDocument(aa){
 		const myModalEl = document.querySelector("#rejectModal");
 		const modal = bootstrap.Modal.getInstance(myModalEl)
 		modal.hide();
+		alert("Το έγγραφο έχει διαγραφεί! Μάλλον...");
+		const records = getSigRecords().then( res => {
+			createSearch();
+		}, rej => {});
 	}
 }
 
@@ -870,6 +877,7 @@ export async function returnDocument(aa){
 	const comment = document.getElementById('returnText').value;
 	let formData = new FormData();
 	formData.append("aa",aa);
+	formData.append("role", role);
 	formData.append("comment", comment);
 
 	let init = {method: 'POST', headers : myHeaders, body : formData};
