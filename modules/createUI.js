@@ -39,7 +39,7 @@ export function createUIstartUp(){
 
 	</div>`
 
-	document.body.insertAdjacentHTML("beforebegin",basicUI);
+	document.body.insertAdjacentHTML("afterbegin",basicUI);
 
 	loginData = localStorage.getItem("loginData");
 	if (loginData === null){
@@ -95,18 +95,19 @@ export function createUIstartUp(){
 	document.querySelector("#selectedFile").addEventListener("change",() => enableFileLoadButton());
 	document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
 
-	//Γέμισμα πίνακα με εγγραφές χρήστη
-	getRecordsAndFill();
-
 	// Να δω τι γίνεται εδώ
 	if (+JSON.parse(localStorage.getItem("loginData")).user.roles[0].accessLevel){
 		//$('#example1').DataTable().columns(4).search("#sign#").draw();
 	}
 	else{
 		const tempUserElement= document.getElementById('showToSignOnlyBtn');
-		tempUserElement.classList.remove('btn-success');
-		tempUserElement.classList.add('btn-danger');
+		tempUserElement.classList.remove('btn-danger');
+		tempUserElement.classList.add('btn-success');
+		tempUserElement.dataset.active=1;
 	}
+
+	//Γέμισμα πίνακα με εγγραφές χρήστη
+	getRecordsAndFill();
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
 	document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
@@ -137,7 +138,7 @@ function setRole(index){
 
 function getRecordsAndFill(){
 	const records = getSigRecords().then( res => {
-		//createSearch();
+		createSearch();
 	}, rej => {});		
 }
 

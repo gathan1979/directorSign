@@ -36,9 +36,10 @@
 		const urlParams = new URLSearchParams(queryString);
 		const filename = urlParams.get('file');
 		const id = urlParams.get('id');
+		const insertDate = urlParams.get('insertDate');
 		
-		if (filename !==null && id !==null){
-			initCode();	
+		if (filename !==null && id !==null && insertDate !==null){
+			initCode(filename,id,insertDate);	
 			document.title = filename;
 		}
 		else{
@@ -49,9 +50,18 @@
 		// Opening PDF by passing its binary data as a string. It is still preferable
 		// to use Uint8Array, but string or array-like structure will work too.
 	 
-		async function initCode() {
-			console.log(canvas.width, canvas.height);
-			let fileData = await viewFileBase64(filename);
+		async function initCode(filename,id,insertDate) {
+			//let lastFile = await getLastRecordWithFilename(id);
+			let lastFile = filename;
+			//console.log(canvas.width, canvas.height);
+			//check if lastFile is pdf
+			const filenameAsArray = lastFile.split(".");
+			if (filenameAsArray.at(-1)!=="pdf" && filenameAsArray.at(-1) !=="PDF"){
+				filenameAsArray.pop();
+				lastFile = filenameAsArray.join("")+".pdf";
+			}
+			console.log(filename,insertDate);
+			let fileData = await viewFileBase64(lastFile, insertDate);
 			fileData = atob(JSON.parse(fileData));
 			const loadingTask = pdfjsLib.getDocument({ data: fileData });
 			pdf = await loadingTask.promise;
@@ -63,11 +73,42 @@
 			
 		};
 	  
-	  
-		async function viewFileBase64(filename){ 
-			//console.log(filename);
+		async function getLastRecordWithFilename(id){
 			const loginData = JSON.parse(localStorage.getItem("loginData"));
-			const urlpar = new URLSearchParams({filename : encodeURIComponent(filename)});
+			const urlpar = new URLSearchParams({id});
+			const jwt = loginData.jwt;
+			const myHeaders = new Headers();
+			myHeaders.append('Authorization', jwt);
+			let init = {method: 'GET', headers : myHeaders};
+			
+			const res = await fetch("/api/getLastRecordWithFilename.php?"+urlpar,init); 
+			if (!res.ok){
+				if (res.status ==  401){
+					const resRef = await refreshToken();
+					if (resRef ===1){
+						getLastRecordWithFilename(filename);
+					}
+					else{
+						alert("σφάλμα εξουσιοδότησης");	
+					}
+				}
+				else if (res.status==403){
+					window.open('unAuthorized.html', '_blank');
+				}
+				else if (res.status==404){
+					alert("το αρχείο δε βρέθηκε");
+				}
+			}
+			else {
+				const filename = await res.text();
+				return filename;
+			}
+		}
+	  
+		async function viewFileBase64(filename, insertDate=""){ 
+			//filename must be a pdf file
+			const loginData = JSON.parse(localStorage.getItem("loginData"));
+			const urlpar = new URLSearchParams({filename : encodeURIComponent(filename), folder : insertDate});
 			const jwt = loginData.jwt;
 			const myHeaders = new Headers();
 			myHeaders.append('Authorization', jwt);
@@ -78,7 +119,7 @@
 				if (res.status ==  401){
 					const resRef = await refreshToken();
 					if (resRef ===1){
-						viewFileBase64(filename);
+						viewFileBase64(filename, insertDate);
 					}
 					else{
 						alert("σφάλμα εξουσιοδότησης");	
@@ -274,7 +315,7 @@
 				}
 			}
 			else {
-				//window.close();
+				window.close();
 			}
 		}
 		

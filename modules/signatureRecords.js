@@ -297,6 +297,7 @@ export async function getUserData(){
 
 
 export async function getSigRecords(){
+	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	const {jwt,role} = getFromLocalStorage();
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -309,6 +310,7 @@ export async function getSigRecords(){
 
 	const res = await fetch("/api/getSigRecords.php?"+params,init);
 	if (!res.ok){
+		document.querySelector("#recordsSpinner").style.display = 'none';
 		if (res.status == 401){
 			const reqToken = await refreshToken();
 			if (reqToken ==1){
@@ -332,6 +334,7 @@ export async function getSigRecords(){
 	}
 	else{
 		//return res;
+		document.querySelector("#recordsSpinner").style.display = 'none';
 		fillTable(await res.json());
 		return "ok";
 	}
@@ -387,25 +390,15 @@ export function fillTable(result){
 		let relevantDocsElement = "";
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
-				relevantDocsElement +='<i id="rel_btn_'+result[key]['aa']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>&nbsp';
+				relevantDocsElement +='<i style="cursor : pointer;" id="rel_btn_'+result[key]['aa']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>';
 			}
 		}
-
+		// result[key].preview_file_last
 		if (!result[key].isExactCopy){
-			if (result[key].preview_file_last==""){
-				filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_firstFile" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
-			}
-			else{
-				filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_firstFile" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'<i  id="btn_'+result[key]['aa']+'_lastFile" class="isButton fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i></div>';
-			}
+			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
 		}
 		else{
-			if (result[key].preview_file_last==""){
-				filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_firstFile" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
-			}
-			else{
-				filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_firstFile" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'<i  id="btn_'+result[key]['aa']+'_lastFile" class="isButton fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i></div>';
-			}
+			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
 		}
 
 		temp1[0] = filenameBtn;
@@ -435,10 +428,20 @@ export function fillTable(result){
 		let historyBtn = "";
 		let rejectBtn = "";
 		let returnBtn = "";
-		if (result[key].currentDep == department && accessLevel==1){
-			signModalBtn = '<button id="showSignModalBtn" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
-			returnBtn = '<button id="showReturnModal" type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-arrow-down" data-toggle="tooltip" title="Επιστροφή Εγγράφου"></i>'+"</button>";
-		}
+		let reuploadFile = "";
+		if (result[key].currentDep == department){
+			if (accessLevel==1){
+				signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
+				returnBtn = '<button id="showReturnModal'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-arrow-down" data-toggle="tooltip" title="Επιστροφή Εγγράφου"></i>'+"</button>";
+			}
+			if (result[key].isReturned){
+				signModalBtn = "";
+				if (result[key].userId==loginData.user.roles[currentRole].aa_role){
+					reuploadFile = ' <input type="file" class="form-control form-control-sm" id="reuploadFileBtn'+result[key]['aa']+'">' ;
+				}
+			}
+		}	
+		
 
 		if (result[key].objection>0){
 			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i>'+"<span class='glyphicon glyphicon-flash' style='font-size: 20px;' aria-hidden='true' data-toggle='tooltip'></span></a>";
@@ -446,8 +449,8 @@ export function fillTable(result){
 		else{
 			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
 		}
-		rejectBtn = '<button id="showRejectModal" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
-		temp1[4] = 	'<div class="recordButtons">'+signModalBtn+returnBtn+historyBtn+rejectBtn+'</div>';
+		rejectBtn = '<button id="showRejectModal'+result[key]['aa']+'" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
+		temp1[4] = 	'<div class="recordButtons">'+reuploadFile+signModalBtn+returnBtn+historyBtn+rejectBtn+'</div>';
 
 		c1.innerHTML = temp1[0];
 		c2.innerHTML = temp1[1];
@@ -455,16 +458,15 @@ export function fillTable(result){
 		c4.innerHTML = temp1[3];
 		c5.innerHTML = temp1[4];
 
-		document.querySelector("#btn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename']));
+		document.querySelector("#btn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename'],result[key].date));
 		//document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=>viewFile(result[key]['filename']));
-		document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['filename']+"&id="+result[key].aa+"#zoom=page-fit"));
+		// result[key].preview_file_last  Τελευταίο αρχείο που υπάρχει στον πίνακα για αυτό το αα
+		//document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['filename']+"&insertDate="+result[key].date+"&id="+result[key].aa+"#zoom=page-fit"));
+		document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['preview_file_last']+"&insertDate="+result[key].date+"&id="+result[key].aa+"#zoom=page-fit"));
 
-		if (result[key].preview_file_last !==""){
-			document.querySelector("#btn_"+result[key]['aa']+"_lastFile").addEventListener("click",()=>viewFile(result[key]['preview_file_last']));
-		}
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
-				document.querySelector("#rel_btn_"+result[key]['aa']+"_"+l).addEventListener("click",()=>viewFile(relevantDocsArray[l]));
+				document.querySelector("#rel_btn_"+result[key]['aa']+"_"+l).addEventListener("click",()=>viewFile(relevantDocsArray[l],result[key].date));
 			}
 		}
 	}
@@ -472,10 +474,10 @@ export function fillTable(result){
 }
 
 
-async function viewFile(filename){
-	//console.log(filename);
+async function viewFile(filename, folder=""){
+	console.log(filename);
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
-	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename)});
+	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename), folder});
 	const jwt = loginData.jwt;
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -515,18 +517,28 @@ async function viewFile(filename){
 		const href = URL.createObjectURL(blob);
 		const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
 
-		let openFileAns = confirm("Ναι για απευθείας άνοιγμα, άκυρο για αποθήκευση");
-		if (inBrowser.includes(fileExtension) && openFileAns){
-			const pdfWin = window.open(href);
-			//pdfWin.document.title = decodeURI(filename);
-			setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
+		if (inBrowser.includes(fileExtension)){
+			let openFileAns = confirm("Ναι για απευθείας άνοιγμα, άκυρο για αποθήκευση");
+			if (openFileAns){
+				const pdfWin = window.open(href);
+				//pdfWin.document.title = decodeURI(filename);
+				setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
+			}
+			else{
+				const aElement = document.createElement('a');
+				aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
+				Object.assign(aElement, {
+				href,
+				download: decodeURI(filename)
+				}).click();
+			}
 		}
 		else{
 			const aElement = document.createElement('a');
 			aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
 			Object.assign(aElement, {
-			  href,
-			  download: decodeURI(filename)
+			href,
+			download: decodeURI(filename)
 			}).click();
 		}
 	}

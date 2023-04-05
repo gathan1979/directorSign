@@ -35,7 +35,9 @@
 		<table id="dataToSignTable" class="table">
 			<thead>
 			  <tr>
-				<th id="filename" class="text-right">Έγγραφο προς Υπογραφή</th>
+				<th id="filename" class="text-right">Έγγραφο προς Υπογραφή <div style="display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div></th>
 				<th id="date" class="text-right">Εισαγωγή</th>
 				<th id="author" class="text-right">Συντάκτης</th>
 				<th id="status" class="text-right">Κατάσταση</th>

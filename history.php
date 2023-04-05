@@ -426,7 +426,7 @@
 				?>
 				
 				
-				  <div id="exactCopySignature" style="border-radius : 1em; padding: 1em;background: rgba(54, 54, 54, 0.2);">
+				  <!--<div id="exactCopySignature" style="border-radius : 1em; padding: 1em;background: rgba(54, 54, 54, 0.2);">
 				  <br><h5><b>Επαναδημιουργία Ακριβούς Αντιγράφου</b></h5><hr>
 				  <br><b>Υπογραφή Αντιγράφου Από :</b>
 					<?php
@@ -442,7 +442,7 @@
 								echo '&nbsp<button class="btn btn-primary btn-sm" id="user'.$row1['attendanceNumber'].'" onclick="changeSignatureState(\'user'.$row1['attendanceNumber'].'\')" >'.$row1['fullName'].'</button>';													
 							}
 						}
-					?>
+					?>-->
 					
 			  <?php
 					echo '<br><br>';

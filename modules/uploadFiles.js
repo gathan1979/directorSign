@@ -1,6 +1,6 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
-import { getSigRecords} from "./signatureRecords.js";
+import { getSigRecords, createSearch} from "./signatureRecords.js";
 
 export const uploadComponents = `<div class="col-md-12" style="padding-left:1em;">
 		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/><br>
@@ -147,8 +147,9 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 		}
 	}
 	else {
+		alert("Το έγγραφο έχει αποσταλεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
-			//createSearch();
+			createSearch();
 		}, rej => {});	
 	}
 }
