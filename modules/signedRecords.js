@@ -1,6 +1,7 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
 import { createSearch } from "./createSignedUI.js";
+import { viewFile } from "./signatureRecords.js";
 
 const entityMap = {
 	'&': '&amp;',
@@ -171,6 +172,7 @@ export function fillTable(result){
 			document.querySelector("#reqExactCopyBtn_"+result[key]['revisionId']).addEventListener("click",(event)=>{
 				requestExactCopy(event).then((msg)=>{alert(msg)},(msg)=>{alert(msg)})
 			});
+			document.querySelector("#signedBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['lastFilename'],result[key].date));
 		}
 		document.querySelector("#btn_"+result[key]['revisionId']).addEventListener("click",()=>viewFile(result[key]['filename']));
 		//document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=>viewFile(result[key]['filename']));
@@ -231,65 +233,63 @@ async function requestExactCopy(event){
 }
 
 
-async function viewFile(filename){ 
-	//console.log(filename);
-	const loginData = JSON.parse(localStorage.getItem("loginData"));
-	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename)});
-	const jwt = loginData.jwt;
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'GET', headers : myHeaders};
+// async function viewFile(filename){ 
+// 	const loginData = JSON.parse(localStorage.getItem("loginData"));
+// 	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename)});
+// 	const jwt = loginData.jwt;
+// 	const myHeaders = new Headers();
+// 	myHeaders.append('Authorization', jwt);
+// 	let init = {method: 'GET', headers : myHeaders};
 	
-	const res = await fetch("/api/viewFile.php?"+urlpar,init); 
-	if (!res.ok){
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ===1){
-				viewFile(filename);
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");	
-			}
-		}
-		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-	}
-	else {
+// 	const res = await fetch("/api/viewFile.php?"+urlpar,init); 
+// 	if (!res.ok){
+// 		if (res.status ==  401){
+// 			const resRef = await refreshToken();
+// 			if (resRef ===1){
+// 				viewFile(filename);
+// 			}
+// 			else{
+// 				alert("σφάλμα εξουσιοδότησης");	
+// 			}
+// 		}
+// 		else if (res.status==403){
+// 			window.open('unAuthorized.html', '_blank');
+// 		}
+// 		else if (res.status==404){
+// 			alert("το αρχείο δε βρέθηκε");
+// 		}
+// 	}
+// 	else {
 
-		const dispHeader = res.headers.get('Content-Disposition');
-		if (dispHeader !== null){
-			const parts = dispHeader.split(';');
-			filename = parts[1].split('=')[1];
-			filename = filename.replaceAll('"',"");
-		}
-		else{
-			filename = "tempfile.tmp";
-		}
-		const fileExtension = filename.split('.').pop();
-		const blob = await res.blob();
-		const href = URL.createObjectURL(blob);
-		const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
+// 		const dispHeader = res.headers.get('Content-Disposition');
+// 		if (dispHeader !== null){
+// 			const parts = dispHeader.split(';');
+// 			filename = parts[1].split('=')[1];
+// 			filename = filename.replaceAll('"',"");
+// 		}
+// 		else{
+// 			filename = "tempfile.tmp";
+// 		}
+// 		const fileExtension = filename.split('.').pop();
+// 		const blob = await res.blob();
+// 		const href = URL.createObjectURL(blob);
+// 		const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
 		
-		let openFileAns = confirm("Ναι για απευθείας άνοιγμα, άκυρο για αποθήκευση");
-		if (inBrowser.includes(fileExtension) && openFileAns){
-			const pdfWin = window.open(href);
-			//pdfWin.document.title = decodeURI(filename);
-			setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
-		}
-		else{
-			const aElement = document.createElement('a');
-			aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
-			Object.assign(aElement, {
-			  href,
-			  download: decodeURI(filename)
-			}).click();
-		}
-	}
-}
+// 		let openFileAns = confirm("Ναι για απευθείας άνοιγμα, άκυρο για αποθήκευση");
+// 		if (inBrowser.includes(fileExtension) && openFileAns){
+// 			const pdfWin = window.open(href);
+// 			setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
+// 		}
+// 		else{
+// 			const aElement = document.createElement('a');
+// 			aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
+// 			Object.assign(aElement, {
+// 			  href,
+// 			  download: decodeURI(filename)
+// 			}).click();
+// 		}
+// 	}
+// }
 
 export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}  
 															// diff = 0 είναι για υπογραφή στο τμήμα

@@ -1,5 +1,6 @@
 import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
+import {uploadFileTest} from "./uploadFiles.js";
 
 const entityMap = {
 	'&': '&amp;',
@@ -429,15 +430,26 @@ export function fillTable(result){
 		let rejectBtn = "";
 		let returnBtn = "";
 		let reuploadFile = "";
-		if (result[key].currentDep == department){
+		if (result[key].currentDep == department){  // το τρέχον τμήμα του εγγράφου είναι ίδιο με το τμήμα του χρήστη
 			if (accessLevel==1){
 				signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
 				returnBtn = '<button id="showReturnModal'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-arrow-down" data-toggle="tooltip" title="Επιστροφή Εγγράφου"></i>'+"</button>";
 			}
-			if (result[key].isReturned){
-				signModalBtn = "";
-				if (result[key].userId==loginData.user.roles[currentRole].aa_role){
-					reuploadFile = ' <input type="file" class="form-control form-control-sm" id="reuploadFileBtn'+result[key]['aa']+'">' ;
+			if (result[key].isReturned){   // πρόκειται για επιστροφή
+				if(result[key].dep == department){  // το αρχικό τμήμα του εγγράφου είναι ίδιο με το τμήμα του χρήστη (το έγγραφο επέστρεψε στο τμήμα του)
+					const currentRoleAA = loginData.user.roles[currentRole].aa_role;
+					if((result[key].lastUser != result[key].userId ) || (result[key].lastFileRecord === "")){ // ο τελευταίος χρήστης δεν είναι αυτός που το ανέβασε, οπότε δεν πάει για υπογραφή	
+						signModalBtn = "";	
+						if(result[key].userId == currentRoleAA){	// ο χρήστης είναι αυτός που το ανέβασε αρχικά και δεν είναι ο τελευταίος που το επεξεργάστηκε
+							reuploadFile = ' <input type="file" class="form-control form-control-sm" id="reuploadFileBtn'+result[key]['aa']+'">' ;
+						}
+					}
+					else{
+						
+					}
+				}
+				else{
+					signModalBtn = "";
 				}
 			}
 		}	
@@ -458,10 +470,11 @@ export function fillTable(result){
 		c4.innerHTML = temp1[3];
 		c5.innerHTML = temp1[4];
 
+		if(reuploadFile!==""){
+			document.querySelector("#reuploadFileBtn"+result[key]['aa']).addEventListener("change",()=>uploadFileTest(undefined,result[key]['aa']));
+		}
 		document.querySelector("#btn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename'],result[key].date));
-		//document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=>viewFile(result[key]['filename']));
 		// result[key].preview_file_last  Τελευταίο αρχείο που υπάρχει στον πίνακα για αυτό το αα
-		//document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['filename']+"&insertDate="+result[key].date+"&id="+result[key].aa+"#zoom=page-fit"));
 		document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['preview_file_last']+"&insertDate="+result[key].date+"&id="+result[key].aa+"#zoom=page-fit"));
 
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
@@ -474,7 +487,7 @@ export function fillTable(result){
 }
 
 
-async function viewFile(filename, folder=""){
+export async function viewFile(filename, folder=""){
 	console.log(filename);
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename), folder});
@@ -580,8 +593,8 @@ export async function signExactCopy(aa){
 		return;
 	}
 
-	//Έλεγχος αν οι παράμετροι που πρέπει να είναι στη μνήμη υπάρχουν και φόρτωσή τους
-	//Έλεγχος αν οι παράμετροι όλες έχουν τιμές, όπως πρέπει
+		//Έλεγχος αν οι παράμετροι που πρέπει να είναι στη μνήμη υπάρχουν και φόρτωσή τους
+		//Έλεγχος αν οι παράμετροι όλες έχουν τιμές, όπως πρέπει
 	const keys = Object.keys(params);
 
 	let errorMsgs = keys.reduce((prev,key, index) =>
@@ -607,7 +620,7 @@ export async function signExactCopy(aa){
 		document.querySelector('#signSpinner').style.display = "none";
 		return;
 	}
-	//-----------------------------------------------------------------------------------------------------------------------------------
+		//----------------------------------------------------------------------------------------------------
 
 	const {jwt,role} = getFromLocalStorage();
 	const myHeaders = new Headers();

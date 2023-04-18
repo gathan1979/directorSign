@@ -2,20 +2,13 @@ import refreshToken from "./refreshToken.js"
 import getFromLocalStorage from "./localStorage.js"
 import { getSigRecords, createSearch} from "./signatureRecords.js";
 
-export const uploadComponents = `<div class="col-md-12" style="padding-left:1em;">
-		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/><br>
-		</div>
-		<div class="col-md-12" id="viewSelectedFiles"></div>
-		<div class="form-group" style="padding:1em;">
-			<label for="authorComment">Σχόλια: </label>
-			<textarea class="form-control" type="text" name="authorComment" id="authorComment" rows="3" cols="100" placeholder="Προαιρετικό κείμενο"></textarea>
-			
-			<input type="button" disabled style="margin-top : 5px;" class="btn btn-primary ektos" id="uploadFileButton"  value="Μεταφόρτωση Αρχείου"/>
-
-			
+export const uploadComponents = `<div class="col-md-12 d-flex flex-column p-2" >
+		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/>
+		<div class="col-md-12 d-flex flex-row mt-1" id="viewSelectedFiles"></div>
+		<div class="d-flex flex-row bd-highlight mt-3 mb-3 gap-5">
+			<textarea class="form-control" type="text" name="authorComment" id="authorComment" rows="2" cols="50" placeholder="Προαιρετικό κείμενο"></textarea>
+			<button disabled style="margin-top : 5px;" class="btn btn-primary" id="uploadFileButton"><i class="fas fa-upload"></i></button>
 		</div>`;
-		
-
 
 export function uploadFile(){                                               //θα αντικατασταθεί από το παρακάτω ΤΕΣΤ
 	var files = document.getElementById('selectedFile').files;
@@ -82,42 +75,37 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 	const {jwt,role} = getFromLocalStorage();	
 	
 	const files = document.getElementById('selectedFile').files;
-	const numFiles = files.length;
+	let numFiles = files.length;
 	let data = new FormData();
 	let numFilesToSign=0;
 
-	for (let i = 0; i < numFiles; i++) {
-		data.append('selectedFile'+i, document.getElementById('selectedFile').files[i]);
-		const element = document.getElementById('filebutton_'+i);
-		if (element.classList.contains('btn-success')){
-			data.append('tobeSigned',i);
-			numFilesToSign+=1;
-		}
-	}
-	if (numFilesToSign>1){
-			alert("Έχετε επιλέξει περισσότερα από ένα έγγραφα προς υπογραφή");
-			return;
-	}
-	else if (numFilesToSign==0){
-			alert("Παρακαλώ επιλέξτε το αρχείο που θα υπογράψετε ψηφιακά");
-			return;
-	}
 	if (reloadNo){			// είναι επαναφόρτωση αρχείου για διόρθωση				
-		const radios = document.getElementsByName('optradio');
-		if (radios !== null){
-			for (let i = 0, length = radios.length; i < length; i++)
-			{
-				if (radios[i].checked)
-				{
-					data.append('action',radios[i].value);
-					break;
-				}
+		data.append('aa', reloadNo);
+		numFiles = 1;
+		data.append('authorComment', "επαναφόρτωση αρχείου από συντάκτη");
+		data.append('selectedFile0', document.getElementById('reuploadFileBtn'+reloadNo).files[0]);
+		data.append('tobeSigned',0);
+	}
+	else{
+		for (let i = 0; i < numFiles; i++) {
+			data.append('selectedFile'+i, document.getElementById('selectedFile').files[i]);
+			const element = document.getElementById('filebutton_'+i);
+			if (element.classList.contains('btn-success')){
+				data.append('tobeSigned',i);
+				numFilesToSign+=1;
 			}
 		}
-		data.append('aa', reloadNo);
+		if (numFilesToSign>1){
+				alert("Έχετε επιλέξει περισσότερα από ένα έγγραφα προς υπογραφή");
+				return;
+		}
+		else if (numFilesToSign==0){
+				alert("Παρακαλώ επιλέξτε το αρχείο που θα υπογράψετε ψηφιακά");
+				return;
+		}
+		data.append('authorComment', document.getElementById('authorComment').value);
 	}
 	
-	data.append('authorComment', document.getElementById('authorComment').value);
 	data.append('numFiles',numFiles);
 	data.append('role',role);
 		
@@ -225,11 +213,11 @@ export function uploadfileAdv(){
 }
 
 export function enableFileLoadButton(){
+	const well = document.getElementById("viewSelectedFiles");
 	if(document.getElementById("selectedFile").value != "") {
 		document.getElementById("uploadFileButton").removeAttribute("disabled");
 		const files = document.getElementById('selectedFile').files;
 		const numFiles = files.length;
-		const well = document.getElementById("viewSelectedFiles");
 		document.querySelector("#viewSelectedFiles").innerHTML= "";
 		for (let i = 0; i < numFiles; i++) {
 			  let element = document.createElement("BUTTON");
@@ -250,6 +238,7 @@ export function enableFileLoadButton(){
 	}
 	else{
 		document.getElementById("uploadFileButton").disabled = true;
+		well.innerHTML = "";
 	}
 }	
 
