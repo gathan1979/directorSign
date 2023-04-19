@@ -488,7 +488,10 @@ export function fillTable(result){
 
 
 export async function viewFile(filename, folder=""){
-	console.log(filename);
+	if(filename === ""){
+		alert("Δεν υπάρχει σχετικό αρχείο");
+		return;
+	}
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename), folder});
 	const jwt = loginData.jwt;
@@ -501,7 +504,7 @@ export async function viewFile(filename, folder=""){
 		if (res.status ==  401){
 			const resRef = await refreshToken();
 			if (resRef ===1){
-				viewFile(filename);
+				viewFile(filename, folder);
 			}
 			else{
 				alert("σφάλμα εξουσιοδότησης");
@@ -691,7 +694,13 @@ export async function signExactCopy(aa){
 	else {
 		document.querySelector('#signExactCopyBtn').removeAttribute("disabled");
 		document.querySelector('#signSpinner').style.display = "none";
-		document.querySelector("#otpText").value = "";
+
+		if(providerName === "MINDIGITAL"){
+			document.querySelector("#otpText").value = "";
+		}
+		const myModalEl = document.querySelector("#signModal");
+		const modal = bootstrap.Modal.getInstance(myModalEl)
+		modal.hide();
 		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
 			createSearch();

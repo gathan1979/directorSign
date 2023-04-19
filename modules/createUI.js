@@ -5,8 +5,8 @@ let loginData = null;
 export function createUIstartUp(){
 
 	const basicUI = `<div id="myNavBar">
-		<div  id="prosIpografi" ><a class="active" href="directorSign.php">Προς Υπογραφή</a></div>
-		<div  id="ipogegrammena" ><a href="signed.php">Διεκπεραιωμένα</a></div>
+		<div  id="prosIpografi" ><a class="active" href="headmaster1_test.php">Προς Υπογραφή</a></div>
+		<div  id="ipogegrammena" ><a href="signed_test.php">Διεκπεραιωμένα</a></div>
 			
 		<div ><a target="_blank" rel="opener" href="../nocc-1.9.8/protocol/editTable1.php?tn=book"><span id="protocolAppText"></span></a></div>	
 		<div ><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
@@ -43,6 +43,7 @@ export function createUIstartUp(){
 
 	loginData = localStorage.getItem("loginData");
 	if (loginData === null){
+		window.location.href = "index.php";
 		alert("Δεν υπάρχουν στοιχεία χρήστη");
 	}
 	else{
@@ -144,5 +145,5 @@ function getRecordsAndFill(){
 
 function logout(){
 	localStorage.clear();
-	location.href = "/directorSign/"
+	location.href = "logout.php"
 }

@@ -113,25 +113,15 @@ export function fillTable(result){
 		let relevantDocsElement = "&nbsp&nbsp&nbsp";
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
-				relevantDocsElement +='<i id="rel_btn_'+result[key]['revisionId']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>&nbsp';		
+				relevantDocsElement +='<i id="rel_btn_'+result[key]['revisionId']+'_'+l+'" class="isButton fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>&nbsp';		
 			}
 		}						
 		
 		if (!rejected){
-			if (result[key].preview_file_last==""){
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-success btn-sm" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
-			}
-			else{
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-success btn-sm" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
-			}
+			filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-success btn-sm" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton  fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
 		}
 		else{
-			if (result[key].preview_file_last==""){
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-danger btn-sm" >'+result[key]['filename']+'</button>&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";
-			}
-			else{
-				filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-danger btn-sm" >'+result[key]['filename']+'</button>&nbsp<i  id="btn_'+result[key]['aa']+'_lastFile" class="fas fa-search-plus" title="Προεπισκόπηση τελευταίας τροποποίησης"></i>&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp<i id="btn_'+result[key]['aa']+'_firstFile" class="fab fa-amilia fa-1x" title="Προεπισκόπηση αρχικής ανάρτησης" ></i>'+relevantDocsElement+"</div>";;
-			}
+			filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-danger btn-sm" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton  fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
 		}
 		
 		temp1[0] = filenameBtn;
@@ -139,10 +129,10 @@ export function fillTable(result){
 		temp1[2] = result[key].fullName;
 		
 		let recordStatus = '<button id="signedBtn_'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-download" data-toggle="tooltip" title="Υπογεγραμμένο για αρχειοθέτηση" data-whatever="'+result[key].aa+'"></i>'+"</button>";
-
+		let exactCopyBtn = '<button id="excopyBtn_'+result[key]['aa']+'" type="button" class="btn btn-success btn-sm" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-paper-plane" data-toggle="tooltip" title="Υπογεγραμμένο για αποστολή" data-whatever="'+result[key].aa+'"></i>'+"</button>";
 
 		if (!rejected){
-			temp1[3] =  recordStatus;
+			temp1[3] =  '<div class="filenameDiv">'+recordStatus+exactCopyBtn+'</div>';
 		}
 		else{
 			temp1[3] ="";
@@ -173,17 +163,14 @@ export function fillTable(result){
 				requestExactCopy(event).then((msg)=>{alert(msg)},(msg)=>{alert(msg)})
 			});
 			document.querySelector("#signedBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['lastFilename'],result[key].date));
+			document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['exactCopyFilename'],result[key].date));
 		}
-		document.querySelector("#btn_"+result[key]['revisionId']).addEventListener("click",()=>viewFile(result[key]['filename']));
-		//document.querySelector("#btn_"+result[key]['aa']+"_firstFile").addEventListener("click",()=>viewFile(result[key]['filename']));
-		//document.querySelector("#btn_"+result[key]['revisionId']+"_firstFile").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['filename']+"&id="+result[key].aa+"#zoom=page-fit"));
+		document.querySelector("#btn_"+result[key]['revisionId']).addEventListener("click",()=>viewFile(result[key]['filename'],result[key].date));
+		document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['lastFilename']+"&insertDate="+result[key].date+"&id="+result[key].revisionId+"#zoom=page-fit"));
 
-		if (result[key].preview_file_last !==""){
-			//document.querySelector("#btn_"+result[key]['revisionId']+"_lastFile").addEventListener("click",()=>viewFile(result[key]['preview_file_last']));
-		}
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
-				//document.querySelector("#rel_btn_"+result[key]['revisionId']+"_"+l).addEventListener("click",()=>viewFile(relevantDocsArray[l]));
+				document.querySelector("#rel_btn_"+result[key]['revisionId']+"_"+l).addEventListener("click",()=>viewFile(relevantDocsArray[l],result[key].date));
 			}
 		}						
 	}

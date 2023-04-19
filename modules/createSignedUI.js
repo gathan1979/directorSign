@@ -1,8 +1,8 @@
 import {getSignedRecords, filterTable}  from "./signedRecords.js";
 			
 const basicUI = `<div id="myNavBar">
-	<div  id="prosIpografi" ><a href="directorSign.php">Προς Υπογραφή</a></div>
-	<div  id="ipogegrammena" ><a class="active"  href="signed.php">Διεκπεραιωμένα</a></div>
+	<div  id="prosIpografi" ><a href="headmaster1_test.php">Προς Υπογραφή</a></div>
+	<div  id="ipogegrammena" ><a class="active"  href="signed_test.php">Διεκπεραιωμένα</a></div>
 		
 	<div ><a target="_blank" rel="opener" href="../nocc-1.9.8/protocol/editTable1.php?tn=book"><span id="protocolAppText"></span></a></div>	
 	<div ><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
@@ -58,7 +58,8 @@ else{
 	const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
 	//document.querySelector("#userRoles").innerHTML = basicBtns;
 	document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
-	document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning" onclick="logout();" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button></div>';	
+	document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning"  id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button></div>';
+	document.querySelector("#logoutBtn").addEventListener("click",logout);		
 }
 
 //create Roles UI	
@@ -181,4 +182,10 @@ function debounce(func, timeout = 500){
 		clearTimeout(timer);
 		timer = setTimeout(() => { func.apply(this, args); }, timeout);
 	};
+}
+
+
+function logout(){
+	localStorage.clear();
+	location.href = "logout.php"
 }

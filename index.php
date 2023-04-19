@@ -186,7 +186,7 @@
 						else{
 							alert("Σφάλμα στην αυθεντικοποίηση");
 						}
-						location.href= "headmaster1.php";
+						location.href= "headmaster1_test.php";
 						localStorage.removeItem('filter');
 					}
 					else{
