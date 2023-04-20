@@ -1,3 +1,4 @@
+import { createUIstartUp } from "./createUI.js";
 import {getSignedRecords, filterTable}  from "./signedRecords.js";
 			
 const basicUI = `<div id="myNavBar">
@@ -5,11 +6,11 @@ const basicUI = `<div id="myNavBar">
 	<div  id="ipogegrammena" ><a class="active"  href="signed_test.php">Διεκπεραιωμένα</a></div>
 		
 	<div ><a target="_blank" rel="opener" href="../nocc-1.9.8/protocol/editTable1.php?tn=book"><span id="protocolAppText"></span></a></div>	
-	<div ><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
+	<div id="protocolBookBtn"><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
 
-	<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>-->
+	<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>
 
-	<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>
+	<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>-->
 
 	<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
 </div><!-- /.container-fluid -->
@@ -28,7 +29,7 @@ const basicUI = `<div id="myNavBar">
 	
 </div>`
 
-document.body.insertAdjacentHTML("beforebegin",basicUI);
+document.body.insertAdjacentHTML("afterbegin",basicUI);
 
 let loginData = localStorage.getItem("loginData");
 if (loginData === null){
@@ -52,8 +53,8 @@ else{
 
 	//Πρόσβαση στο Παρουσιολόγιο
 	if (+loginData.user.roles[cRole].privilege){
-		const adeiesBtn = '<div><a class="nav-link" target="_blank" href="/adeies/index.php">Άδειες</a></div>';
-		document.querySelector("#myNavBar").innerHTML += adeiesBtn;
+		const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
+		document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
 	}
 	const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
 	//document.querySelector("#userRoles").innerHTML = basicBtns;

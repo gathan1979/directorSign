@@ -814,7 +814,7 @@ export async function signDocument(aa, isLast=0, objection=0){
 		document.querySelector('#signBtn').removeAttribute("disabled");
 		const resdec = res.json();
 		if (res.status ==  401){
-			if (resdec === "mindigital"){
+			if (resdec == "mindigital"){
 				alert("Αποσυνδεθείτε και επανασυνδεθείτε στο σύστημα υπογραφών Mindigital");
 			}
 			else{

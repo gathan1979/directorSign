@@ -1,25 +1,24 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./uploadFiles.js";
 import {getSigRecords, createSearch}  from "./signatureRecords.js";
+
 let loginData = null;
+const adeiesBtn = '<div id="leaveBtn"><a target="_blank" href="/adeies/startPage.php">Άδειες</a></div>';
 
 export function createUIstartUp(){
 
-	const basicUI = `<div id="myNavBar">
+	const navBarDiv = `<div id="myNavBar">
 		<div  id="prosIpografi" ><a class="active" href="headmaster1_test.php">Προς Υπογραφή</a></div>
 		<div  id="ipogegrammena" ><a href="signed_test.php">Διεκπεραιωμένα</a></div>
 			
 		<div ><a target="_blank" rel="opener" href="../nocc-1.9.8/protocol/editTable1.php?tn=book"><span id="protocolAppText"></span></a></div>	
-		<div ><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
-
+		<div id="protocolBookBtn"><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
 		<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>-->
-
-		<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>
-
+		<!--<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>-->
 		<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
-	</div><!-- /.container-fluid -->
+	</div><!-- /.container-fluid -->`;
 
 
-	<div id="headmasterExtraMenuDiv">
+	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
 		<div class="flexVertical">
 			<button class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadDiv"><i class="far fa-plus-square"></i></button>
 		</div>
@@ -32,14 +31,20 @@ export function createUIstartUp(){
 			<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
 		</div>
 		
-	</div>
+	</div>`;
 
-	<div id="uploadDiv" class="collapse">
-		
+	const uploadDiv = `<div id="uploadDiv" class="collapse">	
+	</div>`;
 
-	</div>`
+	if (document.querySelector("#myNavBar")!==null){
+		document.querySelector("#myNavBar").remove();
+		document.querySelector("#headmasterExtraMenuDiv").remove();
+		document.querySelector("#uploadDiv").remove();
+	}
 
-	document.body.insertAdjacentHTML("afterbegin",basicUI);
+	document.body.insertAdjacentHTML("afterbegin",uploadDiv);
+	document.body.insertAdjacentHTML("afterbegin",extraMenuDiv);
+	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
 
 	loginData = localStorage.getItem("loginData");
 	if (loginData === null){
@@ -64,8 +69,7 @@ export function createUIstartUp(){
 
 		//Πρόσβαση στο Παρουσιολόγιο
 		if (+loginData.user.roles[cRole].privilege){
-			const adeiesBtn = '<div><a class="nav-link" target="_blank" href="/adeies/index.php">Άδειες</a></div>';
-			document.querySelector("#myNavBar").innerHTML += adeiesBtn;
+			document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
 		}
 		const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
 		//document.querySelector("#userRoles").innerHTML = basicBtns;
@@ -135,6 +139,32 @@ function setRole(index){
 	localStorage.setItem("currentRole",index);									
 	updateRolesUI();
 	getRecordsAndFill();
+	if (loginData === null){
+		window.location.href = "index.php";
+		alert("Δεν υπάρχουν στοιχεία χρήστη");
+	}
+	else{
+		//Πρόσβαση στο Πρωτόκολλο λεκτικό
+		let cRole = localStorage.getItem("currentRole");
+		if (cRole !== null){
+			if (+loginData.user.roles[cRole].protocolAccessLevel){
+				document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
+			}
+			else{
+				document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
+			}
+			if (+loginData.user.roles[cRole].privilege){
+				document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
+			}
+			else{
+				if(document.querySelector("#leaveBtn") !==null){
+					document.querySelector("#leaveBtn").remove();
+				}
+			}
+		}
+	}	
+	
+	//createUIstartUp();
 }
 
 function getRecordsAndFill(){
@@ -145,5 +175,5 @@ function getRecordsAndFill(){
 
 function logout(){
 	localStorage.clear();
-	location.href = "logout.php"
+	location.href = "logout.php";
 }
