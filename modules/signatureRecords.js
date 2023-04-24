@@ -130,10 +130,31 @@ const returnModalDiv =
 		</div>
 	</div>`;
 
+const historyModalDiv =
+	`<div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="historyModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document" style="max-width : 80%">
+			<div class="modal-content">
+				<div class="modal-header"> 
+					<b>Ιστορικό Εγγράφου</b>
+				</div>
+			 	<div class="modal-body" id="historyBody">
+
+				</div>
+			  	<div class="modal-footer">
+				  	<div class="otherContentFooter">
+				 	 </div>
+					<button id="closeHistoryModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			  	</div>
+			</div>
+		  </div>
+		</div>
+	</div>`;
+
 
 document.body.insertAdjacentHTML("beforeend",signModalDiv);
 document.body.insertAdjacentHTML("beforeend",rejectModalDiv);
 document.body.insertAdjacentHTML("beforeend",returnModalDiv);
+document.body.insertAdjacentHTML("beforeend",historyModalDiv);
 
 const loginData = JSON.parse(localStorage.getItem("loginData"));
 const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
@@ -269,6 +290,11 @@ document.querySelector("#returnModal").addEventListener("show.bs.modal",(e)=> {
 	relevantBtn.addEventListener("click",() => returnDocument(+recordAA));
 });
 
+document.querySelector("#historyModal").addEventListener("show.bs.modal",(e)=> {
+	const recordAA = e.relatedTarget.getAttribute('data-whatever');
+	getRecordHistory(recordAA);
+});
+
 //------------------------------------------------------ΑΠΟ ΕΔΩ ΚΑΙ ΚΑΤΩ ΜΕΘΟΔΟΙ ---------------------------------------------------------------------------------
 
 export async function getUserData(){
@@ -293,6 +319,52 @@ export async function getUserData(){
 	}
 	else{
 		return res.json();
+	}
+}
+
+async function getRecordHistory(aa){
+	console.log("retrieving history ...");
+	//document.querySelector("#recordsSpinner").style.display = 'inline-block';
+	const {jwt,role} = getFromLocalStorage();
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let init = {method: 'GET', headers : myHeaders};
+	//console.log(init);
+
+	const params = new URLSearchParams({
+		role: role,
+		aa
+	});
+
+	const res = await fetch("/api/getRecordHistory.php?"+params,init);
+	if (!res.ok){
+		document.querySelector("#recordsSpinner").style.display = 'none';
+		if (res.status == 401){
+			const reqToken = await refreshToken();
+			if (reqToken ==1){
+				getRecordHistory(aa);
+				const error = new Error("token expired")
+				error.code = "400"
+				throw error;
+			}
+			else{
+				alert('σφάλμα εξουσιοδότησης');
+				const error = new Error("token invalid")
+				error.code = "400"
+				throw error;
+			}
+		}
+		else{
+			const error = new Error("unauthorized")
+			error.code = "400"
+			throw error;
+		}
+	}
+	else{
+		//return res;
+		document.querySelector("#recordsSpinner").style.display = 'none';
+		fillHistoryModal(await res.json());
+		return "ok";
 	}
 }
 
@@ -338,6 +410,22 @@ export async function getSigRecords(){
 		document.querySelector("#recordsSpinner").style.display = 'none';
 		fillTable(await res.json());
 		return "ok";
+	}
+}
+
+function fillHistoryModal(result){
+	//console.log("filling history");
+	document.querySelector("#historyBody").innerHTML ="";
+	let insertDate = result[0]['date'];
+	for (let key=0;key<result.length;key++) {
+		const tmpElement = "<div class='flexHorizontal'>"+ '<div style="width:30%;" class="filenameDiv"><button  id="historyRecord_'+result[key]['aa']+'" class="btn btn-success" >'+
+										result[key]['filename']+'</button>'+"</div><div style='width:30%;text-align:center;'>"+
+										result[key]['fullname']+"</div><div style='width:20%;text-align:center;'>"+
+										result[key]['comments']+"</div><div style='width:20%;text-align:center;'>"+result[key]['date']+"</div></div>";
+		document.querySelector("#historyBody").innerHTML += tmpElement;
+	}
+	for (let key=0;key<result.length;key++) {
+		document.querySelector("#historyRecord_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename'],insertDate));
 	}
 }
 
@@ -456,10 +544,11 @@ export function fillTable(result){
 		
 
 		if (result[key].objection>0){
-			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i>'+"<span class='glyphicon glyphicon-flash' style='font-size: 20px;' aria-hidden='true' data-toggle='tooltip'></span></a>";
+			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history_test.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i>'+"<span class='glyphicon glyphicon-flash' style='font-size: 20px;' aria-hidden='true' data-toggle='tooltip'></span></a>";
 		}
 		else{
-			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
+			//historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history_test.php?aa="+result[key].aa+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
+			historyBtn = '<button  class="btn btn-primary btn-sm" type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#historyModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
 		}
 		rejectBtn = '<button id="showRejectModal'+result[key]['aa']+'" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
 		temp1[4] = 	'<div class="recordButtons">'+reuploadFile+signModalBtn+returnBtn+historyBtn+rejectBtn+'</div>';
