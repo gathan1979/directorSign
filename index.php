@@ -26,12 +26,12 @@
 		<!--<script defer src="js/fontawesome-all.js"></script>-->
 		
 		<script src="js/jquery-ui.min.js"></script>
-		<!-- The stylesheet should go in the <head>, or be included in your CSS -->
+		<!-- The stylesheet should go in the <head>, or be included in your CSS 
 		<link rel="stylesheet" href="tetris/blockrain.css">
 
-		<!-- jQuery and Blockrain.js
-		<script src="tetris/jquery.js"></script> -->
-		<script src="tetris/blockrain.jquery.min.js"></script>
+		jQuery and Blockrain.js
+		<script src="tetris/jquery.js"></script>
+		<script src="tetris/blockrain.jquery.min.js"></script>-->
 	
 	
 		<?php		
@@ -43,14 +43,14 @@
 			//$queryString = "?multiuser=".$multiuser;
 			if (isset($_SESSION['user'])){
 				if ($_SESSION['accessLevel']=="0") {
-					header('Location: headmaster1.php'.$queryString);
+					header('Location: headmaster1_test.php'.$queryString);
 				}
 				else if ($_SESSION['accessLevel']=="1"){
 					if ($_SESSION['department']=='0'||$_SESSION['department']=='1'||$_SESSION['department']=='3'||$_SESSION['department']=='4'){
-						header('Location: headmaster1.php'.$queryString);
+						header('Location: headmaster1_test.php'.$queryString);
 					}
 					else{
-						header('Location: headmaster1.php'.$queryString);
+						header('Location: headmaster1_test.php'.$queryString);
 					}
 				}
 				else{
@@ -77,9 +77,9 @@
 		
 				var capsLockEnabled = null;
 		
-				$( document ).ready(function(){
-					$('.game').blockrain();
-				});
+				//$( document ).ready(function(){
+					//$('.game').blockrain();
+				//});
 
 				// function setUsername(){
 					// var d = document.getElementById("fullname");
@@ -174,9 +174,9 @@
 					formData.append('pass',document.getElementById("pass").value);
 					let init = {method: 'POST', body: formData};
 					//console.log(init);
-					const res = await fetch("login1.php",init); 
+					const res = await fetch("/api/login1.php",init); 
 					if (res.status >= 200 && res.status <= 299) {
-						const res2 = await fetch("login2JWT.php",init); 
+						const res2 = await fetch("/api/login2JWT.php",init); 
 						if (res2.status >= 200 && res2.status <= 299) {
 							const loginData = await res2.json();
 							localStorage.setItem("loginData",JSON.stringify(loginData));
@@ -200,7 +200,7 @@
 					formData.append('pass',document.getElementById("pass").value);
 					let init = {method: 'POST', body: formData};
 					//console.log(init);
-					const res = await fetch("login2JWT.php",init); 
+					const res = await fetch("\api\login2JWT.php",init); 
 					if (res.status >= 200 && res.status <= 299) {
 						const loginData = await res.json();
 						localStorage.setItem("loginData",JSON.stringify(loginData));

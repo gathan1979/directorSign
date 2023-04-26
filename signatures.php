@@ -23,10 +23,9 @@
 		<link href="css/all.css" rel="stylesheet">
 		<!--fontawesome-->
 				
-		<script type="module" src="./modules/signedRecords.js"></script>
 		<script type="module" >
-			import {createSignedUIstartUp} from "./modules/createSignedUI.js";
-			createSignedUIstartUp();
+			import {createUIstartUp} from "./modules/UI.js";
+			createUIstartUp();
 		</script>
 	
 
@@ -35,10 +34,12 @@
 		<table id="dataToSignTable" class="table">
 			<thead>
 			  <tr>
-				<th id="filename" class="text-right">Διεκπεραιωμένο Έγγραφο</th>
+				<th id="filename" class="text-right">Έγγραφο προς Υπογραφή <div style="display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div></th>
 				<th id="date" class="text-right">Εισαγωγή</th>
 				<th id="author" class="text-right">Συντάκτης</th>
-				<th id="files" class="text-right">Αρχεία</th>
+				<th id="status" class="text-right">Κατάσταση</th>
 				<th id="fileActions" class="text-right">Ενέργειες</th>
 			  </tr>
 			</thead>

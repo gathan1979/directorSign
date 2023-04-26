@@ -1,1 +1,0 @@
-ERROR: An existing client is not running. Start the client first so it can be connected to
