@@ -186,7 +186,7 @@
 						else{
 							alert("Σφάλμα στην αυθεντικοποίηση");
 						}
-						location.href= "headmaster1_test.php";
+						location.href= "signatures.php";
 						localStorage.removeItem('filter');
 					}
 					else{
@@ -206,7 +206,7 @@
 						localStorage.setItem("loginData",JSON.stringify(loginData));
 						console.log(JSON.parse(localStorage.getItem("loginData")));
 						localStorage.setItem("currentRole",0);
-						location.href= "headmaster1_test.php"
+						location.href= "signatures.php"
 					}
 					else{
 						alert("Σφάλμα στην αυθεντικοποίηση");

@@ -135,6 +135,8 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 		}
 	}
 	else {
+		document.querySelector("#viewSelectedFiles").innerHTML = "";
+		document.querySelector("#selectedFile").value = null;
 		alert("Το έγγραφο έχει αποσταλεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
 			createSearch();

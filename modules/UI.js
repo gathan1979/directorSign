@@ -4,6 +4,31 @@ import {createSignatureRecords,getSigRecords, getSignedRecords, createSearch}  f
 let loginData = null;
 let page = null;
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
+const passwordModalDiv =
+`<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document" >
+		<div class="modal-content">
+			<div class="modal-header">
+				<b>Αλλαγή κωδικού</b>
+			</div>
+			<div class="modal-body" id="passwordForm">
+				<table class="table table-hover" >
+					<tr><td class="emfanisi">Επώνυμο Όνομα</td><td><input type="text" name="name" id="name" value="<?php echo $row2['fullName']?>" style="text-transform:uppercase" disabled/></td></tr>
+					<tr><td class="emfanisi">Παλιός Κωδικός Πρόσβασης</td><td><input type="password" size="60" name="oldpasswd" id="oldpasswd" />&nbsp<i onclick="showPass('oldpasswd')" class="fas fa-eye fa-1x"></i></td></tr>					
+					<tr><td class="emfanisi">Νέος Κωδικός Πρόσβασης</td><td><input type="password" size="60" name="passwd" id="passwd" />&nbsp<i onclick="showPass('passwd')" class="fas fa-eye fa-1x"></i></td></tr>
+					<tr><td class="emfanisi">Επανεισαγωγή Νέου Κωδικού Πρόσβασης</td><td><input type="password" size="60" name="passwd2" id="passwd2" />&nbsp<i onclick="showPass('passwd2')" class="fas fa-eye fa-1x"></i></td></tr>
+					<tr><td></td><td><input type="button" id="import" value="Επεξεργασία" onclick="kataxorisi(event);"/></td></tr>
+				</table>			
+			</div>
+			<div class="modal-footer">
+				<div class="otherContentFooter">
+				</div>
+				<button id="closePasswordModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+	</div>
+</div>`;
 
 export function createUIstartUp(){
 
@@ -22,7 +47,7 @@ export function createUIstartUp(){
 
 
 	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
-		<div class="flexVertical">
+		<div class="flexVertical" id="uploadBtnDiv">
 			<button class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadDiv"><i class="far fa-plus-square"></i></button>
 		</div>
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
@@ -49,7 +74,9 @@ export function createUIstartUp(){
 
 	document.body.insertAdjacentHTML("afterbegin",uploadDiv);
 	document.body.insertAdjacentHTML("afterbegin",extraMenuDiv);
+    //createNavbar();
 	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
+	document.body.insertAdjacentHTML("beforeend",passwordModalDiv);
 
 	loginData = localStorage.getItem("loginData");
 	if (loginData === null){
@@ -77,12 +104,13 @@ export function createUIstartUp(){
             const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
 			document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
 		}
-		const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
+		//const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
 		//document.querySelector("#userRoles").innerHTML = basicBtns;
-		document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
-		document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button></div>';
+        document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
+        document.querySelector("#myNavBarLogoContent").innerHTML += '<button class="btn btn-warning btn-sm" id="changePwdBtn" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtn"></i></button>';
+		document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning btn-sm" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
 		document.querySelector("#logoutBtn").addEventListener("click",logout);	
-
+		
         document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
         document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);		
 	}
@@ -195,10 +223,11 @@ export function createSignedUIstartUp(){
 		if (+loginData.user.roles[cRole].privilege){
 			document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
 		}
-		const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
+		//const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
 		//document.querySelector("#userRoles").innerHTML = basicBtns;
-		document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
-		document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning"  id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button></div>';
+        document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
+        document.querySelector("#myNavBarLogoContent").innerHTML += '<button class="btn btn-warning btn-sm" id="changePwdBtn" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtn"></i></button>';
+		document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning btn-sm"  id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
 		document.querySelector("#logoutBtn").addEventListener("click",logout);		
 
         document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
@@ -238,6 +267,73 @@ export function createSignedUIstartUp(){
 	document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
 	document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
 	document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
+}
+
+function changePassword(){
+
+}
+
+function createNavbar(){
+    const navBarDiv = `<div id="myNavBar">
+		<div  id="prosIpografi" ><a class="active" >Προς Υπογραφή</a></div>
+		<div  id="ipogegrammena" ><a >Διεκπεραιωμένα</a></div>
+			
+		<div ><a target="_blank" rel="opener" href="../nocc-1.9.8/protocol/editTable1.php?tn=book"><span id="protocolAppText"></span></a></div>	
+		<div id="protocolBookBtn"><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
+		<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>-->
+		<!--<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>-->
+		<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
+	</div><!-- /.container-fluid -->`;
+
+	if (document.querySelector("#myNavBar")!==null){
+		document.querySelector("#myNavBar").remove();
+		document.querySelector("#headmasterExtraMenuDiv").remove();
+		if (document.querySelector("#uploadDiv")){
+            document.querySelector("#uploadDiv").remove();
+        }
+	}
+
+	document.body.insertAdjacentHTML("afterbegin",uploadDiv);
+	document.body.insertAdjacentHTML("afterbegin",extraMenuDiv);
+	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
+
+	loginData = localStorage.getItem("loginData");
+	if (loginData === null){
+		window.location.href = "index.php";
+		alert("Δεν υπάρχουν στοιχεία χρήστη");
+	}
+	else{
+		loginData = JSON.parse(loginData);
+		//Πρόσβαση στο Πρωτόκολλο λεκτικό
+		let cRole = localStorage.getItem("currentRole");
+		if (cRole !== null){
+			if (+loginData.user.roles[cRole].protocolAccessLevel){
+				document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
+			}
+			else{
+				document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
+			}
+		}
+		else{
+			alert("Δεν υπάρχουν στοιχεία ιδιότητας χρήστη");	
+		}
+
+		//Πρόσβαση στο Παρουσιολόγιο
+		if (+loginData.user.roles[cRole].privilege){
+            const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
+			document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
+		}
+		//const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
+		//document.querySelector("#userRoles").innerHTML = basicBtns;
+        document.querySelector("#myNavBarLogoContent").innerHTML = '<i class="fas fa-key" id="changePwdBtn"></i>';
+		document.querySelector("#myNavBarLogoContent").innerHTML += loginData.user.user;
+		document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
+		document.querySelector("#logoutBtn").addEventListener("click",logout);	
+
+        document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
+        document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
+        document.querySelector("#changePwdBtn").addEventListener("click",changePassword);		
+	}
 }
 
 

@@ -279,6 +279,7 @@ export function createSignatureRecords(){
         const isExactCopy = e.relatedTarget.getAttribute('data-isExactCopy');
         const relevantBtn = document.querySelector("#rejectButton");
         const relevantText = document.querySelector("#rejectText");
+		relevantText.textContent = "";
         
         relevantText.addEventListener("keyup",()=> {if(relevantText.value != ""){relevantBtn.removeAttribute("disabled")}else{relevantBtn.setAttribute("disabled",true)} });
         relevantBtn.addEventListener("click",() => rejectDocument(+recordAA, isExactCopy));
@@ -601,7 +602,7 @@ export function fillTableToBeSigned(result){
 
 export async function viewFile(filename, folder=""){
 	if(filename === ""){
-		alert("Δεν υπάρχει σχετικό αρχείο");
+		alert("Δεν έχει οριστεί όνομα αρχείου");
 		return;
 	}
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
@@ -1713,12 +1714,13 @@ export function fillTableWithSigned(result){
 		
 		let historyBtn = "";
 		let reqExactCopyBtn = "";
-		
+		historyBtn = '<button  class="btn btn-primary btn-sm" type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#historyModal" data-whatever="'+result[key].revisionId+'">'+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i></button>';
+
 		//if (result[key].objection>0){
 			//historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].revisionId+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i>'+"<span class='glyphicon glyphicon-flash' style='font-size: 20px;' aria-hidden='true' data-toggle='tooltip'></span></a>";
 		//}
 		//else{
-			historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].revisionId+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
+			//historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].revisionId+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
 		//}
 		if (!rejected){
 			reqExactCopyBtn = '<button id="reqExactCopyBtn_'+result[key]['revisionId']+'" type="button" class="btn btn-info btn-sm" data-whatever="'+result[key].revisionId+'">'+'<i class="fas fa-bell" data-toggle="tooltip" title="Αίτημα Ακριβούς Αντιγράφου" data-whatever="'+result[key].revisionId+'"></i>'+"</button>";
@@ -1736,7 +1738,15 @@ export function fillTableWithSigned(result){
 				requestExactCopy(event).then((msg)=>{alert(msg)},(msg)=>{alert(msg)})
 			});
 			document.querySelector("#signedBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['lastFilename'],result[key].date));
-			document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['exactCopyFilename'],result[key].date));
+            if (result[key]['exactCopyStatus'] == -1){
+                document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>alert("Δεν έχετε αιτηθεί ακριβές αντίγραφο. Πατήστε το καμπανάκι ..."));
+            }
+            else if (result[key]['exactCopyStatus'] == 0){
+                document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>alert("Το αίτημα σας είναι σε αναμονή..."));
+            }
+            else if (result[key]['exactCopyStatus'] == 1){
+                document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['exactCopyFilename'],result[key].date));
+            }
 		}
 		document.querySelector("#btn_"+result[key]['revisionId']).addEventListener("click",()=>viewFile(result[key]['filename'],result[key].date));
 		document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['lastFilename']+"&insertDate="+result[key].date+"&id="+result[key].revisionId+"#zoom=page-fit"));
