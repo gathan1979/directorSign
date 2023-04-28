@@ -433,9 +433,9 @@ function fillHistoryModal(result){
 			tmpElement += '<div class="flexHorizontal"><button  class="btn btn-warning btn-sm" type="button" class="btn btn-primary btn-sm" title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></button>';
 		}
 		else{
-			tmpElement += "<div class='flexHorizontal'>"
+			tmpElement += "<div class='flexHorizontal' style='margin-left:2em;'>"
 		}
-		tmpElement += '<div style="width:30%;" class="filenameDiv"><button  id="historyRecord_'+result[key]['aa']+'" class="btn btn-success" >'+
+		tmpElement += '<div style="width:30%;" class="filenameDiv"><button  id="historyRecord_'+result[key]['aa']+'" class="btn btn-success btn-sm" >'+
 										result[key]['filename']+'</button>'+"</div><div style='width:30%;text-align:center;'>"+
 										result[key]['fullname']+"</div><div style='width:20%;text-align:center;'>"+
 										result[key]['comments']+"</div><div style='width:20%;text-align:center;'>"+result[key]['date']+"</div></div>";
@@ -502,9 +502,9 @@ export function fillTableToBeSigned(result){
 				relevantDocsElement +='<i style="cursor : pointer;" id="rel_btn_'+result[key]['aa']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>';
 			}
 		}
-		// result[key].preview_file_last
+		
 		if (!result[key].isExactCopy){
-			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-success" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
+			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-warning" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
 		}
 		else{
 			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
@@ -512,7 +512,7 @@ export function fillTableToBeSigned(result){
 
 		let attention = ""
 		if (result[key].objection>0){
-			attention = '<button  class="btn btn-warning btn-sm" type="button" style="margin-left:3px;" class="btn btn-primary btn-sm" title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></button>';
+			attention = '<button  class="btn btn-warning btn-sm" type="button" style="margin-left:3px;"  title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></button>';
 		}
 
 		temp1[0] = filenameBtn;
@@ -530,7 +530,7 @@ export function fillTableToBeSigned(result){
 				}
 			}
 			if(result[key].isReturned){
-				recordStatus += '<i style="margin-left:3px;color : orange;" class="fas fa-undo"></i>';
+				recordStatus += '<button  class="btn btn-warning btn-sm" type="button" style="margin-left:3px;" title="από επιστροφή"><i class="fas fa-undo"></i></button>';
 			}
 			recordStatus += attention;
 		}
@@ -566,7 +566,7 @@ export function fillTableToBeSigned(result){
 					}
 				}
 				else{
-					signModalBtn = "";
+                    signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
 				}
 			}
 		}	

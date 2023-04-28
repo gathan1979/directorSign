@@ -266,6 +266,9 @@ function setRole(index){
         case "signed" :
             getSignedRecordsAndFill();
             break;
+        default :
+            alert("Σελίδα μη διαθέσιμη");
+            return;
     }
 	//getRecordsAndFill();
 	if (loginData === null){
