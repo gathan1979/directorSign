@@ -957,7 +957,7 @@ export async function signDocument(aa, isLast=0, objection=0){
 			document.querySelector("#otpText").value = "";
 		}
 		const myModalEl = document.querySelector("#signModal");
-		const modal = bootstrap.Modal.getInstance(myModalEl)
+		const modal = bootstrap.Modal.getInstance(myModalEl);
 		modal.hide();
 		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
@@ -1745,6 +1745,9 @@ export function fillTableWithSigned(result){
                 document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>alert("Το αίτημα σας είναι σε αναμονή..."));
             }
             else if (result[key]['exactCopyStatus'] == 1){
+				if (result[key]['exactCopyFilename'] == ""){
+					result[key]['exactCopyFilename'] = result[key]['filename'].split('.').slice(0, -1).join('.')+"_MD_Exact_Copy.pdf";
+				}
                 document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['exactCopyFilename'],result[key].date));
             }
 		}
