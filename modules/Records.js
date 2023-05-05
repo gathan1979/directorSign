@@ -53,7 +53,7 @@ let UPLOAD = 	{
 const signProviders = { MINDIGITAL, UPLOAD, FF, SCH};
 Object.freeze(signProviders);
 
-export function createSignatureRecords(){
+export function createActionsTemplate(){
     const signModalDiv =
         `<div class="modal fade" id="signModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -431,7 +431,7 @@ function fillHistoryModal(result){
             tmpElement = '<div style="font-size:0.8em;margin:1em;"><i style="margin-right:0.5em;" class="fas fa-arrow-circle-down"></i>'+result[key]['depName']+'</div>';
         }
 		if (result[key]['hasObjection'] ==1){
-			tmpElement += '<div class="flexHorizontal"><button  class="btn btn-warning btn-sm" type="button" class="btn btn-primary btn-sm" title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></button>';
+			tmpElement += '<div class="flexHorizontal"><span style="align-self: center;margin-left:3px;background-color :darkorange!important" class="badge rounded-pill bg-warning " title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></span>';
 		}
 		else{
 			tmpElement += "<div class='flexHorizontal' style='margin-left:2em;'>"
@@ -442,7 +442,7 @@ function fillHistoryModal(result){
 										result[key]['comments']+"</div><div style='width:20%;text-align:center;'>"+result[key]['date']+"</div></div>";
 		const arrow = '<div style="font-size:0.8em;margin:1em;"><i style="margin-right:0.5em;" class="fas fa-arrow-circle-down"></i>'+result[key]['nextLevelName']+'</div>';
         tmpElement += arrow;
-        console.log(tmpElement);
+        //console.log(tmpElement);
         document.querySelector("#historyBody").innerHTML += tmpElement;
 	}
 	for (let key=0;key<result.length;key++) {
@@ -498,7 +498,7 @@ export function fillTableToBeSigned(result){
 		let relevantDocs = result[key].relevantDocs;
 		let relevantDocsArray = relevantDocs.split("*");
 		let relevantDocsElement = "";
-		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
+		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")){
 			for (let l=0;l<relevantDocsArray.length;l++){
 				relevantDocsElement +='<i style="cursor : pointer;" id="rel_btn_'+result[key]['aa']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>';
 			}
@@ -513,7 +513,8 @@ export function fillTableToBeSigned(result){
 
 		let attention = ""
 		if (result[key].objection>0){
-			attention = '<button  class="btn btn-warning btn-sm" type="button" style="margin-left:3px;"  title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></button>';
+			attention = '<span style="margin-left:3px;background-color :darkorange!important" class="badge rounded-pill bg-warning " title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></span>';
+			//attention = '<button  class="btn btn-warning btn-sm" type="button" disabled style="margin-left:3px;"  title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></button>';
 		}
 
 		temp1[0] = filenameBtn;
@@ -524,14 +525,17 @@ export function fillTableToBeSigned(result){
 		if (!result[key].isExactCopy){
 			for (let i=0;i<result[key].levels;i++){
 				if (i<result[key].diff){
-					recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-success btn-sm"><i class="fas fa-calendar-check"></i></button>';
+					recordStatus += '<span style="margin-left:3px;" class="badge rounded-pill bg-success "><i class="fas fa-calendar-check"></i></span>';
+					//recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-success btn-sm"><i class="fas fa-calendar-check"></i></button>';
 				}
 				else{
-					recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-secondary btn-sm"><i class="fas fa-calendar-times"></i></button>';
+					recordStatus += '<span style="margin-left:3px;" class="badge rounded-pill bg-secondary "><i class="fas fa-calendar-times"></i></span>';
+					//recordStatus += '<button type="button" style="margin-left:3px;" disabled class="btn btn-secondary btn-sm"><i class="fas fa-calendar-times"></i></button>';
 				}
 			}
 			if(result[key].isReturned){
-				recordStatus += '<button  class="btn btn-warning btn-sm" type="button" style="margin-left:3px;" title="από επιστροφή"><i class="fas fa-undo"></i></button>';
+				recordStatus += '<span style="margin-left:3px;" class="badge rounded-pill bg-warning "><i class="fas fa-undo"></i></span>';
+				//recordStatus += '<button  class="btn btn-warning btn-sm" type="button" disabled style="margin-left:3px;" title="από επιστροφή"><i class="fas fa-undo"></i></button>';
 			}
 			recordStatus += attention;
 		}
@@ -546,11 +550,12 @@ export function fillTableToBeSigned(result){
 		let returnBtn = "";
 		let reuploadFile = "";
 		if (result[key].currentDep == department){  // το τρέχον τμήμα του εγγράφου είναι ίδιο με το τμήμα του χρήστη
-			if (accessLevel==1){
+			if (result[key].isExactCopy){
 				signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
+			}
+			if (accessLevel==1){
 				if (!result[key].isExactCopy){
 					returnBtn = '<button id="showReturnModal'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-arrow-down" data-toggle="tooltip" title="Επιστροφή Εγγράφου"></i>'+"</button>";
-					
 				}
 			}
 			if (result[key].isReturned){   // πρόκειται για επιστροφή
@@ -571,8 +576,6 @@ export function fillTableToBeSigned(result){
 				}
 			}
 		}	
-		
-		
 		historyBtn = '<button  class="btn btn-primary btn-sm" type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#historyModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i></button>';
 		rejectBtn = '<button id="showRejectModal'+result[key]['aa']+'" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
 		temp1[4] = 	'<div class="recordButtons">'+reuploadFile+signModalBtn+returnBtn+historyBtn+rejectBtn+'</div>';
@@ -1598,6 +1601,7 @@ function debounce(func, timeout = 500){
 
 
 export async function getSignedRecords(){
+	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	const {jwt,role} = getFromLocalStorage();	
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -1611,6 +1615,7 @@ export async function getSignedRecords(){
 	const res = await fetch("/api/getSignedRecords.php?"+params,init); 
 	if (!res.ok){
 		if (res.status == 401){
+			document.querySelector("#recordsSpinner").style.display = 'none';
 			const reqToken = await refreshToken();
 			if (reqToken ==1){
 				getSignedRecords();
@@ -1634,6 +1639,7 @@ export async function getSignedRecords(){
 	else{
 		//return res;
 		fillTableWithSigned(await res.json());
+		document.querySelector("#recordsSpinner").style.display = 'none';
 		return "ok";
 	}
 }
@@ -1723,7 +1729,7 @@ export function fillTableWithSigned(result){
 			//historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].revisionId+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού">'+"</i></a>";
 		//}
 		if (!rejected){
-			reqExactCopyBtn = '<button id="reqExactCopyBtn_'+result[key]['revisionId']+'" type="button" class="btn btn-info btn-sm" data-whatever="'+result[key].revisionId+'">'+'<i class="fas fa-bell" data-toggle="tooltip" title="Αίτημα Ακριβούς Αντιγράφου" data-whatever="'+result[key].revisionId+'"></i>'+"</button>";
+			reqExactCopyBtn = '<button id="reqExactCopyBtn_'+result[key]['revisionId']+'" type="button" class="btn btn-info btn-sm" data-lastExCopyDate="'+result[key].exactCopyDate+'" data-whatever="'+result[key].revisionId+'">'+'<i class="fas fa-bell" data-toggle="tooltip" title="Αίτημα Ακριβούς Αντιγράφου, '+(result[key].exactCopyDate===""?"":"Τελευταίο αντίγραφο "+result[key].exactCopyDate)+'" data-whatever="'+result[key].revisionId+'"></i>'+"</button>";
 		}
 		temp1[4] = 	'<div class="recordButtons">'+reqExactCopyBtn+historyBtn+'</div>';	
 		
@@ -1763,6 +1769,14 @@ export function fillTableWithSigned(result){
 }
 
 async function requestExactCopy(event){
+	event.preventDefault();
+	//console.log(event.currentTarget)
+	const lastExCopyDate = event.currentTarget.dataset.lastexcopydate;
+	if (lastExCopyDate !==""){
+		if (!confirm("Υπάρχει ακριβές αντίγραφο με ημερομηνία "+lastExCopyDate+", Θέλετε να εκδόσετε νέο;")){
+			return "Το αίτημα δεν καταχωρήθηκε";
+		}
+	}
 	//console.log(filename);
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const jwt = loginData.jwt;

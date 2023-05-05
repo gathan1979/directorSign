@@ -1,9 +1,9 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
-import {createSignatureRecords,getSigRecords, getSignedRecords, createSearch}  from "./Records.js";
+import {createActionsTemplate,getSigRecords, getSignedRecords, createSearch}  from "./Records.js";
 import getFromLocalStorage from "./localStorage.js"
 
 let loginData = null;
-let page = null;
+export let page = null;
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
 const pwdBtn = '<button class="btn btn-warning btn-sm" id="changePwdBtn" data-bs-toggle="modal" data-bs-target="#passwordModal" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtn"></i></button>';
 
@@ -164,7 +164,7 @@ export function createUIstartUp(){
 	}
 
 	//Γέμισμα πίνακα με εγγραφές χρήστη
-    createSignatureRecords();
+    createActionsTemplate();
 	getToSignRecordsAndFill();
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
@@ -427,14 +427,14 @@ function setRole(index){
 	//createUIstartUp();
 }
 
-function getToSignRecordsAndFill(){
+export function getToSignRecordsAndFill(){
 	const records = getSigRecords().then( res => {
 		createSearch();
 	}, rej => {});		
 }
 
 
-function getSignedRecordsAndFill(){
+export function getSignedRecordsAndFill(){
 	const records = getSignedRecords().then( res => {
 		createSearch();
 	}, rej => {});			

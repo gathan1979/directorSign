@@ -24,8 +24,21 @@
 		<!--fontawesome-->
 				
 		<script type="module" >
-			import {createUIstartUp} from "./modules/UI.js";
+			import {createUIstartUp, page, getToSignRecordsAndFill, getSignedRecordsAndFill} from "./modules/UI.js";
 			createUIstartUp();
+			document.querySelector("#syncRecords").addEventListener("click", ()=>  { switch (page){
+					case "signature" :
+						getToSignRecordsAndFill();
+						break;
+					case "signed" :
+						getSignedRecordsAndFill();
+						break;
+					default :
+						alert("Σελίδα μη διαθέσιμη");
+						return;
+					}
+				}	
+			)
 		</script>
 	
 
@@ -34,7 +47,7 @@
 		<table id="dataToSignTable" class="table">
 			<thead>
 			  <tr>
-				<th id="filename" class="text-right">Έγγραφο<div style="display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
+				<th id="filename" class="text-right">Έγγραφο <button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i></button><div style="margin-left:1em;display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
 						<span class="visually-hidden">Loading...</span>
 					</div></th>
 				<th id="date" class="text-right">Εισαγωγή</th>
