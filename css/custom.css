@@ -330,3 +330,12 @@ td .fa-crosshairs{
 .isGreen {
 	color : #198754;
 }
+
+#fileOpenDialog::backdrop{
+	background-color: rgba(0,0,0,0.5);
+}
+
+#fileOpenDialog {
+	background: floralwhite;
+	border-radius: 5px;
+}

@@ -415,6 +415,7 @@ export async function getSigRecords(){
 	}
 	else{
 		//return res;
+		//console.log(res.statusText);
 		document.querySelector("#recordsSpinner").style.display = 'none';
 		fillTableToBeSigned(await res.json());
 		return "ok";
@@ -554,6 +555,7 @@ export function fillTableToBeSigned(result){
 				signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
 			}
 			if (accessLevel==1){
+				signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#signModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
 				if (!result[key].isExactCopy){
 					returnBtn = '<button id="showReturnModal'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-arrow-down" data-toggle="tooltip" title="Επιστροφή Εγγράφου"></i>'+"</button>";
 				}
@@ -632,6 +634,12 @@ export async function viewFile(filename, folder=""){
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
 		}
+		else if (res.status==500){
+			alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
+		}
+		else {
+			alert("Σφάλμα");
+		}
 	}
 	else {
 
@@ -650,6 +658,18 @@ export async function viewFile(filename, folder=""){
 		const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
 
 		if (inBrowser.includes(fileExtension)){
+			if (document.querySelector("#fileOpenDialog")){
+				document.querySelector("#fileOpenDialog").innerHTML =
+				`<div><div style="margin-bottom:10px;">Χρήση του αρχείου για : </div><div>
+				<button class="btn btn-primary" id="fileOpenFromDialogBtn">Άνοιγμα</button>
+				<button class="btn btn-success" id="fileSaveFromDialogBtn">Αποθήκευση</button>
+				<button class="btn btn-secondary" id="fileCloseDialog">Κλείσιμο</button></div></div>`;
+				document.querySelector("#fileOpenFromDialogBtn").addEventListener("click",() => openFromDialog(href, filename));
+				document.querySelector("#fileSaveFromDialogBtn").addEventListener("click",() => saveFromDialog(href, filename));
+				document.querySelector("#fileCloseDialog").addEventListener("click",() => closeFromDialog());
+				document.querySelector("#fileOpenDialog").showModal();
+			}
+			return;
 			let openFileAns = confirm("Ναι για απευθείας άνοιγμα, άκυρο για αποθήκευση");
 			if (openFileAns){
 				const pdfWin = window.open(href);
@@ -674,6 +694,27 @@ export async function viewFile(filename, folder=""){
 			}).click();
 		}
 	}
+}
+
+function openFromDialog(href,filename){
+	const pdfWin = window.open(href);
+	//pdfWin.document.title = decodeURI(filename);
+	setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
+	closeFromDialog();
+}
+
+function saveFromDialog(href,filename){
+	const aElement = document.createElement('a');
+	aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
+	Object.assign(aElement, {
+	href,
+	download: decodeURI(filename)
+	}).click();
+	closeFromDialog();
+}
+
+function closeFromDialog(){
+	document.querySelector("#fileOpenDialog").close();
 }
 
 

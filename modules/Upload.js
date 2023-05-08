@@ -121,7 +121,7 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 				uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadNo);
 			}
 			else{
-				alert("σφάλμα εξουσιοδότησης");	
+				alert("Σφάλμα εξουσιοδότησης");	
 			}
 		}
 		else if (res.status==403){
@@ -129,6 +129,9 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
+		}
+		else if (res.status==500){
+			alert("Σφάλμα! Επικοινωνήστε με το διαχειριστή του συστήματος");
 		}
 		else{
 			alert("Σφάλμα!!!");

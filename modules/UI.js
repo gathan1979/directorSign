@@ -32,7 +32,14 @@ const passwordModalDiv =
 	</div>
 </div>`;
 
+const fileOpenModal = 
+`<dialog id="fileOpenDialog">
+
+</dialog>`;
+
 function pagesCommonCode(){
+	document.body.insertAdjacentHTML("beforeend",fileOpenModal);
+
 	document.querySelector("#showOldPassBtn").addEventListener("click", ()=>showPass('oldPwd'));
 	document.querySelector("#showNewPass1Btn").addEventListener("click", ()=>showPass('newPwd'));
 	document.querySelector("#showNewPass2Btn").addEventListener("click",()=>showPass('newPwd2'));
@@ -42,6 +49,12 @@ function pagesCommonCode(){
 		document.getElementById('newPwd').value= "";
 		document.getElementById('newPwd2').value= "";
     });
+
+
+
+	`<button id="fileOpenFromDialogBtn">Άνοιγμα</button>
+	<button id="fileSaveFromDialogBtn">Αποθήκευση</button>
+	<button id="fileCloseDialog">Κλείσιμο</button>`
 }
 
 export function createUIstartUp(){
@@ -91,6 +104,7 @@ export function createUIstartUp(){
     //createNavbar();
 	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
 	document.body.insertAdjacentHTML("beforeend",passwordModalDiv);
+	
 
 	loginData = localStorage.getItem("loginData");
 	if (loginData === null){
