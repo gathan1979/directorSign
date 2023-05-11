@@ -1,5 +1,5 @@
-import refreshToken from "./refreshToken.js"
-import getFromLocalStorage from "./localStorage.js"
+import refreshToken from "./RefreshToken.js"
+import getFromLocalStorage from "./LocalStorage.js"
 import { getSigRecords, createSearch} from "./Records.js";
 
 export const uploadComponents = `<div class="col-md-12 d-flex flex-column p-2" >

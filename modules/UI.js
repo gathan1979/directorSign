@@ -1,6 +1,6 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
 import {createActionsTemplate,getSigRecords, getSignedRecords, createSearch}  from "./Records.js";
-import getFromLocalStorage from "./localStorage.js"
+import getFromLocalStorage from "./LocalStorage.js"
 
 let loginData = null;
 export let page = null;
@@ -33,12 +33,28 @@ const passwordModalDiv =
 </div>`;
 
 const fileOpenModal = 
-`<dialog id="fileOpenDialog">
+	`<dialog id="fileOpenDialog">
+		</dialog>`;
 
-</dialog>`;
+const loadingModal = 
+	`<dialog id="loadingDialog">
+		<div class="spinner-border" role="status">
+			<span>Αναμονή για ολοκλήρωση της διαδικασίας</span>
+			<span class="visually-hidden">Loading...</span>
+		</div>
+	</dialog>`;
 
 function pagesCommonCode(){
+
+	if (document.querySelector("#fileOpenDialog")!==null){
+		document.querySelector("#fileOpenDialog").remove();
+	}
 	document.body.insertAdjacentHTML("beforeend",fileOpenModal);
+
+	if (document.querySelector("#loadingDialog")!==null){
+		document.querySelector("#loadingDialog").remove();
+	}
+	document.body.insertAdjacentHTML("beforeend",loadingModal);
 
 	document.querySelector("#showOldPassBtn").addEventListener("click", ()=>showPass('oldPwd'));
 	document.querySelector("#showNewPass1Btn").addEventListener("click", ()=>showPass('newPwd'));
@@ -50,15 +66,13 @@ function pagesCommonCode(){
 		document.getElementById('newPwd2').value= "";
     });
 
-
-
 	`<button id="fileOpenFromDialogBtn">Άνοιγμα</button>
 	<button id="fileSaveFromDialogBtn">Αποθήκευση</button>
 	<button id="fileCloseDialog">Κλείσιμο</button>`
 }
 
 export function createUIstartUp(){
-
+	console.log("signature");
     page = "signature";
 
 	const navBarDiv = `<div id="myNavBar">
@@ -77,8 +91,8 @@ export function createUIstartUp(){
 		<div class="flexVertical" id="uploadBtnDiv">
 			<button class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadDiv"><i class="far fa-plus-square"></i></button>
 		</div>
-		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
 
+		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
 		<div id="userRoles" ></div>
 		<div class="flexHorizontal">
 			<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
@@ -103,6 +117,10 @@ export function createUIstartUp(){
 	document.body.insertAdjacentHTML("afterbegin",extraMenuDiv);
     //createNavbar();
 	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
+
+	if (document.querySelector("#passwordModal") !== null){
+		document.querySelector("#passwordModal").remove();
+	}
 	document.body.insertAdjacentHTML("beforeend",passwordModalDiv);
 	
 
@@ -192,25 +210,21 @@ export function createSignedUIstartUp(){
     console.log("signed");
     page = "signed";
 
-	const basicUI = `<div id="myNavBar">
+	const navBarDiv = `<div id="myNavBar">
     <div  id="prosIpografi" ><a>Προς Υπογραφή</a></div>
     <div  id="ipogegrammena" ><a  class="active">Διεκπεραιωμένα</a></div>
 			
 		<div ><a target="_blank" rel="opener" href="../nocc-1.9.8/protocol/editTable1.php?tn=book"><span id="protocolAppText"></span></a></div>	
 		<div id="protocolBookBtn"><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
-
 		<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>
-
 		<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>-->
-
 		<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
-	</div><!-- /.container-fluid -->
+	</div><!-- /.container-fluid -->`;
 
 
-	<div id="headmasterExtraMenuDiv">
+	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
 		
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
-
 		<div id="userRoles" ></div>
 		<div class="flexHorizontal">
 			<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
@@ -228,7 +242,13 @@ export function createSignedUIstartUp(){
         }
 	}
 
-	document.body.insertAdjacentHTML("afterbegin",basicUI);
+	document.body.insertAdjacentHTML("afterbegin",extraMenuDiv);
+    //createNavbar();
+	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
+	if (document.querySelector("#passwordModal") !== null){
+		document.querySelector("#passwordModal").remove();
+	}
+	document.body.insertAdjacentHTML("beforeend",passwordModalDiv);
 
 
 	loginData = localStorage.getItem("loginData");
@@ -453,6 +473,14 @@ export function getSignedRecordsAndFill(){
 		createSearch();
 	}, rej => {});			
 }
+
+export function getChargesAndFill(){
+	const records = getSignedRecords().then( res => {
+		createSearch();
+	}, rej => {});			
+}
+
+
 
 function logout(){
 	localStorage.clear();

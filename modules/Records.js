@@ -1,5 +1,5 @@
-import refreshToken from "./refreshToken.js"
-import getFromLocalStorage from "./localStorage.js"
+import refreshToken from "./RefreshToken.js"
+import getFromLocalStorage from "./LocalStorage.js"
 import {uploadFileTest} from "./Upload.js";
 
 
@@ -154,6 +154,19 @@ export function createActionsTemplate(){
             </div>
         </div>`;
 
+
+	if (document.querySelector("#signModal") !== null){
+		document.querySelector("#signModal").remove();
+	}
+	if (document.querySelector("#rejectModal") !== null){
+		document.querySelector("#rejectModal").remove();
+	}
+	if (document.querySelector("#returnModal") !== null){
+		document.querySelector("#returnModal").remove();
+	}
+	if (document.querySelector("#historyModal") !== null){
+		document.querySelector("#historyModal").remove();
+	}
 
     document.body.insertAdjacentHTML("beforeend",signModalDiv);
     document.body.insertAdjacentHTML("beforeend",rejectModalDiv);
