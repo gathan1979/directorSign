@@ -71,7 +71,7 @@ export function uploadFile(){                                               //θ
 }
 
 export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadNo = 0){
-	//$("#loading").fadeIn();
+	document.querySelector("#loadingDialog").showModal();
 	const {jwt,role} = getFromLocalStorage();	
 	
 	const files = document.getElementById('selectedFile').files;
@@ -97,10 +97,12 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 		}
 		if (numFilesToSign>1){
 				alert("Έχετε επιλέξει περισσότερα από ένα έγγραφα προς υπογραφή");
+				document.querySelector("#loadingDialog").close();
 				return;
 		}
 		else if (numFilesToSign==0){
 				alert("Παρακαλώ επιλέξτε το αρχείο που θα υπογράψετε ψηφιακά");
+				document.querySelector("#loadingDialog").close();
 				return;
 		}
 		data.append('authorComment', document.getElementById('authorComment').value);
@@ -115,6 +117,7 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 	
 	const res = await fetch(uploadURL,init); 
 	if (!res.ok){
+		document.querySelector("#loadingDialog").close();
 		if (res.status == 401){
 			const resRef = await refreshToken();
 			if (resRef ===1){
@@ -138,6 +141,7 @@ export async function uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadN
 		}
 	}
 	else {
+		document.querySelector("#loadingDialog").close();
 		document.querySelector("#viewSelectedFiles").innerHTML = "";
 		document.querySelector("#selectedFile").value = null;
 		alert("Το έγγραφο έχει αποσταλεί! Μάλλον...");

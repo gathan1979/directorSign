@@ -43,14 +43,14 @@
 			//$queryString = "?multiuser=".$multiuser;
 			if (isset($_SESSION['user'])){
 				if ($_SESSION['accessLevel']=="0") {
-					header('Location: headmaster1_test.php'.$queryString);
+					header('Location: signatures.php'.$queryString);
 				}
 				else if ($_SESSION['accessLevel']=="1"){
 					if ($_SESSION['department']=='0'||$_SESSION['department']=='1'||$_SESSION['department']=='3'||$_SESSION['department']=='4'){
-						header('Location: headmaster1_test.php'.$queryString);
+						header('Location: signatures.php'.$queryString);
 					}
 					else{
-						header('Location: headmaster1_test.php'.$queryString);
+						header('Location: signatures.php'.$queryString);
 					}
 				}
 				else{

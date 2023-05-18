@@ -1,6 +1,8 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
 import {createActionsTemplate,getSigRecords, getSignedRecords, createSearch}  from "./Records_test.js";
-import getFromLocalStorage from "./LocalStorage.js"
+import getFromLocalStorage from "./LocalStorage.js";
+import createFilter,{updateBtnsFromFilter,getFilteredData} from "./Filter.js"
+import refreshToken from "./RefreshToken.js";
 
 let loginData = null;
 export let page = null;
@@ -40,7 +42,6 @@ const fileOpenModal =
 const loadingModal = 
 	`<dialog id="loadingDialog">
 		<div class="spinner-border" role="status">
-			<span>Αναμονή για ολοκλήρωση της διαδικασίας</span>
 			<span class="visually-hidden">Loading...</span>
 		</div>
 	</dialog>`;
@@ -61,10 +62,12 @@ const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
 		</div>
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
 		<div id="userRoles" ></div>
-		<div class="flexHorizontal">
-			<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
-			<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
-			<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
+		<div id="outerFilterDiv" class="flexVertical smallPadding">
+			<div id="generalFilterDiv" class="flexHorizontal ">
+				<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
+				<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
+				<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
+			</div>
 		</div>
 		
 	</div>`;
@@ -86,9 +89,32 @@ const signTable = `<table id="dataToSignTable" class="table">
 	</tbody>
 	</table>`;
 
+const chargesTable = `<table id="chargesTable" class="table">
+	<thead>
+	<tr>
+		<th id="chargesTableAA" class="text-right" style="width:5%">AA <button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i></button><div style="margin-left:1em;display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div></th>
+		<th id="chargesTableApostoleas" class="text-right">Αποστολέας</th>
+		<th id="chargesTableThema" class="text-right">Θέμα</th>
+		<th id="chargesTableImParal" class="text-right">Ημ.Παραλ.</th>
+		<th id="chargesTableArEiserx" class="text-right">Αρ.Εισερχ.</th>
+		<th id="chargesTablePros" class="text-right">Προς</th>
+		<th id="chargesTableThemaEkserx" class="text-right">Θέμα Εξερχ.</th>
+		<th id="chargesTableImEkserx" class="text-right">Ημ.Εξερχ.</th>
+		<th id="chargesTableKatast" class="text-right">Κατάστ.</th>
+		<th id="chargesTableStoixeiaEmail" style="display:none" class="text-right">Στοιχεία Email</th>
+		<th id="chargesTableImEisagogis" style="display:none" class="text-right">Ημ.Εισαγωγής</th>
+	</tr>
+	</thead>
+	<tbody>
+
+	</tbody>
+	</table>`;
+
 
 function pagesCommonCode(){
-	console.log("common page code executing...")
+	console.log("common page code executing...");
 	if (document.querySelector("#myNavBar")!==null){
 		document.querySelector("#myNavBar").remove();
 	}
@@ -98,11 +124,8 @@ function pagesCommonCode(){
 	if (document.querySelector("#uploadBtn")!==null){
 		document.querySelector("#uploadBtn").remove();
 	}
-
 	if (document.querySelector("#uploadDiv")!==null){
-		console.log("common page code executing...")
 		document.querySelector("#uploadDiv").remove();
-		
 	}
 	if (document.querySelector("#passwordModal") !== null){
 		document.querySelector("#passwordModal").remove();
@@ -119,35 +142,34 @@ function pagesCommonCode(){
 
 	const uploadDiv = `<div id="uploadDiv" class="collapse"></div>`;
 	document.body.insertAdjacentHTML("afterbegin",uploadDiv);
-	console.log("upload added");
+	//console.log("upload added");
 
 	document.body.insertAdjacentHTML("afterbegin",extraMenuDiv);
 	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
 	document.body.insertAdjacentHTML("beforeend",passwordModalDiv);
 
+	if (document.querySelector("#chargesTable")!==null){
+		document.querySelector("#chargesTable").remove();
+	}
+	if (document.querySelector("#dataToSignTable")!==null){
+		document.querySelector("#dataToSignTable").remove();
+	}
+
 	switch (page){
 		case "signature" :
-			if (document.querySelector("#dataToSignTable")!==null){
-				document.querySelector("#dataToSignTable").remove();
-			}
 			document.body.insertAdjacentHTML("beforeend",signTable);
 			document.querySelector("#ipogegrammena>a").classList.remove("active");
 			document.querySelector("#xreoseis>a").classList.remove("active");
 			document.querySelector("#prosIpografi>a").classList.add("active");
 			break;
 		case "signed" :
-			if (document.querySelector("#dataToSignTable")!==null){
-				document.querySelector("#dataToSignTable").remove();
-			}
 			document.body.insertAdjacentHTML("beforeend",signTable);
 			document.querySelector("#ipogegrammena>a").classList.add("active");
 			document.querySelector("#xreoseis>a").classList.remove("active");
 			document.querySelector("#prosIpografi>a").classList.remove("active");
 			break;
 		case "charges" :
-			if (document.querySelector("#dataToSignTable")!==null){
-				document.querySelector("#dataToSignTable").remove();
-			}
+			document.body.insertAdjacentHTML("beforeend",chargesTable);
 			document.querySelector("#ipogegrammena>a").classList.remove("active");
 			document.querySelector("#xreoseis>a").classList.add("active");
 			document.querySelector("#prosIpografi>a").classList.remove("active");
@@ -228,6 +250,23 @@ function pagesCommonCode(){
 	document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
 	document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
 
+	document.querySelector("#syncRecords").addEventListener("click", ()=>  { 
+		switch (page){
+			case "signature" :
+				getToSignRecordsAndFill();
+				break;
+			case "signed" :
+				getSignedRecordsAndFill();
+				break;
+			case "charges" :
+				getFilteredData();
+				break;
+			default :
+				alert("Σελίδα μη διαθέσιμη");
+				return;
+		}
+	});
+
 	`<button id="fileOpenFromDialogBtn">Άνοιγμα</button>
 	<button id="fileSaveFromDialogBtn">Αποθήκευση</button>
 	<button id="fileCloseDialog">Κλείσιμο</button>`
@@ -235,70 +274,93 @@ function pagesCommonCode(){
 
 
 async function createChargesUIstartUp(){
+	console.log("charges");
 	page = "charges";
 	pagesCommonCode();
-
-	`<div class="topMenu" >
-		<div id="topSettingsDiv" class="topSettingsDiv" >	
+	let cRole = localStorage.getItem("currentRole");
+	const chargesFilterMenuDiv =`<div id="chargesFilterMenu" class="flexVertical ">
+		<div id="topSettingsDiv" class="flexHorizontal" >	
 			<div id="recordChangesBtnDiv" >
-				<button class="btn btn-info" type="button" id="openChangesBtn" data-toggle="tooltip" data-original-title="Αλλαγές σε πρωτόκολλα">
+				<button class="btn btn-danger " type="button" id="openChangesBtn" data-toggle="tooltip" data-original-title="Αλλαγές σε πρωτόκολλα">
 					<i class="fas fa-info"></i>
 				</button>
 				
 			</div>
 			<div id="filterBtnDiv" >
-				<button class="btn btn-info" type="button" id="openFilterBtn" data-toggle="tooltip" data-original-title="Φίλτρο">
+				<button class="btn btn-danger" type="button" id="openFilterBtn" data-toggle="tooltip" data-original-title="Φίλτρο">
 					<i class="fas fa-filter"></i>
 				</button>
 				
 			</div>
 			<div id="yearDiv" class="yearDiv">
 				<div class="dropdown col-7">
-					<button class="btn btn-info dropdown-toggle" type="button" id="yearDropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<button class="btn btn-danger dropdown-toggle" type="button" id="yearDropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 						
 					</button>
 					<div class="dropdown-menu" id="yearDropdownMenu" aria-labelledby="yearDropdownMenuButton">
 					
 					</div>
 				</div>
-				<div class="form-check">
-					<?php
-						if ($_SESSION['protocolAccessLevel'] == 1){
-							echo '<button class="btn btn-info" type="button" id="addYearButton" onclick="addYear();" >+</button>'; 
-						}
-					?>
-				</div>
 			</div>
 			
 			<div id="removeNotificationsBtnDiv" >
-				<?php
-					if ($_SESSION['protocolAccessLevel'] != 1){
-						echo  '<button class="btn btn-info ektos" name="removeNotifications" id="removeNotifications" onclick="removeNotifications()" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">';
-						echo  '<i class="fab fa-stack-overflow"></i>';
-						echo  '</button>';
-					}
-				?>
+				<button class="btn btn-danger" name="removeNotifications" id="removeNotifications" onclick="removeNotifications()" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
+				<i class="fab fa-stack-overflow"></i>
+				</button>
 			</div>
-			
-				
+
+			<div id="topMenuAdminBtnsDiv" class="col-lg-2 col-sm-12" >	
+				${
+					+loginData.user.roles[cRole].protocolAccessLevel?
+					`<div><a rel="opener"   rel="referer" target="_blank" href="../mich_login.php"><i class="fas fa-envelope  fa-lg"></i>&nbspEmails</a></div>
+					<div><a rel="opener"   rel="referer" target="_blank" href="../kside/index.php"><i class="fas fa-inbox  fa-lg"></i>&nbspΚΣΗΔΕ</a></div>`:``
+				}
+			</div>
 		</div>
 		<div id="recentProtocolsDiv" class="col-lg-5 col-sm-12" >	
 		</div>
-		<div id="topMenuAdminBtnsDiv" class="col-lg-2 col-sm-12" >	
-		<?php
-			if ($_SESSION['protocolAccessLevel'] == 1){
-				echo '<div  ><a rel="opener"   rel="referer" target="_blank" href="../mich_login.php"><i class="fas fa-envelope  fa-lg"></i>&nbspEmails</a></div>';
-				echo '<div  ><a rel="opener"   rel="referer" target="_blank" href="../kside/index.php"><i class="fas fa-inbox  fa-lg"></i>&nbspΚΣΗΔΕ</a></div>';
-			}
-		?>
-		</div>
+	
 
 	</div>`;
+
+	const filterDiv= `<dialog id="changesDiv" class="customModal">
+						<div id="changesTitle" class="customTitle">
+							<div>Τελευταίες αλλαγές</div>
+							<div id="changesDatesDiv"> 
+								<button type="button" data-days="1" class="btn btn-warning btn-sm">1ημ.</button>
+								<button type="button" data-days="7" class="btn btn-warning btn-sm">7ημ.</button>
+								<button type="button" data-days="30" class="btn btn-warning btn-sm">30ημ.</button>
+							</div>
+							<div id="changesCloseButtonDiv">
+								<button id="changesCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+							</div>
+						</div>
+						<div id="changesContent"></div>
+						<div id="changesDetailsContent"></div>
+					</dialog>
+
+					<dialog id="filterDiv" class="customModal">
+						<div id="filterTitle" class="customTitle">
+							<div>Φίλτρο αναζήτησης</div>
+							<div id="filterCloseButtonDiv">
+								<button id="filterCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+							</div>
+						</div>
+						<div id="filterContent"></div>
+						<div id="filterApplyDiv"></div>
+					</dialog>`;
+	
+	document.body.insertAdjacentHTML("afterend",filterDiv);
+	createFilter(document.querySelector("#filterContent"));
+	updateBtnsFromFilter();
+
+	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
 	const protocolYears = getProtocolYears();
 	let currentYear = null;
 	if (currentYear = localStorage.getItem(currentYear)){
 		yearDropdownMenuButton.innerHTML = "Έτος "+currentYear;
 	}
+	getChargesAndFill();
 }
 
 export function createUIstartUp(){
@@ -484,6 +546,9 @@ function setRole(index){
         case "signed" :
             getSignedRecordsAndFill();
             break;
+		case "charges" :
+			getChargesAndFill();
+			break;
         default :
             alert("Σελίδα μη διαθέσιμη");
             return;
@@ -530,8 +595,8 @@ export function getSignedRecordsAndFill(){
 }
 
 export function getChargesAndFill(){
-	const records = getSignedRecords().then( res => {
-		createSearch();
+	const records = getFilteredData().then( res => {
+		//createSearch();
 	}, rej => {});			
 }
 

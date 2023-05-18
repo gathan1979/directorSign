@@ -39,7 +39,6 @@ const fileOpenModal =
 const loadingModal = 
 	`<dialog id="loadingDialog">
 		<div class="spinner-border" role="status">
-			<span>Αναμονή για ολοκλήρωση της διαδικασίας</span>
 			<span class="visually-hidden">Loading...</span>
 		</div>
 	</dialog>`;
@@ -94,7 +93,7 @@ export function createUIstartUp(){
 
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
 		<div id="userRoles" ></div>
-		<div class="flexHorizontal">
+		<div class="flexHorizontal smallPadding">
 			<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
 			<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
 			<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>

@@ -110,8 +110,13 @@ td .fa-crosshairs{
 	margin-top : 2em;	
 }
 
+#chargesTable{
+	margin : 1em;
+	width  : calc(100% - 4em);
+}
+
 #dataToSignTable{
-	margin : 2em;
+	margin : 1em;
 	width  : calc(100% - 4em);
 }
 
@@ -128,7 +133,7 @@ td .fa-crosshairs{
 	background-color : gray;
 	padding : 15px;
 	align-items :flex-start;
-	margin : 2em;
+	margin : 0.2em;
 	margin-bottom : 0em;
 	align-items : top;
 }
@@ -254,7 +259,6 @@ td .fa-crosshairs{
 	flex-flow: column nowrap;
 	gap : 0.2em;
 	background-color : lightgray;
-	padding : 10px;
 	border-radius : 5px;
 	align-items : stretch;
 	flex-basis : auto;
@@ -265,10 +269,13 @@ td .fa-crosshairs{
 	flex-flow: row nowrap;
 	gap : 0.2em;
 	background-color : lightgray;
-	padding : 10px;
 	border-radius : 5px;
 	align-items : stretch;
 	flex-basis : auto;
+}
+
+.smallPadding{
+	padding : 10px;
 }
 
 #tableSearchInput {
@@ -336,6 +343,15 @@ td .fa-crosshairs{
 }
 
 #fileOpenDialog {
+	background: floralwhite;
+	border-radius: 5px;
+}
+
+#loadingDialog::backdrop{
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
+#loadingDialog {
 	background: floralwhite;
 	border-radius: 5px;
 }
