@@ -69,7 +69,7 @@ const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
 				<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
 			</div>
 		</div>
-		
+		<div id="recentProtocolsDiv"></div>
 	</div>`;
 
 const signTable = `<table id="dataToSignTable" class="table">
@@ -92,7 +92,7 @@ const signTable = `<table id="dataToSignTable" class="table">
 const chargesTable = `<table id="chargesTable" class="table">
 	<thead>
 	<tr>
-		<th id="chargesTableAA" class="text-right" style="width:5%">AA <button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i></button><div style="margin-left:1em;display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
+		<th id="chargesTableAA" class="text-right" style="width:10%">AA <button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i></button><div style="margin-left:1em;display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
 				<span class="visually-hidden">Loading...</span>
 			</div></th>
 		<th id="chargesTableApostoleas" class="text-right">Αποστολέας</th>
@@ -111,6 +111,11 @@ const chargesTable = `<table id="chargesTable" class="table">
 
 	</tbody>
 	</table>`;
+
+const protocolRecordModal = 
+	`<dialog id="protocolRecordDialog">
+
+	</dialog>`;
 
 
 function pagesCommonCode(){
@@ -151,6 +156,9 @@ function pagesCommonCode(){
 	if (document.querySelector("#chargesTable")!==null){
 		document.querySelector("#chargesTable").remove();
 	}
+	if (document.querySelector("#protocolRecordDialog")!==null){
+		document.querySelector("#protocolRecordDialog").remove();
+	}
 	if (document.querySelector("#dataToSignTable")!==null){
 		document.querySelector("#dataToSignTable").remove();
 	}
@@ -170,6 +178,7 @@ function pagesCommonCode(){
 			break;
 		case "charges" :
 			document.body.insertAdjacentHTML("beforeend",chargesTable);
+			document.body.insertAdjacentHTML("beforeend",protocolRecordModal);
 			document.querySelector("#ipogegrammena>a").classList.remove("active");
 			document.querySelector("#xreoseis>a").classList.add("active");
 			document.querySelector("#prosIpografi>a").classList.remove("active");

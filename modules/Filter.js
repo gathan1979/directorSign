@@ -259,6 +259,7 @@ function addListeners(){
 // Filters ----
 
 export async function getFilteredData(){
+	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	updateFilterStorage();
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	
@@ -270,7 +271,7 @@ export async function getFilteredData(){
 
 	const  completeOblect= Object.assign({
 		role : loginData.user.roles[localStorage.getItem("currentRole")].aa_role,
-		currentYear : localStorage.getItem("currentYear")
+		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
 	},filteredObject);
 	const urlpar = new URLSearchParams(completeOblect);
 	
@@ -279,8 +280,9 @@ export async function getFilteredData(){
 	myHeaders.append('Authorization', jwt);
 	let init = {method: 'GET', headers : myHeaders};
 	
-	const res = await fetch("/api/showTableData.php?"+urlpar,init); 
+	const res = await fetch("/api/showTableData_test.php?"+urlpar,init); 
 	if (!res.ok){
+		document.querySelector("#recordsSpinner").style.display = 'none';
 		if (res.status == 401){
 			const refRes = await refreshToken();
 			if (refRes !==1){
@@ -297,8 +299,10 @@ export async function getFilteredData(){
 		}
 	}
 	else{
+		document.querySelector("#recordsSpinner").style.display = 'none';
 		const result = await res.json();
 		fillChargesTable(result);
+		
 	}
 }
 
@@ -307,7 +311,7 @@ export function fillChargesTable(result){
 	for (let i = 0; i <= result.length; i++) {
 		let tr = document.createElement('tr');
 		for (let k = 0; k < 11; k++) {
-			console.log(result[k])
+			//console.log(result[k])
 			let td = document.createElement('td');
 			td.innerHTML = result[i][k];
 			if(result[i]["isRead"]==1){
@@ -330,9 +334,268 @@ export function fillChargesTable(result){
 			}
 			tr.appendChild(td);
 		}
+		tr.addEventListener("click", (event) => openProtocolRecord(result[i]["subjectField"], result[i]["aaField"],event));
 		table.appendChild(tr);
 	}
 }
+
+function openProtocolRecord(subject,record,event){
+	console.log("record no ..."+record)
+	const protocolWindowContent = 
+	`<div id="bottomSection">
+		<div class="" name="bottomSectionTitleBar" id="bottomSectionTitleBar">
+			<div class="" name="bottomSectionTitle" id="bottomSectionTitle">
+			</div>
+			<div style="display:flex; gap:0.2em;" name="bottomSectionButtons" id="bottomSectionButtons">
+			</div>
+		</div>
+		
+		<div id="bottomSectionBody">
+			<div  class="firstBottomSectionColumn">
+
+				<record-attachments protocolNo="${record}"></record-attachments>
+
+				<div id="relativeModule">
+					<div class="pr-1 pl-2 pt-3">
+						<button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#sxetika" aria-expanded="false" aria-controls="sxetika">
+							Σχετικά Έγγραφα <span id="relativeButtonBadge" class="badge badge-info"></span>
+						</button>
+					</div>
+					<div class=" mh-25 mt-3 pt-3  collapse" id="sxetika" style="background: rgba(122, 160, 126, 0.2)!important;">
+					
+						<form>
+							<div class="form-group row mb-2 mr-2 pt-2 ml-1">
+								<label for="insertRelativeField" class="col-sm-2 col-form-label">Νέο Σχετικό</label>
+								<div class="row pl-4 pl-sm-0 pt-1 pt-sm-0 pb-2 pb-sm-0 ">
+									<input type="number" class="form-control-sm col-3" id="insertRelativeField" placeholder="αρ.πρωτ">&nbsp/&nbsp
+									<input type="number" class="form-control-sm col-3" id="insertRelativeYearField" value="">
+								</div>
+								<button id="insertRelativeBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
+							</div>
+							
+						</form>
+						<table class="table" id="relativeTable">
+							<thead>
+							<tr>
+								<th ><button id="fullRelativeTree" type="button"  class="btn-sm btn-outline-success mb-2"><i class="fas fa-sitemap"></i></button>	
+								&nbspΣχετικά</th>
+							</tr>
+							</thead>
+							<tbody>
+						
+							</tbody>
+						</table>
+						
+					</div>
+				</div>
+
+				<div class="table-responsive mt-2 pt-2" id="comments" style="background: rgba(122, 160, 180, 0.2)!important;">	
+					<form>
+						<div class="form-group row mb-2 mr-2 pt-2 ml-1">
+							<!--<label for="insertCommentField" class="col-sm-2 col-form-label">Νέο Σχόλιο</label>-->
+							<div class="col-7">
+								<input type="text" class="form-control form-control-sm " id="insertCommentField" placeholder="Νέο Σχόλιο">
+							</div>
+							<button id="saveCommentBtn" type="button" class="btn-sm btn-success mb-2">Εισαγωγή</button>	
+						</div>
+						
+					</form>
+					<table class="table" id="commentsTable">
+						<thead>
+						<tr>
+							<th id="commentsTitle">Σχόλια</th>
+						</tr>
+						</thead>
+						<tbody>
+					
+						</tbody>
+					</table>
+				</div>
+
+				<div class="table-responsive mt-2 pt-2" id="kshde" style="background: rgba(122, 160, 126, 0.2)!important;">
+					<table class="table" id="kshdeTableInProtocol">
+						<thead>
+						<tr>
+							<th id="kshdeTitle">ΚΣΗΔΕ</th>
+						</tr>
+						</thead>
+						<tbody>
+					
+						</tbody>
+					</table>
+				</div>
+
+				<div class="table-responsive mt-2 pt-2" id="history" style="background: rgba(122, 160, 126, 0.2)!important;">
+					<table class="table" id="historyTable">
+						<thead>
+						<tr>
+							<th id="historyTitle">Ιστορικό&nbsp<i id="historyArrow" onclick="loadHistory();" class="fas fa-arrow-right"></i></th>
+						</tr>
+						</thead>
+						<tbody>
+					
+						</tbody>
+					</table>
+				</div>
+
+				<!-- <?php include 'html/tags.php'?> -->
+
+			</div>	
+
+			<div id="foldersDiv" class="secondBottomSectionColumn" style="background: rgba(86, 86, 136, 0.2)!important;">
+				
+				<div class="row" style="padding-top:10px">
+					<div class="col">
+						<button id="saveFoldersButton" type="button" class="btn btn-outline-success"  onclick="saveFolders();" data-toggle="tooltip" data-placement="top" title="Αποθήκευση Αλλαγών στους Φακέλους"><i class="far fa-save"></i></button>
+						<span data-toggle="modal" data-target="#foldersModal"><button id="showFoldersButton" type="button"  class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Εμφάνιση λίστας φακέλων με επεξηγήσεις"><i class="fas fa-list-ol"></i></button></span>
+						<button data-toggle="modal" data-target="#seachfoldersModal" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Αναζήτηση φακέλων" id="seachFolderButton"><i class="fas fa-search"></i></button>
+						</br></br>
+					</div>	
+				</div>
+				<hr>
+				<table id="folders" name="folderList" class="table">
+
+				<thead >
+					<tr >
+						<th colspan="3">Φάκελοι</th>
+					</tr>
+				
+				</thead>
+				<tbody>
+					<?php 		
+						include 'connection.php';
+						mysqli_query($con,"SET NAMES 'UTF8'");
+						$erotima = "select * from folders order by aaField asc"; //ARIS
+						//$erotima = "select * from folders order by aaField asc";
+						$result1 = mysqli_query($con,$erotima) or die ("database read error - show folders");
+						$i = 0;
+						$rowcount=mysqli_num_rows($result1);
+						while ($row1 = mysqli_fetch_array($result1, MYSQLI_BOTH)){	
+							if (($i % 3) ==0){
+								echo '<tr>';
+							}
+							if ($row1['subfolderField'] == null){ 
+								$fullFolder = $row1['folderField']; 
+							} 
+							else{ 
+								$fullFolder = $row1['folderField'].".".$row1['subfolderField']; 
+							} 
+							echo '<td style="padding:1px"><button class="btn btn-secondary btn-sm" id="folder'.$row1['aaField'].'" onclick="changeFolderStatus(\'folder'.$row1['aaField'].'\')" >'.$fullFolder.'</button></td>';
+							//echo '<td style="padding:1px"><button class="btn btn-secondary btn-sm" id="folder'.$row1['aaField'].'" onclick="changeFolderStatus(\'folder'.$row1['aaField'].'\')" >'.$row1['folderField'].'</button></td>';													
+							if (($i % 3) ==2){
+								echo '</tr>';
+							}
+							$i++;
+						}
+					?>
+				</tbody>
+				</table>
+			</div>
+
+			
+			<div class="thirdBottomSectionColumn" id="assignmentsDiv" class="mt-2 mt-sm-0 col-<?php if (($_SESSION['protocolAccessLevel'] == 1) || (strpos($_SERVER['REQUEST_URI'], 'protocolBook.php') == true)){echo '12 col-md-4';}else{echo '12 col-md-4';}?> small" >
+				<div class="col-12" style="background: rgba(155, 130, 136, 0.2)!important;">	
+					<div class="row" style="padding-top:10px">
+						<div class="col-7">
+							<button <?php if($_SESSION['accessLevel']||$_SESSION['protocolAccessLevel'] == 1){ echo ''; }else{echo 'disabled';}?>  id="saveAssignmentButton" type="button" class="btn btn-outline-success trn" data-toggle="modal" data-target="#assignmentModal" data-whatever="assign" onclick="saveAssignments();"><i class="far fa-save"></i></button>
+							<button <?php if($_SESSION['accessLevel']||$_SESSION['protocolAccessLevel'] == 1){ echo ''; }else{echo 'disabled';}?>   id="addNotificationButton" type="button" class="btn btn-info trn" data-toggle="modal" data-target="#assignmentModal" data-whatever="assign" onclick="selectAllforNotification();"><i class="far fa-bell"></i></button>
+							<button <?php if($_SESSION['accessLevel']||$_SESSION['protocolAccessLevel'] == 1){ echo ''; }else{echo 'disabled';}?>   id="deselectUsersButton" type="button" class="btn btn-danger trn" data-toggle="modal" data-target="#assignmentModal" data-whatever="assign" onclick="deselectAllAssignments();"><i class="fas fa-user-slash"></i></button>
+						</div>
+						<div>
+							<div class="row"><div class="alert alert-success" style="padding:0.5em"></div>&nbspΧρέωση</div>
+							<div class="row"><div class="alert alert-info" style="padding:0.5em"></div>&nbspΚοιν.</div>
+						</div>
+					</div>
+					<hr>
+						<b>
+							<div id="assignmentsTitle" style="color: DarkRed;font-size: 12px;">Χρεώσεις</div>
+						</b>
+					<hr>
+					<br>
+				</div>
+				<div class="col-12" id="assignments" name="assignments" style="padding-top:10px;background: rgba(155, 130, 136, 0.2)!important;">
+				<!--<table id="assignments" name="assignments" class="table">
+				<thead>
+					<tr>
+						<th>Χρεώσεις</th>
+					</tr>
+
+				</thead>
+				<tbody>-->
+				<?php 		
+						include 'connectionAdeies.php';
+						include 'findLevels.php';
+						mysqli_query($con1,"SET NAMES 'UTF8'");
+						$erotimadep = "select  aa,departmentName,parent,last_parent from departmentstypes where parent=0"; 
+						$resultdep = mysqli_query($con1,$erotimadep) or die ("database read error - show table attachments");
+						//sto headDeps apothikeuontai oi arxikoi komvoi. Sinithos einai enas p.x. o Perifereiakos Dieuthintis
+						//$headDeps=array();
+						//while ($rowdep = mysqli_fetch_array($resultdep, MYSQLI_BOTH)){
+							//if ($rowdep['parent'] == 0){
+								//$headDeps[] = $rowdep;
+							//}	
+				//}
+						//var_dump($headDeps);
+						//echo '<br>----------';
+						//$deps = array();
+						//$deps = depsOneLevelDown($headDeps[0]['aa'],$deps);
+						
+						$headDep = mysqli_fetch_array($resultdep, MYSQLI_BOTH);
+						
+						
+						if (strpos($_SERVER['REQUEST_URI'], 'protocolBook.php') == true){
+							$html = createTree($headDep,-1);
+						}
+						else if ($_SESSION['protocolAccessLevel'] == 1){
+							$html = createTree($headDep,1);
+						}
+						else if ($_SESSION['accessLevel']==1){
+							$html = createTree($headDep,0);
+						}
+						else{
+							$html = createTree($headDep,-1);
+						}
+						echo $html;
+					
+					echo '<div id="assignmentsToAbsent" style="background: rgba(155, 130, 136, 0.2)!important;">';
+					echo '</div>';
+				?>
+				</div>
+				<!--</tbody>
+				</table>-->
+			</div>
+				
+
+		</div>
+	</div>`;
+
+	const loginData = JSON.parse(localStorage.getItem("loginData"));
+	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
+	document.querySelector("#protocolRecordDialog").showModal();
+	//event.currentTarget.style.backgroundColor = "green";
+	document.querySelector("#protocolRecordDialog").innerHTML = protocolWindowContent;
+	
+	//Fill protocolWindowContent 
+	if (currentRoleObject.protocolAccessLevel ==1){
+		document.querySelector("#bottomSectionButtons").innerHTML += 
+		`<span   data-toggle="tooltip" title="Αποστολή ΚΣΗΔΕ"><button style="margin-left : 0.5em;" data-toggle="modal" data-target="#addKsideModal" type="button" class="btn btn-success ektos mr-1" id="sendDoc" ><i class="fas fa-download fa-rotate-180"></i></button></span>
+		 <button class="btn btn-warning ektos mr-2" name="copyProtocol" id="copyProtocol" onclick="copyProtocol();" data-toggle="tooltip" title="Αντίγραφο Πρωτοκόλλου"><i class="far fa-copy"></i></button>&nbsp`;
+	}
+	if (currentRoleObject.protocolAccessLevel ==1 || currentRoleObject.accessLevel ==1){
+		document.querySelector("#bottomSectionButtons").innerHTML += 
+		`<button class="btn btn-info ektos mr-2" name="publishToSite" id="publishToSite" onclick="publishToSite();" data-toggle="tooltip" title="Αίτημα Ανάρτησης στη Σελίδα"><i class="fas fa-cloud-upload-alt"></i></button>`;
+	}
+	document.querySelector("#bottomSectionButtons").innerHTML += `<button class="btn btn-warning ektos mr-2" name="makeUnread" id="makeUnread" onclick="makeMessageUnread()" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
+	document.querySelector("#bottomSectionTitle").innerHTML =subject;
+	document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadfile());
+	document.querySelector("#fullRelativeTree").addEventListener("click",()=>loadRelativeFull(1));
+	document.querySelector("#insertRelativeBtn").addEventListener("click",()=>saveRelative());
+	document.querySelector("#saveCommentBtn").addEventListener("click",()=>saveComment());
+
+}
+
+
+
 
 // if ( aData[8] == 1 )
 // {
@@ -358,3 +621,81 @@ export function fillChargesTable(result){
 //   }
 // },
 
+
+
+// table.on( 'select', function ( e, dt, type, indexes ) {
+// 	var temp = table.page.info();
+// 	currPage = temp.page;
+// 	console.log("page="+currPage);
+// 	currRow = dt.row({selected: true}).index();
+// 	console.log("row="+currRow);
+	
+// 	$("#historyArrow").removeClass('fa-rotate-90');
+// 	$("#bottomSection").removeClass("d-none");
+// 	var elmnt = document.getElementById("tableButtonsSection");
+// 	elmnt.scrollIntoView(true);
+// 	$("#attachments tbody tr").remove(); 
+// 	$("#history tbody tr").remove(); 
+// 	$("#commentsTable tbody tr").remove();
+// 	if ( type === 'row' ) {
+// 		//var data = table.rows( indexes ).data().pluck( 'id' );
+// 		var sdata = table.cell('.selected', 0).data();
+// 		selectedIndex = sdata;	
+// 		if (recentProtocols == null){
+// 			recentProtocols = [];
+// 			recentProtocols.push(selectedIndex);
+// 		}
+// 		else if (recentProtocols.length >=5){
+// 			const check = (element) => element == selectedIndex;
+// 			var elementExists = recentProtocols.findIndex(check);
+// 			console.log("vrethike sta prosfata :"+elementExists);
+// 			if (elementExists == -1){
+// 				console.log("tha prostethei");
+// 				recentProtocols.shift();
+// 				recentProtocols.push(selectedIndex);
+// 			}
+// 		}
+// 		else{
+// 			const check = (element) => element == selectedIndex;
+// 			var elementExists = recentProtocols.findIndex(check);
+// 			console.log("vrethike sta prosfata :"+elementExists);
+// 			if (elementExists == -1){
+// 				recentProtocols.push(selectedIndex);
+// 			}
+// 		}
+		
+// 		localStorage.setItem("recentProtocols", JSON.stringify(recentProtocols));	
+// 		loadRecent();						
+// 		//alert(sdata);
+// 		document.getElementById("editButton").disabled = false;
+// 		//document.getElementById("removeButton").disabled = false;
+// 		loadAttachments(<?php echo  $_SESSION['protocolAccessLevel'];?>);
+// 		loadAssignments();
+// 		loadComments(1);
+// 		loadFolders();
+// 		loadKshde();
+// 		if (<?php echo  $_SESSION['protocolAccessLevel'];?>){ 
+// 			loadHistory(); 
+// 		}
+// 		loadRelative(1);
+// 		document.getElementById("bottomSectionTitle").innerHTML  = "<b> Πρωτ. : " + table.cell('.selected', 0).data()+"</b>";
+// 		document.getElementById("bottomSectionTitle").innerHTML  += " ||  <b> (ΕΙΣ.) </b> " + table.cell('.selected', 2).data();
+// 		document.getElementById("bottomSectionTitle").innerHTML  += " || <b> (ΕΞ.)  </b>" + table.cell('.selected', 6).data();
+// 		//console.log("ddd"+table.cell('.selected', 11).data());
+// 		//if (table.cell('.selected', 11).data() == 0){
+// 		messageRead(table.cell('.selected', 0).data(),<?php echo $_SESSION['aa_staff'];?>);
+// 			table.$('tr.selected').removeClass('unread');
+// 		//}
+// 	}
+// 	//window.history.pushState("test", "Title", "10.142.49.10/nocc-1.9.8/protocol/editTable1.php?tn=book&page="+currPage);
+// } );
+
+// table.on( 'deselect', function ( e, dt, type, indexes ) {
+// 	selectedIndex = 0;
+// 	if ( type === 'row' ) {
+// 		//var data = table.rows( indexes ).data().pluck( 'id' );
+// 		document.getElementById("editButton").disabled = true;
+// 		//document.getElementById("removeButton").disabled = true;
+// 		$("#bottomSection").addClass("d-none");
+// 	}
+// } );

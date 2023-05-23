@@ -115,6 +115,19 @@ td .fa-crosshairs{
 	width  : calc(100% - 4em);
 }
 
+#chargesTable>tbody>tr{
+	cursor : pointer;
+}
+
+#protocolRecordDialog {
+	width:90%;
+	height:90%;
+}
+
+#protocolRecordDialog::backdrop{
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
 #dataToSignTable{
 	margin : 1em;
 	width  : calc(100% - 4em);
@@ -355,3 +368,28 @@ td .fa-crosshairs{
 	background: floralwhite;
 	border-radius: 5px;
 }
+
+#bottomSectionTitleBar {
+	display: flex;
+    align-items: center;
+    justify-content: space-between;
+	border-color: #ccc;
+	border-bottom: solid 1px;
+	margin-bottom: 0.2em;
+	padding-bottom: 0.2em;
+}
+
+#bottomSectionBody {
+	display: flex;
+	flex-direction: row;
+    align-items: top;
+    justify-content: left;
+	gap:10px;
+}
+
+.firstBottomSectionColumn,.secondBottomSectionColumn,.thirdBottomSectionColumn{
+	display : flex;
+	flex-direction: column;
+	gap : 5px;
+}
+
