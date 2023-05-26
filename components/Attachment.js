@@ -1,37 +1,56 @@
+import refreshToken from "../modules/RefreshToken.js";
+import getFromLocalStorage from "../modules/LocalStorage.js";
+import { viewFile } from "../modules/Records_test.js";
 
-const content = `<div  class="table-responsive  pb-2" id="attachmentsDiv"  style="background: rgba(122, 130, 136, 0.2)!important;border-radius:5px;">
-    <div class="pl-2 pl-sm-0">
-        </br>
-        <input type="file" class="btn btn-default ektos" name="selectedFile" id="selectedFile" />
-        <button class="btn btn-outline-success ektos " id="uploadFileButton"  title="Μεταφόρτωση επιλεγμένου αρχείου"><i class="fas fa-upload"></i></button>
+const content = 
+`<div  id="attachmentsDiv"  style="display:flex;gap:10px;flex-direction:column;height:100%;background: rgba(122, 130, 136, 0.2)!important;border-radius:5px;padding:10px;">
+    <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
+    <link rel="stylesheet" type="text/css" href="css/custom.css" />
+    <link href="css/all.css" rel="stylesheet">
+
+    <div style="display:flex;justify-content: space-between;align-items:center;">
+        <div>
+            <span style="font-size:14px;font-weight:bold;">Συνημμένα</span>
+        </div>
+        <div>
+            <button class="btn btn-outline-danger btn-sm" id="zipFileButton"  title="Λήψη όλων"><i class="fas fa-file-download"></i></button>
+            <button id="showAttachmentModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
+        </div>
     </div>
-    <hr>
-    <table id="attachments" name="attachments" class="table">
-        <thead>
-            <tr>
-                <th id="attachmentsTitle">Συνημμένα<button class="btn btn-outline-danger ektos btn-sm" id="zipFileButton"  title="Λήψη όλων"><i class="fas fa-file-download fa-lg"></i></button></th>
-            </tr>
-        </thead>
-        <tbody> 
-        </tbody>
-    </table>
-</div>`;
+
+    <div style="height:90%;overflow-y:scroll;">
+        <table id="attachments" name="attachments" class="table">
+            <tbody style="font-size : 12px;"> 
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<dialog id="addAttachmentModal" class="customDialog">
+    <form>
+        <div class="flexVertical">
+            <input type="file" class="btn btn-default ektos" name="selectedFile" id="selectedFile" />
+            <button class="btn btn-outline-success ektos " id="uploadFileButton"  title="Μεταφόρτωση επιλεγμένου αρχείου"><i class="fas fa-upload"></i></button>
+        </div>
+    </form>
+</dialog>`;
 
 
 class Attachments extends HTMLElement {
     protocolNo;
+    shadow;
 
     constructor() {
         super();
-      
-       
     }
 
     connectedCallback(){
-        this.innerHTML = content;
+        this.shadow = this.attachShadow({mode: 'open'});
+        this.shadow.innerHTML = content;
         this.protocolNo = this.attributes.protocolNo.value;
-        console.log(this.protocolNo);
-        document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFile());
+        //console.log(this.protocolNo);
+        this.shadow.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFile());
+        this.shadow.querySelector("#showAttachmentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addAttachmentModal").showModal());
         this.loadAttachments(1);
     }
 
@@ -40,20 +59,20 @@ class Attachments extends HTMLElement {
     }
 
     async uploadFile(uploadURL="/api/uploadAttFile.php"){
-        document.querySelector("#loadingDialog").showModal();
+        this.shadow.querySelector("#loadingDialog").showModal();
         const {jwt,role} = getFromLocalStorage();	
         
-        const files = document.getElementById('selectedFile').files;
+        const files = this.shadow.getElementById('selectedFile').files;
         let numFiles = files.length;
         let data = new FormData();
 
         if (numFiles==0){
             alert("Παρακαλώ επιλέξτε το αρχείο που θα προσθέσετε στα συνημμένα");
-            document.querySelector("#loadingDialog").close();
+            this.shadow.querySelector("#loadingDialog").close();
             return;
         }
 
-        data.append('selectedFile', document.getElementById('selectedFile').files[0]);
+        data.append('selectedFile', this.shadow.getElementById('selectedFile').files[0]);
         data.append('role',role);
             
         const myHeaders = new Headers();
@@ -62,7 +81,7 @@ class Attachments extends HTMLElement {
         
         const res = await fetch(uploadURL,init); 
         if (!res.ok){
-            document.querySelector("#loadingDialog").close();
+            this.shadow.querySelector("#loadingDialog").close();
             if (res.status == 401){
                 const resRef = await refreshToken();
                 if (resRef ===1){
@@ -86,8 +105,8 @@ class Attachments extends HTMLElement {
             }
         }
         else {
-            document.querySelector("#loadingDialog").close();
-            document.querySelector("#selectedFile").value = null;
+            this.shadow.querySelector("#loadingDialog").close();
+            this.shadow.querySelector("#selectedFile").value = null;
             alert("Το έγγραφο έχει αποσταλεί! Μάλλον...");
             this.loadAttachments(1);
         }
@@ -97,8 +116,8 @@ class Attachments extends HTMLElement {
         let fileArray = [];
         let year;
         let exdisk=0;
-        document.querySelectorAll("#attachments tbody").innerHTML = "";
-        document.querySelectorAll("#attachmentsTitle").innerHTML = '<div id="attachmentsSpinner" class="spinner-border" style="margin-left:1em;width: 1rem; height: 1rem;" role="status"></div>';
+        this.shadow.querySelectorAll("#attachments tbody").innerHTML = "";
+        this.shadow.querySelectorAll("#attachmentsTitle").innerHTML = '<div id="attachmentsSpinner" class="spinner-border" style="margin-left:1em;width: 1rem; height: 1rem;" role="status"></div>';
         const loginData = JSON.parse(localStorage.getItem("loginData"));
         const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):2023;
         const urlpar = new URLSearchParams({currentYear , protocolNo : this.protocolNo});
@@ -130,7 +149,7 @@ class Attachments extends HTMLElement {
         else{
             const result = await res.json(); 
             let temp3="";
-            //document.querySelector("#attachmentsSpinner").remove();
+            //this.shadow.querySelector("#attachmentsSpinner").remove();
             //$("#attachmentsSpinner").remove();
             const openInBrowser = ['pdf','PDF','html','htm','jpg','png'];
             for (let key1=0;key1<result.length;key1++) {
@@ -183,15 +202,7 @@ class Attachments extends HTMLElement {
                 let spacesString ='&nbsp&nbsp&nbsp';
                 temp3+=newTableLineString+fileLinkString+spacesString+openFileString+(isWord||isPDF?spacesString+openFileStringWithProtocol:"")+(isPDF&&level?spacesString+setGdprString:"")+spacesString+removeFileString+spacesString+spacesString+attachedByString+'</td></tr>';
             }
-            let zipBut = document.getElementById('zipFileButton').addEventListener("click",async function(){
-                // $.ajax({
-                   // type: "post",
-                   // data: {"fileArray" : fileArray, "selectedIndex" : selectedIndex, "selectedYear" : year, "externaldisk" : exdisk},
-                   // url: "zipFiles.php",
-                   // success: function(msg1){					
-                        // window.open(msg1);
-                   // }
-                // })
+            let zipBut = this.shadow.getElementById('zipFileButton').addEventListener("click",async function(){
                 let formData  = new FormData();
                 formData.append('protocolNo',this.protocolNo);
                 formData.append('currentYear', year);
@@ -214,31 +225,31 @@ class Attachments extends HTMLElement {
                 }
             });
             //$( "#attachments tbody").append(temp3);
-            document.querySelector("#attachments tbody").innerHTML = temp3;
+            this.shadow.querySelector("#attachments tbody").innerHTML = temp3;
         }		
     }
 
     removeAttachment(aa,record,filename){
         var r = confirm("Πρόκειται να διαγράψετε ενα συνημμένο έγγραφο");
-         if (r == true) {
-               $.ajax({
-                  type: "post",
-                  data: {"aa" : aa, "record":record,"filename":filename},
-                  url: "removeAttachment.php",
-                  success: function(msg){
-   
-                          $(".message").html(msg);
-                           $("#alert").show();
-                      
-                      loadAttachments(1);
-                      loadHistory();
-                      
-                   }
-               });	  		
-         } else {
-           
-         }
-   }
+        if (r == true) {
+            $.ajax({
+                type: "post",
+                data: {"aa" : aa, "record":record,"filename":filename},
+                url: "removeAttachment.php",
+                success: function(msg){
+
+                        $(".message").html(msg);
+                        $("#alert").show();
+                    
+                    loadAttachments(1);
+                    loadHistory();
+                    
+                }
+            });	  		
+        } else {
+        
+        }
+    }
 }
 
 

@@ -353,64 +353,13 @@ function openProtocolRecord(subject,record,event){
 		<div id="bottomSectionBody">
 			<div  class="firstBottomSectionColumn">
 
-				<record-attachments protocolNo="${record}"></record-attachments>
+				<record-attachments style="max-height:40%;" protocolNo="${record}"></record-attachments>
 
-				<div id="relativeModule">
-					<div class="pr-1 pl-2 pt-3">
-						<button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#sxetika" aria-expanded="false" aria-controls="sxetika">
-							Σχετικά Έγγραφα <span id="relativeButtonBadge" class="badge badge-info"></span>
-						</button>
-					</div>
-					<div class=" mh-25 mt-3 pt-3  collapse" id="sxetika" style="background: rgba(122, 160, 126, 0.2)!important;">
-					
-						<form>
-							<div class="form-group row mb-2 mr-2 pt-2 ml-1">
-								<label for="insertRelativeField" class="col-sm-2 col-form-label">Νέο Σχετικό</label>
-								<div class="row pl-4 pl-sm-0 pt-1 pt-sm-0 pb-2 pb-sm-0 ">
-									<input type="number" class="form-control-sm col-3" id="insertRelativeField" placeholder="αρ.πρωτ">&nbsp/&nbsp
-									<input type="number" class="form-control-sm col-3" id="insertRelativeYearField" value="">
-								</div>
-								<button id="insertRelativeBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
-							</div>
-							
-						</form>
-						<table class="table" id="relativeTable">
-							<thead>
-							<tr>
-								<th ><button id="fullRelativeTree" type="button"  class="btn-sm btn-outline-success mb-2"><i class="fas fa-sitemap"></i></button>	
-								&nbspΣχετικά</th>
-							</tr>
-							</thead>
-							<tbody>
-						
-							</tbody>
-						</table>
-						
-					</div>
-				</div>
+				<record-relative style="max-height:20%;" protocolNo="${record}"></record-relative>
 
-				<div class="table-responsive mt-2 pt-2" id="comments" style="background: rgba(122, 160, 180, 0.2)!important;">	
-					<form>
-						<div class="form-group row mb-2 mr-2 pt-2 ml-1">
-							<!--<label for="insertCommentField" class="col-sm-2 col-form-label">Νέο Σχόλιο</label>-->
-							<div class="col-7">
-								<input type="text" class="form-control form-control-sm " id="insertCommentField" placeholder="Νέο Σχόλιο">
-							</div>
-							<button id="saveCommentBtn" type="button" class="btn-sm btn-success mb-2">Εισαγωγή</button>	
-						</div>
-						
-					</form>
-					<table class="table" id="commentsTable">
-						<thead>
-						<tr>
-							<th id="commentsTitle">Σχόλια</th>
-						</tr>
-						</thead>
-						<tbody>
-					
-						</tbody>
-					</table>
-				</div>
+				<record-comment style="max-height:20%;" protocolNo="${record}"></record-comment>
+
+				
 
 				<div class="table-responsive mt-2 pt-2" id="kshde" style="background: rgba(122, 160, 126, 0.2)!important;">
 					<table class="table" id="kshdeTableInProtocol">
@@ -587,10 +536,8 @@ function openProtocolRecord(subject,record,event){
 	}
 	document.querySelector("#bottomSectionButtons").innerHTML += `<button class="btn btn-warning ektos mr-2" name="makeUnread" id="makeUnread" onclick="makeMessageUnread()" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
 	document.querySelector("#bottomSectionTitle").innerHTML =subject;
-	document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadfile());
-	document.querySelector("#fullRelativeTree").addEventListener("click",()=>loadRelativeFull(1));
-	document.querySelector("#insertRelativeBtn").addEventListener("click",()=>saveRelative());
-	document.querySelector("#saveCommentBtn").addEventListener("click",()=>saveComment());
+
+	
 
 }
 

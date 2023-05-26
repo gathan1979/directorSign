@@ -390,6 +390,13 @@ td .fa-crosshairs{
 .firstBottomSectionColumn,.secondBottomSectionColumn,.thirdBottomSectionColumn{
 	display : flex;
 	flex-direction: column;
-	gap : 5px;
+	gap : 15px;
+	flex-basis:30%;
+	flex-grow: 1;
 }
+
+.customDialog::backdrop{
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
 

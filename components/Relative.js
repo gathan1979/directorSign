@@ -1,239 +1,249 @@
+import refreshToken from "../modules/RefreshToken.js";
+import getFromLocalStorage from "../modules/LocalStorage.js";
 
-const content = `<div id="relativeModule">
-    <div class="pr-1 pl-2 pt-3">
-        <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#sxetika" aria-expanded="false" aria-controls="sxetika">
-            Σχετικά Έγγραφα <span id="relativeButtonBadge" class="badge badge-info"></span>
-        </button>
+const relativeContent = `
+    <div id="relativeModule" style="display:flex;gap:10px;flex-direction:column;background: rgba(122, 160, 126, 0.2)!important;padding:10px;height:100%;">
+        <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
+        <link rel="stylesheet" type="text/css" href="css/custom.css" />
+        <link href="css/all.css" rel="stylesheet">
+        
+        <div style="display:flex;justify-content: space-between;align-items:center;">
+            <div>
+                <span id="relativeTableTitle" style="font-size:14px;font-weight:bold;">Σχετικά</span> 
+                <span class="badge bg-secondary" id="relativeTableTitleBadge"></span>
+            </div>
+            <div>
+                <button id="fullRelativeTree" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-sitemap"></i></button>
+                <button id="showRelativeModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+
+        <div style="height:90%;overflow-y:scroll;">
+            <table class="table" id="relativeTable">
+                
+                <tbody id="relativeTableBody" style="font-size : 12px;">
+            
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class=" mh-25 mt-3 pt-3  collapse" id="sxetika" style="background: rgba(122, 160, 126, 0.2)!important;">
-
+    <dialog id="addRelativeModal" class="customDialog">
         <form>
-            <div class="form-group row mb-2 mr-2 pt-2 ml-1">
-                <label for="insertRelativeField" class="col-sm-2 col-form-label">Νέο Σχετικό</label>
-                <div class="row pl-4 pl-sm-0 pt-1 pt-sm-0 pb-2 pb-sm-0 ">
-                    <input type="number" class="form-control-sm col-3" id="insertRelativeField" placeholder="αρ.πρωτ">&nbsp/&nbsp
-                    <input type="number" class="form-control-sm col-3" id="insertRelativeYearField" value="">
+            <div class="flexVertical">
+                <span >Νέο Σχετικό</span>
+                <div>
+                    <input type="number" class="form-control-sm" id="insertRelativeField" placeholder="αρ.πρωτ">&nbsp/&nbsp
+                    <input type="number" class="form-control-sm" id="insertRelativeYearField" value="">
                 </div>
                 <button id="insertRelativeBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
             </div>
-            
         </form>
-        <table class="table" id="relativeTable">
-            <thead>
-            <tr>
-                <th ><button id="fullRelativeTree" type="button"  class="btn-sm btn-outline-success mb-2"><i class="fas fa-sitemap"></i></button>	
-                &nbspΣχετικά</th>
-            </tr>
-            </thead>
-            <tbody>
-        
-            </tbody>
-        </table>
-        
-    </div>
-</div>`;
+    </dialog>`;
 
 
 class Relative extends HTMLElement {
     protocolNo;
+    shadow;
 
     constructor() {
         super();
     }
 
     connectedCallback(){
-        this.innerHTML = content;
+        this.shadow = this.attachShadow({mode: 'open'});
+        this.shadow.innerHTML = relativeContent;
         this.protocolNo = this.attributes.protocolNo.value;
-        console.log(this.protocolNo);
-        document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFile());
-        this.loadAttachments(1);
+        this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>loadRelativeFull(1));
+        this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>saveRelative());
+        this.loadRelative(this.protocolNo,1);
+        this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
     }
 
     disconnectedCallback() {
     
     }
 
-    async uploadFile(uploadURL="/api/uploadAttFile.php"){
-        document.querySelector("#loadingDialog").showModal();
-        const {jwt,role} = getFromLocalStorage();	
-        
-        const files = document.getElementById('selectedFile').files;
-        let numFiles = files.length;
-        let data = new FormData();
 
-        if (numFiles==0){
-            alert("Παρακαλώ επιλέξτε το αρχείο που θα προσθέσετε στα συνημμένα");
-            document.querySelector("#loadingDialog").close();
-            return;
-        }
+    async loadRelative(protocolNo, active){
+        this.shadow.querySelector("#insertRelativeField").value = "";
+        this.shadow.querySelector("#insertRelativeYearField").value = new Date().getFullYear;
+        this.shadow.querySelector("#relativeTableBody").innerHTML = "";
 
-        data.append('selectedFile', document.getElementById('selectedFile').files[0]);
-        data.append('role',role);
-            
+        const {jwt,role} = getFromLocalStorage();
         const myHeaders = new Headers();
         myHeaders.append('Authorization', jwt);
-        let init = {method: 'POST', headers : myHeaders, body : data};
+        let urlparams = new URLSearchParams({postData : protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
         
-        const res = await fetch(uploadURL,init); 
+        let init = {method: 'GET', headers : myHeaders};
+        const res = await fetch("/api/getRelative.php?"+urlparams,init);
         if (!res.ok){
-            document.querySelector("#loadingDialog").close();
-            if (res.status == 401){
+            const resdec = res.json();
+            if (res.status ==  401){
                 const resRef = await refreshToken();
-                if (resRef ===1){
-                    uploadFile(uploadURL);
+                if (resRef ==1){
+                    loadRelative(active);
                 }
                 else{
-                    alert("Σφάλμα εξουσιοδότησης");	
+                    alert("σφάλμα εξουσιοδότησης");
                 }
             }
             else if (res.status==403){
-                window.open('unAuthorized.html', '_blank');
+                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
             }
             else if (res.status==404){
                 alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Σφάλμα! Επικοινωνήστε με το διαχειριστή του συστήματος");
             }
             else{
                 alert("Σφάλμα!!!");
             }
         }
-        else {
-            document.querySelector("#loadingDialog").close();
-            document.querySelector("#selectedFile").value = null;
-            alert("Το έγγραφο έχει αποσταλεί! Μάλλον...");
-            this.loadAttachments(1);
-        }
-    }
-
-    async loadAttachments(level){ // το level να ελεγχθεί, δουλεύει πλέον με το localStorage
-        let fileArray = [];
-        let year;
-        let exdisk=0;
-        document.querySelectorAll("#attachments tbody").innerHTML = "";
-        document.querySelectorAll("#attachmentsTitle").innerHTML = '<div id="attachmentsSpinner" class="spinner-border" style="margin-left:1em;width: 1rem; height: 1rem;" role="status"></div>';
-        const loginData = JSON.parse(localStorage.getItem("loginData"));
-        const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):2023;
-        const urlpar = new URLSearchParams({currentYear , protocolNo : this.protocolNo});
-        if (level!=-1){
-            level = +loginData.user.roles[localStorage.getItem("currentRole")].protocolAccessLevel;
-        }
-        const jwt = loginData.jwt;
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let init = {method: 'GET', headers : myHeaders};
-        
-        const res = await fetch("/api/getAttachments.php?"+urlpar,init); 
-        if (!res.ok){
-            if (res.status==401){
-                const resRef = await refreshToken();
-                if (resRef !==1){
-                    alert("σφάλμα στη λήψη συνημμένων");
-                }
-                else{
-                    loadAttachments(level);
-                }
-            }
-            else{
-                const error = new Error("unauthorized");
-                error.code = "400";
-                throw error;	
-            }
-        }
         else{
-            const result = await res.json(); 
-            let temp3="";
-            //document.querySelector("#attachmentsSpinner").remove();
-            //$("#attachmentsSpinner").remove();
-            const openInBrowser = ['pdf','PDF','html','htm','jpg','png'];
-            for (let key1=0;key1<result.length;key1++) {
-                
-                let filenameSize = result[key1]['filename'].length;
-                let attachedByString = '<button type="button" class="btn btn-info btn-sm">'+result[key1]['attachedBy']+'</button>';
-                let newTableLineString = '<tr><td style="padding-top:0.2rem;padding-bottom:0.2rem">';
-                let fileLinkString = "";
-                if (result[key1]['isGdprProtected']=="1"){
-                    fileLinkString+='<i class="fas fa-exclamation" style="color:red"></i>&nbsp';
-                }
-                if (level==1){	
-                    fileLinkString += '<b data-toggle="tooltip" title="Μετονομασία Συνημμένου" contenteditable="true" onkeyup="checkAndrenameAttachment('+result[key1]['aa']+',event);" onfocusout="renameAttachment('+result[key1]['aa']+',event);">'+result[key1]['filename']+'</b>';
-                }
-                else{
-                    fileLinkString += '<b>'+result[key1]['filename']+'</b>';
-                }		
-                fileArray.push(result[key1]['filename']);	
-                year = result[key1]['year'];
-                exdisk = result[key1]['externaldisk'];
-                
-                let isPDF = false;
-                let isWord = false;
-                let fileParts = result[key1]['filename'].split(".");
-                let fileType = fileParts[fileParts.length - 1];
-                if (fileType == "pdf" || fileType=="PDF"){
-                    isPDF = true;
-                }
-                else if (fileType == "doc" || fileType=="docx"){
-                    isWord = true;
-                }
-                
-                let removeFileString = "";
-                if (level!=-1){
-                    removeFileString = '<button data-toggle="tooltip" title="Διαγραφή συνημμένου" class="btn-danger" onclick="removeAttachment('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\')"><i class="far fa-minus-square"></i></button>';
-                }
-                //let openFileString = '<button type="button" class="btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="fas fa-folder-open"></i></button>';
-                let openFileImage = '<i class="fas fa-download"></i>';
-                if (openInBrowser.includes(fileType)){
-                    openFileImage = '<i class="fas fa-folder-open"></i>';
-                }
-                let openFileString = '<button type="button" class="btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+',0)">'+openFileImage+'</button>';
-                //let openFileStringWithProtocol = '<button class="btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNewWithProtocol('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="far fa-window-maximize"></i></button>';
-                let openFileStringWithProtocol = '<button class="btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNew('+result[key1]['aa']+',1)"><i class="far fa-window-maximize"></i></button>';
-                
-                let setGdprString = '<button class="btn-warning" data-toggle="modal" data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
-                //if (level!=-1){	
-                    //setGdprString = '<button '+(level ==1 ? "" : "disabled")+' class="btn-warning" data-toggle="modal" data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
-                //}
-                let spacesString ='&nbsp&nbsp&nbsp';
-                temp3+=newTableLineString+fileLinkString+spacesString+openFileString+(isWord||isPDF?spacesString+openFileStringWithProtocol:"")+(isPDF&&level?spacesString+setGdprString:"")+spacesString+removeFileString+spacesString+spacesString+attachedByString+'</td></tr>';
-            }
-            let zipBut = document.getElementById('zipFileButton').addEventListener("click",async function(){
-                // $.ajax({
-                   // type: "post",
-                   // data: {"fileArray" : fileArray, "selectedIndex" : selectedIndex, "selectedYear" : year, "externaldisk" : exdisk},
-                   // url: "zipFiles.php",
-                   // success: function(msg1){					
-                        // window.open(msg1);
-                   // }
-                // })
-                let formData  = new FormData();
-                formData.append('protocolNo',this.protocolNo);
-                formData.append('currentYear', year);
-                let newInit = {method: 'POST', headers : myHeaders, body : formData};
-                const res = await fetch("/api/zipFiles.php",newInit); 
-                if (!res.ok){
-                    if (res.status==401){
-                        await refreshToken();
+            const resdec = await res.json();
+            this.shadow.getElementById("relativeTableTitleBadge").textContent = resdec.length;
+
+            for (let key1=0;key1<resdec.length;key1++) {
+                let temp="";
+                const removeRelative = '<button class="btn-danger" onclick="removeRelative('+resdec[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
+                const spacesString ='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+                const subject = '&nbsp&nbsp&nbsp'+resdec[key1][4].substring(0, 50)+ "...";
+                const subjectRel = '&nbsp&nbsp&nbsp'+resdec[key1][5].substring(0, 50)+ "...";
+                //console.log(selectedIndex+" --- "+resdec[key1]['recordField']);
+                if (active){
+                    if (protocolNo == resdec[key1]['recordField']){
+                        temp = "<tr><td id='sxet"+resdec[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+resdec[key1]['relative']+');">'+resdec[key1]['relative']+"/"+resdec[key1]['year']+'</button>'+spacesString+removeRelative+subjectRel+"</td></tr>";
                     }
                     else{
-                        const error = new Error("unauthorized");
-                        error.code = "400";
-                        throw error;	
+                        temp = "<tr><td id='sxet"+resdec[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+resdec[key1]['recordField']+');">'+resdec[key1]['recordField']+"/"+resdec[key1]['year']+'</button>'+spacesString+removeRelative+subject+"</td></tr>";
+                    }
+                }else{
+                    if (protocolNo == resdec[key1]['recordField']){
+                        temp = "<tr><td id='sxet"+resdec[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+resdec[key1]['relative']+');">'+resdec[key1]['relative']+"/"+resdec[key1]['year']+'</button>'+spacesString+"</td></tr>";
+                    }
+                    else{
+                        temp = "<tr><td id='sxet"+resdec[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+resdec[key1]['recordField']+');">'+resdec[key1]['recordField']+"/"+resdec[key1]['year']+'</button>'+spacesString+"</td></tr>";
                     }
                 }
-                else{
-                    const result = await res.text();
-                    console.log(result);
-                    window.open(result);
-                }
-            });
-            //$( "#attachments tbody").append(temp3);
-            document.querySelector("#attachments tbody").innerHTML = temp3;
-        }		
+                this.shadow.getElementById("relativeTableBody").innerHTML += temp;
+            }
+        }    
     }
+    
+    async loadRelativeFull(active){
+        $("#insertRelativeField").val('');
+        $("#insertRelativeYearField").val('');
+        $("#relativeTable tbody tr").remove(); 
+        if (this.shadow.getElementById('fullRelativeTree').classList.contains('btn-success')){
+            this.shadow.getElementById('fullRelativeTree').classList.remove('btn-success');
+            this.shadow.getElementById('fullRelativeTree').classList.add('btn-outline-success');
+            loadRelative(active);
+            return;
+        }
+        else{
+            this.shadow.getElementById('fullRelativeTree').classList.remove('btn-outline-success');
+            this.shadow.getElementById('fullRelativeTree').classList.add('btn-success');
+        }
+        $.ajax({
+           type: "post",
+           data: {"postData" : selectedIndex},
+           url: "getRelativeFull.php",
+           success: function(msg){
+             //console.log(msg); 
+            result = jQuery.parseJSON(msg); 
+            //console.log(result);
+            temp4="";
+            var html = "";
+            $("#relativeButtonBadge").empty().html(result.length);
+            for (var key1=0;key1<result.length;key1++) {
+                var removeRelative = '<button class="btn-danger" onclick="removeRelative('+result[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
+                var spacesString ='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+                var subject = '&nbsp&nbsp&nbsp'+result[key1][4].substring(0, 80)+ "...";
+                var subjectRel = '&nbsp&nbsp&nbsp'+result[key1][5].substring(0, 80)+ "...";
+                console.log(result[key1]['recordField']+" --- "+result[key1]['relative']+">>>>>"+subject+">>>>>"+subjectRel);
+                if (active){
+                    if (selectedIndex == result[key1]['recordField']){
+                        temp = "<tr><td id='sxet"+result[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+result[key1]['relative']+');">'+result[key1]['relative']+"/"+result[key1]['year']+'</button>'+spacesString+removeRelative+subjectRel+"</td></tr>";
+                    }
+                    else if (selectedIndex == result[key1]['relative']){
+                        temp = "<tr><td id='sxet"+result[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+result[key1]['recordField']+');">'+result[key1]['recordField']+"/"+result[key1]['year']+'</button>'+spacesString+removeRelative+subject+"</td></tr>";
+                    }
+                    else{
+                        temp = "<tr><td id='sxet"+result[key1]['aaField']+"'>"+'<button class="btn btn-warning btn-sm" type="button" onclick="showRelative('+result[key1]['recordField']+');">'+result[key1]['recordField']+"/"+result[key1]['year']+'</button>'+'&nbsp<i class="far fa-arrow-alt-circle-right"></i>&nbsp'+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+result[key1]['relative']+');">'+result[key1]['relative']+"/"+result[key1]['year']+'</button>'+spacesString+removeRelative+subject+"|"+subjectRel+"</td></tr>";
+                    }
+                }else{
+                    if (selectedIndex == result[key1]['recordField']){
+                        temp = "<tr><td id='sxet"+result[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+result[key1]['relative']+');">'+result[key1]['relative']+"/"+result[key1]['year']+'</button>'+spacesString+subjectRel+"</td></tr>";
+                    }
+                    else{
+                        temp = "<tr><td id='sxet"+result[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+result[key1]['recordField']+');">'+result[key1]['recordField']+"/"+result[key1]['year']+'</button>'+spacesString+subject+"</td></tr>";
+                    }
+                }
+                //console.log(temp);
+                html = $.parseHTML(temp);
+                $("#relativeTable tbody").append(html);
+            }
+           }
+        })	
+    }
+
+    async removeRelative (aa){
+        var r = confirm("Πρόκειται να διαγράψετε ενα σχετικό έγγραφο");
+        if (r == true) {
+            $.ajax({
+                type: "post",
+                data: {"aa" : aa},
+                url: "removeRelative.php",
+                success: function(msg){
+                    //alert(msg);
+                    if (msg="success"){
+                        $(".message").html("επιτυχής διαγραφή");
+                        $("#alert").show();
+                    }
+                    else{
+                        $(".message").html(msg);
+                        $("#alertError").show();
+                    }
+                    loadRelative();
+                    
+                }
+            });	  		
+        } 
+    }
+   
+    async saveRelative(){
+        var relative = this.shadow.getElementById("insertRelativeField").value;
+        var year = this.shadow.getElementById("insertRelativeYearField").value;
+        //console.log(comment);
+        $.ajax({
+                type: "post",
+                data: {"postData" : selectedIndex, "relative": relative,"year": year},
+                url: "saveRelative.php",
+                success: function(msg){
+                    //alert(msg);
+                    if (msg="success"){
+                        $(".message").html("επιτυχής καταχώρηση");
+                        $("#alert").show();
+                    }
+                    else{
+                        $(".message").html("σφάλμα στην καταχώρηση");
+                        $("#alert1").show();
+                    }
+                    loadRelative();
+                    //$('#addModal').modal('hide');
+                    //setTimeout(window.location.reload.bind(window.location),1500);
+                }
+        });	
+    }
+
+    
+    showRelative(aaField){
+        $('#example').DataTable().search(aaField).draw();
+        $("#bottomSection").addClass("d-none");
+        var elmnt = document.getElementById("tableButtonsSection");
+    }
+    
 }
 
 
 
 
-customElements.define("record-attachments", Attachments);
+customElements.define("record-relative", Relative);
