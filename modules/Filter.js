@@ -344,9 +344,10 @@ function openProtocolRecord(subject,record,event){
 	const protocolWindowContent = 
 	`<div id="bottomSection">
 		<div class="" name="bottomSectionTitleBar" id="bottomSectionTitleBar">
-			<div class="" name="bottomSectionTitle" id="bottomSectionTitle">
+			<div style="padding-right:10px;" name="bottomSectionTitle" id="bottomSectionTitle">
 			</div>
 			<div style="display:flex; gap:0.2em;" name="bottomSectionButtons" id="bottomSectionButtons">
+				
 			</div>
 		</div>
 		
@@ -354,31 +355,15 @@ function openProtocolRecord(subject,record,event){
 			<div  class="firstBottomSectionColumn">
 
 				<record-attachments style="max-height:40%;" protocolNo="${record}"></record-attachments>
-
 				<record-relative style="max-height:20%;" protocolNo="${record}"></record-relative>
-
 				<record-comment style="max-height:20%;" protocolNo="${record}"></record-comment>
-
-				
+				<record-history style="max-height:20%;" protocolNo="${record}"></record-history>
 
 				<div class="table-responsive mt-2 pt-2" id="kshde" style="background: rgba(122, 160, 126, 0.2)!important;">
 					<table class="table" id="kshdeTableInProtocol">
 						<thead>
 						<tr>
 							<th id="kshdeTitle">ΚΣΗΔΕ</th>
-						</tr>
-						</thead>
-						<tbody>
-					
-						</tbody>
-					</table>
-				</div>
-
-				<div class="table-responsive mt-2 pt-2" id="history" style="background: rgba(122, 160, 126, 0.2)!important;">
-					<table class="table" id="historyTable">
-						<thead>
-						<tr>
-							<th id="historyTitle">Ιστορικό&nbsp<i id="historyArrow" onclick="loadHistory();" class="fas fa-arrow-right"></i></th>
 						</tr>
 						</thead>
 						<tbody>
@@ -516,7 +501,80 @@ function openProtocolRecord(subject,record,event){
 				
 
 		</div>
-	</div>`;
+	</div>
+	
+	<dialog id="editRecordModal" class="customDialog">
+		<div class="flexHorizontal">
+			<span style="font-weight:bold;padding:5px;">Επεξεργασία Εγγραφής</span>
+		</div>
+		<div class="customDialogContent" style="margin-top:10px;">
+			<form id="editRecordForm">
+				<div class="form-group row">
+					<label for="aaField" class="col-sm-2 col-form-label">AA*</label>
+					<div class="col-sm-10">
+						<input required="" placeholder="int(11)  " type="number" step="1" class="form-control" id="aaField" disabled=""></div>
+					</div>
+					<div class="form-group row">
+						<label for="fromField" class="col-sm-2 col-form-label">ΑΠΟΣΤΟΛΕΑΣ*</label>
+						<div class="col-sm-10"><input required="" placeholder="varchar(200)  " type="text" class="form-control" id="fromField" disabled=""></div>
+					</div>
+					<div class="form-group row">
+						<label for="subjectField" class="col-sm-2 col-form-label">ΘΕΜΑ*</label>
+						<div class="col-sm-10"><input required="" placeholder="varchar(200)  " type="text" class="form-control" id="subjectField" disabled=""></div>
+					</div>
+					<div class="form-group row">
+						<label for="docDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΠΑΡΑΛ.*</label>
+						<div class="col-sm-10"><input required="" placeholder="datetime" "="" type="text" class="form-control" id="docDate" disabled=""></div>
+					</div>
+					<div class="form-group row">
+						<label for="docNumber" class="col-sm-2 col-form-label">ΑΡΙΘΜ. ΕΙΣ.*</label>
+						<div class="col-sm-10"><input required="" placeholder="varchar(100)  " type="text" class="form-control" id="docNumber"></div>
+					</div>
+					<hr style="border:4px solid orange; border-radius: 2px;">
+					<div class="form-group row">
+						<label for="toField" class="col-sm-2 col-form-label">ΠΡΟΣ*</label>
+						<div class="col-sm-10"><input required="" placeholder="varchar(200)  " type="text" class="form-control" id="toField"></div>
+					</div>
+					<div class="form-group row">
+						<label for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.*</label>
+						<div class="col-sm-10"><input required="" placeholder="varchar(400)  " type="text" class="form-control" id="outSubjectField"></div>
+					</div>
+					<div class="form-group row">
+						<label for="outDocDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΞΕΡΧ.*</label><div class="col-sm-10">
+						<input required="" placeholder="date  " type="date" class="form-control" id="outDocDate"></div>
+					</div>
+					<div class="form-group row">
+						<label for="statusField" class="col-sm-2 col-form-label">ΚΑΤΑΣΤ.*</label>
+						<div class="col-sm-10">
+							<input required="" placeholder="tinyint(11)  " type="number" step="1" class="form-control" id="statusField" disabled="">
+						</div>
+					</div>
+					<div class="form-group row">
+						<label for="linkField" class="col-sm-2 col-form-label">ΣΤΟΙΧΕΙΑ EMAIL*</label>
+						<div class="col-sm-10"><input required="" placeholder="varchar(300)  " type="text" class="form-control" id="linkField" disabled=""></div>
+					</div>
+					<div class="form-group row">
+						<label for="insertDateField" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ*</label>
+						<div class="col-sm-10"><input required="" placeholder="date  " type="date" class="form-control" id="insertDateField" disabled="">
+					</div>
+				</div>
+			</form>
+		</div>
+		<div class="modal-footer">
+			<?php 
+			if ($_SESSION['protocolAccessLevel'] == 1){
+				echo '<button id="restoreButtonModal" type="button" class="btn btn-info trn" >Restore Record</button>';	
+				echo '<button id="archiveButtonModal" type="button" class="btn btn-warning trn" >Save and Archive Record</button>';	
+			}
+			else{
+				echo '<button id="finishButtonModal" type="button" class="btn btn-warning trn" >Close Record</button>';
+			}
+			?>
+			<button id="saveButtonModal" type="button" class="btn btn-sm btn-success">Save Record</button>
+			<button id="editButtonModal" type="button" class="btn btn-sm btn-success" >Save Changes</button>
+			<button id="closeButtonModal" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
+		</div>			
+	</dialog>`;
 
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
@@ -535,10 +593,13 @@ function openProtocolRecord(subject,record,event){
 		`<button class="btn btn-info ektos mr-2" name="publishToSite" id="publishToSite" onclick="publishToSite();" data-toggle="tooltip" title="Αίτημα Ανάρτησης στη Σελίδα"><i class="fas fa-cloud-upload-alt"></i></button>`;
 	}
 	document.querySelector("#bottomSectionButtons").innerHTML += `<button class="btn btn-warning ektos mr-2" name="makeUnread" id="makeUnread" onclick="makeMessageUnread()" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
-	document.querySelector("#bottomSectionTitle").innerHTML =subject;
+	document.querySelector("#bottomSectionTitle").innerHTML = `<button id="editRecord" style="margin-right:10px;" class="btn btn-info"><i class="fas fa-edit"></i></button>`+subject;
+	document.querySelector("#editRecord").addEventListener("click", ()=> document.querySelector("#editRecordModal").showModal());
 
+
+	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
+	document.querySelector("#closeModalBtn").addEventListener("click", ()=> document.querySelector("#protocolRecordDialog").close());
 	
-
 }
 
 

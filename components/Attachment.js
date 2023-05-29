@@ -11,9 +11,10 @@ const content =
     <div style="display:flex;justify-content: space-between;align-items:center;">
         <div>
             <span style="font-size:14px;font-weight:bold;">Συνημμένα</span>
+            <span class="badge bg-secondary" id="attachmentTableTitleBadge"></span>
         </div>
         <div>
-            <button class="btn btn-outline-danger btn-sm" id="zipFileButton"  title="Λήψη όλων"><i class="fas fa-file-download"></i></button>
+            <button class="btn btn-outline-danger btn-sm" id="zipFileButton"  title="Λήψη όλων"><i class="fas fa-file-archive"></i></button>
             <button id="showAttachmentModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
         </div>
     </div>
@@ -26,13 +27,17 @@ const content =
     </div>
 </div>
 
-<dialog id="addAttachmentModal" class="customDialog">
-    <form>
-        <div class="flexVertical">
-            <input type="file" class="btn btn-default ektos" name="selectedFile" id="selectedFile" />
-            <button class="btn btn-outline-success ektos " id="uploadFileButton"  title="Μεταφόρτωση επιλεγμένου αρχείου"><i class="fas fa-upload"></i></button>
-        </div>
-    </form>
+<dialog id="addAttachmentModal" class="customDialog"> 
+    <div class="customDialogContent">
+        <button style="margin-left:20px;align-self:flex-end;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        <form>
+            <div class="flexVertical" style="padding:5px;">
+                <span >Νέο συνημμένο</span>
+                <input type="file" class="btn btn-default" name="selectedFile" id="selectedFile" />
+                <button class="btn btn-outline-success ektos " id="uploadFileButton"  title="Μεταφόρτωση επιλεγμένου αρχείου"><i class="fas fa-upload"></i></button>
+            </div>
+        </form>
+    </div>
 </dialog>`;
 
 
@@ -51,6 +56,7 @@ class Attachments extends HTMLElement {
         //console.log(this.protocolNo);
         this.shadow.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFile());
         this.shadow.querySelector("#showAttachmentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addAttachmentModal").showModal());
+        this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addAttachmentModal").close());
         this.loadAttachments(1);
     }
 
@@ -155,17 +161,17 @@ class Attachments extends HTMLElement {
             for (let key1=0;key1<result.length;key1++) {
                 
                 let filenameSize = result[key1]['filename'].length;
-                let attachedByString = '<button type="button" class="btn btn-info btn-sm">'+result[key1]['attachedBy']+'</button>';
-                let newTableLineString = '<tr><td style="padding-top:0.2rem;padding-bottom:0.2rem">';
+                let attachedByString = '<span  class="badge rounded-pill bg-secondary">'+result[key1]['attachedBy']+'</span>';
+                let newTableLineString = '<tr><td style="padding-top:0.2rem;padding-bottom:0.2rem"><div style="display:flex;align-items:flex-start;gap:2px;">';
                 let fileLinkString = "";
                 if (result[key1]['isGdprProtected']=="1"){
                     fileLinkString+='<i class="fas fa-exclamation" style="color:red"></i>&nbsp';
                 }
                 if (level==1){	
-                    fileLinkString += '<b data-toggle="tooltip" title="Μετονομασία Συνημμένου" contenteditable="true" onkeyup="checkAndrenameAttachment('+result[key1]['aa']+',event);" onfocusout="renameAttachment('+result[key1]['aa']+',event);">'+result[key1]['filename']+'</b>';
+                    fileLinkString += '<span title="Μετονομασία Συνημμένου" contenteditable="true" onkeyup="checkAndrenameAttachment('+result[key1]['aa']+',event);" onfocusout="renameAttachment('+result[key1]['aa']+',event);">'+result[key1]['filename']+'</span>';
                 }
                 else{
-                    fileLinkString += '<b>'+result[key1]['filename']+'</b>';
+                    fileLinkString += '<span>'+result[key1]['filename']+'</span>';
                 }		
                 fileArray.push(result[key1]['filename']);	
                 year = result[key1]['year'];
@@ -184,23 +190,24 @@ class Attachments extends HTMLElement {
                 
                 let removeFileString = "";
                 if (level!=-1){
-                    removeFileString = '<button data-toggle="tooltip" title="Διαγραφή συνημμένου" class="btn-danger" onclick="removeAttachment('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\')"><i class="far fa-minus-square"></i></button>';
+                    removeFileString = '<button data-toggle="tooltip" title="Διαγραφή συνημμένου" class="btn btn-sm  btn-danger" onclick="removeAttachment('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\')"><i class="far fa-minus-square"></i></button>';
                 }
                 //let openFileString = '<button type="button" class="btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="fas fa-folder-open"></i></button>';
                 let openFileImage = '<i class="fas fa-download"></i>';
                 if (openInBrowser.includes(fileType)){
                     openFileImage = '<i class="fas fa-folder-open"></i>';
                 }
-                let openFileString = '<button type="button" class="btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+',0)">'+openFileImage+'</button>';
+                let openFileString = '<button type="button" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+',0)">'+openFileImage+'</button>';
                 //let openFileStringWithProtocol = '<button class="btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNewWithProtocol('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="far fa-window-maximize"></i></button>';
-                let openFileStringWithProtocol = '<button class="btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNew('+result[key1]['aa']+',1)"><i class="far fa-window-maximize"></i></button>';
+                let openFileStringWithProtocol = '<button class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNew('+result[key1]['aa']+',1)"><i class="far fa-window-maximize"></i></button>';
                 
-                let setGdprString = '<button class="btn-warning" data-toggle="modal" data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
+                let setGdprString = '<button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
                 //if (level!=-1){	
                     //setGdprString = '<button '+(level ==1 ? "" : "disabled")+' class="btn-warning" data-toggle="modal" data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
                 //}
                 let spacesString ='&nbsp&nbsp&nbsp';
-                temp3+=newTableLineString+fileLinkString+spacesString+openFileString+(isWord||isPDF?spacesString+openFileStringWithProtocol:"")+(isPDF&&level?spacesString+setGdprString:"")+spacesString+removeFileString+spacesString+spacesString+attachedByString+'</td></tr>';
+                let attachmentBtnDiv = "<div style='display:flex;justify-content:end;gap:2px;flex-grow:1;align-items:flex-start;'>"+openFileString+(isWord||isPDF?openFileStringWithProtocol:"")+(isPDF&&level?setGdprString:"")+removeFileString+"</div>";
+                temp3+=newTableLineString+attachedByString+fileLinkString+attachmentBtnDiv+'</div></td></tr>';
             }
             let zipBut = this.shadow.getElementById('zipFileButton').addEventListener("click",async function(){
                 let formData  = new FormData();

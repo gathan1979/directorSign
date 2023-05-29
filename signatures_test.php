@@ -16,6 +16,7 @@
 		<script type="module" src="components/Attachment.js"></script>
 		<script type="module" src="components/Relative.js"></script>
 		<script type="module" src="components/Comment.js"></script>
+		<script type="module" src="components/History.js"></script>
 		
 		<link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
 		<script src="bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>

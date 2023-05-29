@@ -27,17 +27,20 @@ const relativeContent = `
             </table>
         </div>
     </div>
-    <dialog id="addRelativeModal" class="customDialog">
-        <form>
-            <div class="flexVertical">
-                <span >Νέο Σχετικό</span>
-                <div>
-                    <input type="number" class="form-control-sm" id="insertRelativeField" placeholder="αρ.πρωτ">&nbsp/&nbsp
-                    <input type="number" class="form-control-sm" id="insertRelativeYearField" value="">
+    <dialog id="addRelativeModal" class="customDialog" >
+      <div class="customDialogContent">
+            <button style="margin-left:20px;align-self:flex-end;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+            <form>
+                <div class="flexVertical" style="padding:5px;">
+                    <span >Νέο Σχετικό</span>
+                    <div class="flexHorizontal">
+                        <input type="number" class="form-control form-control-sm" id="insertRelativeField" placeholder="αρ.πρωτ">&nbsp/&nbsp
+                        <input type="number" class="form-control form-control-sm" id="insertRelativeYearField" value="">
+                    </div>
+                    <button id="insertRelativeBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
                 </div>
-                <button id="insertRelativeBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
-            </div>
-        </form>
+            </form>
+        </div>
     </dialog>`;
 
 
@@ -57,6 +60,7 @@ class Relative extends HTMLElement {
         this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>saveRelative());
         this.loadRelative(this.protocolNo,1);
         this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
+        this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
     }
 
     disconnectedCallback() {
@@ -103,7 +107,7 @@ class Relative extends HTMLElement {
 
             for (let key1=0;key1<resdec.length;key1++) {
                 let temp="";
-                const removeRelative = '<button class="btn-danger" onclick="removeRelative('+resdec[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
+                const removeRelative = '<button class="btn btn-sm btn-danger" onclick="removeRelative('+resdec[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
                 const spacesString ='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
                 const subject = '&nbsp&nbsp&nbsp'+resdec[key1][4].substring(0, 50)+ "...";
                 const subjectRel = '&nbsp&nbsp&nbsp'+resdec[key1][5].substring(0, 50)+ "...";

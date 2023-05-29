@@ -28,15 +28,16 @@ const commentContent = `
     </div>
 
     <dialog id="addCommentModal" class="customDialog">
-        <form>
-            <div class="form-group row mb-2 mr-2 pt-2 ml-1">
-                <!--<label for="insertCommentField" class="col-sm-2 col-form-label">Νέο Σχόλιο</label>-->
-                <div class="col-7">
-                    <input type="text" class="form-control form-control-sm " id="insertCommentField" placeholder="Νέο Σχόλιο">
+        <div class="customDialogContent">
+            <button style="margin-left:20px;align-self:flex-end;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+            <form>
+                <div class="flexVertical" style="padding:5px;">
+                    <span >Νέο Σχόλιο</span>
+                    <textarea type="text" cols="100" rows="2" class="form-control form-control-sm " id="insertCommentField"></textarea>
+                    <button id="saveCommentBtn" type="button" class="btn-sm btn-success mb-2">Εισαγωγή</button>	
                 </div>
-                <button id="saveCommentBtn" type="button" class="btn-sm btn-success mb-2">Εισαγωγή</button>	
-            </div>
-        </form>
+            </form>
+        </div>
     </dialog>`;
 
 
@@ -54,6 +55,7 @@ class Comment extends HTMLElement {
         this.protocolNo = this.attributes.protocolNo.value;
         this.shadow.querySelector("#showAddCommentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addCommentModal").showModal());
         this.shadow.querySelector("#saveCommentBtn").addEventListener("click",()=>saveComment());
+        this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addCommentModal").close());
         this.loadComments(this.protocolNo,1);
     }
 
@@ -122,7 +124,7 @@ class Comment extends HTMLElement {
             this.shadow.querySelector("#commentTableTitleBadge").textContent = resdec.length;
             let html = "";
             for (let key1=0;key1<resdec.length;key1++) {
-                const removeComment = '<button class="btn-danger" onclick="removeComment('+resdec[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
+                const removeComment = '<button class="btn btn-sm btn-danger" onclick="removeComment('+resdec[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
                 const spacesString ='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
                 let temp = "";
                 if (active){
