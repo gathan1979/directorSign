@@ -1,6 +1,5 @@
 import refreshToken from "../modules/RefreshToken.js";
 import getFromLocalStorage from "../modules/LocalStorage.js";
-import { viewFile } from "../modules/Records_test.js";
 
 const content = 
 `<div  id="attachmentsDiv"  style="display:flex;gap:10px;flex-direction:column;height:100%;background: rgba(122, 130, 136, 0.2)!important;border-radius:5px;padding:10px;">
@@ -119,6 +118,7 @@ class Attachments extends HTMLElement {
     }
 
     async loadAttachments(level){ // το level να ελεγχθεί, δουλεύει πλέον με το localStorage
+        const {jwt,role} = getFromLocalStorage();	
         let fileArray = [];
         let year;
         let exdisk=0;
@@ -126,11 +126,11 @@ class Attachments extends HTMLElement {
         this.shadow.querySelectorAll("#attachmentsTitle").innerHTML = '<div id="attachmentsSpinner" class="spinner-border" style="margin-left:1em;width: 1rem; height: 1rem;" role="status"></div>';
         const loginData = JSON.parse(localStorage.getItem("loginData"));
         const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):2023;
-        const urlpar = new URLSearchParams({currentYear , protocolNo : this.protocolNo});
+        const urlpar = new URLSearchParams({currentYear , protocolNo : this.protocolNo, currentRole : role});
+       
         if (level!=-1){
             level = +loginData.user.roles[localStorage.getItem("currentRole")].protocolAccessLevel;
         }
-        const jwt = loginData.jwt;
         const myHeaders = new Headers();
         myHeaders.append('Authorization', jwt);
         let init = {method: 'GET', headers : myHeaders};
@@ -143,7 +143,7 @@ class Attachments extends HTMLElement {
                     alert("σφάλμα στη λήψη συνημμένων");
                 }
                 else{
-                    loadAttachments(level);
+                    this.loadAttachments(level);
                 }
             }
             else{
@@ -190,24 +190,26 @@ class Attachments extends HTMLElement {
                 
                 let removeFileString = "";
                 if (level!=-1){
-                    removeFileString = '<button data-toggle="tooltip" title="Διαγραφή συνημμένου" class="btn btn-sm  btn-danger" onclick="removeAttachment('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\')"><i class="far fa-minus-square"></i></button>';
+                    removeFileString = '<button id="removeAtt_'+result[key1]['aa']+'" data-toggle="tooltip" title="Διαγραφή συνημμένου" class="btn btn-sm  btn-danger" onclick="removeAttachment('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\')"><i class="far fa-minus-square"></i></button>';
                 }
                 //let openFileString = '<button type="button" class="btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="fas fa-folder-open"></i></button>';
                 let openFileImage = '<i class="fas fa-download"></i>';
                 if (openInBrowser.includes(fileType)){
                     openFileImage = '<i class="fas fa-folder-open"></i>';
                 }
-                let openFileString = '<button type="button" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+',0)">'+openFileImage+'</button>';
+                let openFileString = '<button id="openAtt_'+result[key1]['aa']+'" type="button" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+',0)">'+openFileImage+'</button>';
                 //let openFileStringWithProtocol = '<button class="btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNewWithProtocol('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="far fa-window-maximize"></i></button>';
-                let openFileStringWithProtocol = '<button class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNew('+result[key1]['aa']+',1)"><i class="far fa-window-maximize"></i></button>';
+                let openFileStringWithProtocol = '<button id="openAttWithProt_'+result[key1]['aa']+'" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNew('+result[key1]['aa']+',1)"><i class="far fa-window-maximize"></i></button>';
                 
-                let setGdprString = '<button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
+                let setGdprString = '<button id="openAttGDPRModal_'+result[key1]['aa']+'" class="btn btn-sm btn-warning"  data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
                 //if (level!=-1){	
                     //setGdprString = '<button '+(level ==1 ? "" : "disabled")+' class="btn-warning" data-toggle="modal" data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
                 //}
                 let spacesString ='&nbsp&nbsp&nbsp';
                 let attachmentBtnDiv = "<div style='display:flex;justify-content:end;gap:2px;flex-grow:1;align-items:flex-start;'>"+openFileString+(isWord||isPDF?openFileStringWithProtocol:"")+(isPDF&&level?setGdprString:"")+removeFileString+"</div>";
                 temp3+=newTableLineString+attachedByString+fileLinkString+attachmentBtnDiv+'</div></td></tr>';
+                this.shadow.querySelector("#attachments tbody").innerHTML += temp3;
+                this.shadow.querySelector("#openAtt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment());
             }
             let zipBut = this.shadow.getElementById('zipFileButton').addEventListener("click",async function(){
                 let formData  = new FormData();
@@ -232,34 +234,113 @@ class Attachments extends HTMLElement {
                 }
             });
             //$( "#attachments tbody").append(temp3);
-            this.shadow.querySelector("#attachments tbody").innerHTML = temp3;
+            
         }		
     }
 
-    removeAttachment(aa,record,filename){
-        var r = confirm("Πρόκειται να διαγράψετε ενα συνημμένο έγγραφο");
-        if (r == true) {
-            $.ajax({
-                type: "post",
-                data: {"aa" : aa, "record":record,"filename":filename},
-                url: "removeAttachment.php",
-                success: function(msg){
-
-                        $(".message").html(msg);
-                        $("#alert").show();
-                    
-                    loadAttachments(1);
-                    loadHistory();
-                    
+    async removeAttachment(aa,record,filename){
+        const procc = confirm("Πρόκειται να διαγράψετε ενα συνημμένο έγγραφο");
+        if ( procc == true) {
+            const {jwt,role} = getFromLocalStorage();	
+            let data = new FormData();
+            data.append('aa',aa);
+            data.append('record',record);
+            data.append('filename',filename);
+                
+            const myHeaders = new Headers();
+            myHeaders.append('Authorization', jwt);
+            let init = {method: 'POST', headers : myHeaders, body : data};
+            const res = await fetch("/api/removeAttachment.php",init); 
+            if (!res.ok){
+                this.shadow.querySelector("#loadingDialog").close();
+                if (res.status == 401){
+                    const resRef = await refreshToken();
+                    if (resRef ===1){
+                        removeAttachment(aa,record,filename);
+                    }
+                    else{
+                        alert("Σφάλμα εξουσιοδότησης");	
+                    }
                 }
-            });	  		
-        } else {
+                else if (res.status==403){
+                    window.open('unAuthorized.html', '_blank');
+                }
+                else if (res.status==404){
+                    alert("το αρχείο δε βρέθηκε");
+                }
+                else if (res.status==500){
+                    alert("Σφάλμα! Επικοινωνήστε με το διαχειριστή του συστήματος");
+                }
+                else{
+                    alert("Σφάλμα!!!");
+                }
+            }
+            else {
+                this.loadAttachments(1);
+               //loadHistory();
+            }
+        } 
+    }
+
+    async viewAttachment(attachmentNo, showProtocol=0){   // 15-12-2022 Θα αντικαταστήσει το παραπάνω ΚΑΙ ΤΟ VIEWATTACHMENTWITHPROTOCOL
+        const loginData = JSON.parse(localStorage.getItem("loginData"));
+        const currentYear = localStorage.getItem("currentYear");
+        const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol});
+        const jwt = loginData.jwt;
+        const myHeaders = new Headers();
+        myHeaders.append('Authorization', jwt);
+        let init = {method: 'GET', headers : myHeaders};
         
+        const res = await fetch("/api/viewAttachmentTest.php?"+urlpar,init); 
+        if (!res.ok){
+            if (res.status>=400 && res.status <= 401){
+                const resRef = await refreshToken();
+                if (resRef ===1){
+                    viewAttachmentTest(attachmentNo);
+                }
+                else{
+                    alert("σφάλμα εξουσιοδότησης");	
+                }
+            }
+            else if (res.status==403){
+                window.open('unAuthorized.html', '_blank');
+            }
+            else if (res.status==404){
+                alert("το αρχείο δε βρέθηκε");
+            }
+        }
+        else {
+            const dispHeader = res.headers.get('Content-Disposition');
+            if (dispHeader !== null){
+                const parts = dispHeader.split(';');
+                filename = parts[1].split('=')[1];
+                filename = filename.replaceAll('"',"");
+            }
+            else{
+                filename = "tempfile.tmp";
+            }
+            const fileExtension = filename.split('.').pop();
+            const blob = await res.blob();
+            const href = URL.createObjectURL(blob);
+            const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
+            
+            let openFileAns = confirm("Ναι για απευθείας άνοιγμα, άκυρο για αποθήκευση");
+            if (inBrowser.includes(fileExtension) && openFileAns){
+                const pdfWin = window.open(href);
+                //pdfWin.document.title = decodeURI(filename);
+                setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
+            }
+            else{
+                const aElement = document.createElement('a');
+                aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
+                Object.assign(aElement, {
+                  href,
+                  download: decodeURI(filename)
+                }).click();
+            }
         }
     }
+    
 }
-
-
-
 
 customElements.define("record-attachments", Attachments);
