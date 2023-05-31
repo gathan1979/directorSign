@@ -391,6 +391,7 @@ async function getRecordHistory(aa){
 
 export async function getSigRecords(){
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
+	document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 	const {jwt,role} = getFromLocalStorage();
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -404,6 +405,7 @@ export async function getSigRecords(){
 	const res = await fetch("/api/getSigRecords.php?"+params,init);
 	if (!res.ok){
 		document.querySelector("#recordsSpinner").style.display = 'none';
+		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 		if (res.status == 401){
 			const reqToken = await refreshToken();
 			if (reqToken ==1){
@@ -429,6 +431,7 @@ export async function getSigRecords(){
 		//return res;
 		//console.log(res.statusText);
 		document.querySelector("#recordsSpinner").style.display = 'none';
+		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 		fillTableToBeSigned(await res.json());
 		return "ok";
 	}
@@ -616,6 +619,95 @@ export function fillTableToBeSigned(result){
 	createSearch();
 }
 
+function openMoveToProtocolDialog(filename, folder=""){
+	if (document.querySelector("#fileMoveDialog")){
+		document.querySelector("#fileMoveDialog").innerHTML =
+		`
+		<div class="customDialogContent">
+			<button style="margin-left:20px;align-self:flex-end;" class="btn btn-secondary" name="closeFileMoveModalBtn" id="closeFileMoveModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+			<div>
+				<form>
+					<div class="flexVertical" style="padding:5px;">
+						<span >Σχετικό Πρωτόκολλο</span>
+						<div class="flexHorizontal">
+							<input type="number" class="form-control form-control-sm" id="linkRelativeField" placeholder="αρ.πρωτ" value="">&nbsp/&nbsp
+							<input type="number" class="form-control form-control-sm" id="linkRelativeYearField" value="${localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear()}">
+						</div>
+						<button id="saveFileMoveDialogBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
+					</div>
+				</form>
+			</div>
+			<div id="searchProtocolResultDiv"></div>
+		<div>`;
+		document.querySelector("#saveFileMoveDialogBtn").addEventListener("click",() => moveSignedToProtocol(filename,folder,document.querySelector("#linkRelativeField")).value,document.querySelector("#linkRelativeYearField").value);
+		document.querySelector("#closeFileMoveModalBtn").addEventListener("click",() => closeFileMoveDialog());
+
+		const debouncedFilter = debounce( () => findRelativeProtocol(document.querySelector("#linkRelativeField").value,document.querySelector("#linkRelativeYearField").value));
+		
+		document.querySelector("#linkRelativeField").addEventListener("keydown",() => debouncedFilter());
+		document.querySelector("#linkRelativeYearField").addEventListener("keydown",() => debouncedFilter());
+		document.querySelector("#fileMoveDialog").showModal();
+	}
+} 
+
+function findRelativeProtocol(protocolNo, year){
+	console.log(protocolNo,year);
+}
+
+function closeFileMoveDialog(){
+	document.querySelector("#fileMoveDialog").close();
+}
+
+async function moveSignedToProtocol(filename, folder="",protocolNo, year){
+	if(filename === ""){
+		alert("Δεν έχει οριστεί όνομα αρχείου");
+		return;
+	}
+	else if(!Number.isInteger(protocolNo)){
+		alert("Δεν έχει οριστεί σχετικό πρωτόκολλο για μεταφορά");
+		return;
+	}
+	else if(!Number.isInteger(year)){
+		alert("Δεν έχει οριστεί σχετικό έτος πρωτοκόλλου για μεταφορά");
+		return;
+	}
+	const formdata = new FormData();
+	formdata.append("filename", filename);
+	formdata.append("folder",folder);
+	formdata.append("protocolNo",protocolNo);
+	formdata.append("year",year);
+	const {jwt,role} = getFromLocalStorage();
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let init = {method: 'POST', headers : myHeaders, body : formdata};
+	const res = await fetch("/api/moveSignedToProtocol.php",init);
+	if (!res.ok){
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ===1){
+				moveSignedToProtocol(filename, folder="",protocolNo, year);
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");
+			}
+		}
+		else if (res.status==403){
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		else if (res.status==500){
+			alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
+		}
+		else {
+			alert("Σφάλμα");
+		}
+	}
+	else {
+		
+	}
+}
 
 export async function viewFile(filename, folder=""){
 	if(filename === ""){
@@ -1654,6 +1746,7 @@ function debounce(func, timeout = 500){
 
 
 export async function getSignedRecords(){
+	document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	const {jwt,role} = getFromLocalStorage();	
 	const myHeaders = new Headers();
@@ -1669,6 +1762,7 @@ export async function getSignedRecords(){
 	if (!res.ok){
 		if (res.status == 401){
 			document.querySelector("#recordsSpinner").style.display = 'none';
+			document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 			const reqToken = await refreshToken();
 			if (reqToken ==1){
 				getSignedRecords();
@@ -1693,6 +1787,7 @@ export async function getSignedRecords(){
 		//return res;
 		fillTableWithSigned(await res.json());
 		document.querySelector("#recordsSpinner").style.display = 'none';
+		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 		return "ok";
 	}
 }
@@ -1700,7 +1795,6 @@ export async function getSignedRecords(){
 export function fillTableWithSigned(result){
 	//const table = $('#example1').DataTable();
 	//table.clear().draw();
-
 	const table = document.getElementById("dataToSignTable");
 	var rows = table.rows;
 	var i = rows.length;
@@ -1763,9 +1857,10 @@ export function fillTableWithSigned(result){
 		
 		let recordStatus = '<button id="signedBtn_'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-download" data-toggle="tooltip" title="Υπογεγραμμένο για αρχειοθέτηση" data-whatever="'+result[key].aa+'"></i>'+"</button>";
 		let exactCopyBtn = '<button id="excopyBtn_'+result[key]['aa']+'" type="button" class="btn btn-success btn-sm" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-paper-plane" data-toggle="tooltip" title="Υπογεγραμμένο για αποστολή" data-whatever="'+result[key].aa+'"></i>'+"</button>";
+		let moveSignedToProtocolBtn = '<button id="moveSignedBtn_'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-link" data-toggle="tooltip" title="Μεταφορά σε πρωτόκολλο" data-whatever="'+result[key].aa+'"></i>'+"</button>";
 
 		if (!rejected){
-			temp1[3] =  '<div class="filenameDiv">'+recordStatus+exactCopyBtn+'</div>';
+			temp1[3] =  '<div class="filenameDiv">'+recordStatus+exactCopyBtn+moveSignedToProtocolBtn+'</div>';
 		}
 		else{
 			temp1[3] ="";
@@ -1797,6 +1892,8 @@ export function fillTableWithSigned(result){
 				requestExactCopy(event).then((msg)=>{alert(msg)},(msg)=>{alert(msg)})
 			});
 			document.querySelector("#signedBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['lastFilename'],result[key].date));
+			document.querySelector("#moveSignedBtn_"+result[key]['aa']).addEventListener("click",()=> openMoveToProtocolDialog(result[key]['lastFilename'],result[key].date));
+			//document.querySelector("#moveSignedBtn_"+result[key]['aa']).addEventListener("click",()=>moveSignedToProtocol(result[key]['lastFilename'],result[key].date));
             if (result[key]['exactCopyStatus'] == -1){
                 document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>alert("Δεν έχετε αιτηθεί ακριβές αντίγραφο. Πατήστε το καμπανάκι ..."));
             }

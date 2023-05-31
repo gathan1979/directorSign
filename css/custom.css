@@ -406,3 +406,7 @@ td .fa-crosshairs{
     border-radius: 15px;
 }
 
+.disabledDiv {
+    pointer-events: none;
+    opacity: 0.4;
+}

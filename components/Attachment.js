@@ -154,12 +154,12 @@ class Attachments extends HTMLElement {
         }
         else{
             const result = await res.json(); 
-            let temp3="";
+            
             //this.shadow.querySelector("#attachmentsSpinner").remove();
             //$("#attachmentsSpinner").remove();
             const openInBrowser = ['pdf','PDF','html','htm','jpg','png'];
             for (let key1=0;key1<result.length;key1++) {
-                
+                let temp3="";
                 let filenameSize = result[key1]['filename'].length;
                 let attachedByString = '<span  class="badge rounded-pill bg-secondary">'+result[key1]['attachedBy']+'</span>';
                 let newTableLineString = '<tr><td style="padding-top:0.2rem;padding-bottom:0.2rem"><div style="display:flex;align-items:flex-start;gap:2px;">';
@@ -197,9 +197,9 @@ class Attachments extends HTMLElement {
                 if (openInBrowser.includes(fileType)){
                     openFileImage = '<i class="fas fa-folder-open"></i>';
                 }
-                let openFileString = '<button id="openAtt_'+result[key1]['aa']+'" type="button" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+',0)">'+openFileImage+'</button>';
+                let openFileString = '<button id="openAtt_'+result[key1]['aa']+'" type="button" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου">'+openFileImage+'</button>';
                 //let openFileStringWithProtocol = '<button class="btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNewWithProtocol('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="far fa-window-maximize"></i></button>';
-                let openFileStringWithProtocol = '<button id="openAttWithProt_'+result[key1]['aa']+'" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNew('+result[key1]['aa']+',1)"><i class="far fa-window-maximize"></i></button>';
+                let openFileStringWithProtocol = '<button id="openAttWithProt_'+result[key1]['aa']+'" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" ><i class="far fa-window-maximize"></i></button>';
                 
                 let setGdprString = '<button id="openAttGDPRModal_'+result[key1]['aa']+'" class="btn btn-sm btn-warning"  data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
                 //if (level!=-1){	
@@ -209,7 +209,13 @@ class Attachments extends HTMLElement {
                 let attachmentBtnDiv = "<div style='display:flex;justify-content:end;gap:2px;flex-grow:1;align-items:flex-start;'>"+openFileString+(isWord||isPDF?openFileStringWithProtocol:"")+(isPDF&&level?setGdprString:"")+removeFileString+"</div>";
                 temp3+=newTableLineString+attachedByString+fileLinkString+attachmentBtnDiv+'</div></td></tr>';
                 this.shadow.querySelector("#attachments tbody").innerHTML += temp3;
-                this.shadow.querySelector("#openAtt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment());
+                
+            }
+            for (let key1=0;key1<result.length;key1++) {
+                this.shadow.querySelector("#openAtt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa']));
+                if (this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa'])){
+                    this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa']),1);
+                }
             }
             let zipBut = this.shadow.getElementById('zipFileButton').addEventListener("click",async function(){
                 let formData  = new FormData();
@@ -256,7 +262,7 @@ class Attachments extends HTMLElement {
                 if (res.status == 401){
                     const resRef = await refreshToken();
                     if (resRef ===1){
-                        removeAttachment(aa,record,filename);
+                        this.removeAttachment(aa,record,filename);
                     }
                     else{
                         alert("Σφάλμα εξουσιοδότησης");	
@@ -284,7 +290,7 @@ class Attachments extends HTMLElement {
 
     async viewAttachment(attachmentNo, showProtocol=0){   // 15-12-2022 Θα αντικαταστήσει το παραπάνω ΚΑΙ ΤΟ VIEWATTACHMENTWITHPROTOCOL
         const loginData = JSON.parse(localStorage.getItem("loginData"));
-        const currentYear = localStorage.getItem("currentYear");
+        const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear;
         const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol});
         const jwt = loginData.jwt;
         const myHeaders = new Headers();
@@ -296,7 +302,7 @@ class Attachments extends HTMLElement {
             if (res.status>=400 && res.status <= 401){
                 const resRef = await refreshToken();
                 if (resRef ===1){
-                    viewAttachmentTest(attachmentNo);
+                    this.viewAttachment(attachmentNo, showProtocol=0);
                 }
                 else{
                     alert("σφάλμα εξουσιοδότησης");	
@@ -311,34 +317,62 @@ class Attachments extends HTMLElement {
         }
         else {
             const dispHeader = res.headers.get('Content-Disposition');
+            let filename = "tempfile.tmp";
             if (dispHeader !== null){
                 const parts = dispHeader.split(';');
+                console.log(parts);
                 filename = parts[1].split('=')[1];
                 filename = filename.replaceAll('"',"");
-            }
-            else{
-                filename = "tempfile.tmp";
             }
             const fileExtension = filename.split('.').pop();
             const blob = await res.blob();
             const href = URL.createObjectURL(blob);
             const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
             
-            let openFileAns = confirm("Ναι για απευθείας άνοιγμα, άκυρο για αποθήκευση");
-            if (inBrowser.includes(fileExtension) && openFileAns){
-                const pdfWin = window.open(href);
-                //pdfWin.document.title = decodeURI(filename);
-                setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
+            if (inBrowser.includes(fileExtension)){
+                if (document.querySelector("#fileOpenDialog")){
+                    document.querySelector("#fileOpenDialog").innerHTML =
+                    `<div><div style="margin-bottom:10px;">Χρήση του αρχείου για : </div><div>
+                    <button class="btn btn-primary" id="fileOpenFromDialogBtn">Άνοιγμα</button>
+                    <button class="btn btn-success" id="fileSaveFromDialogBtn">Αποθήκευση</button>
+                    <button class="btn btn-secondary" id="fileCloseDialog">Κλείσιμο</button></div></div>`;
+                    document.querySelector("#fileOpenFromDialogBtn").addEventListener("click",() => this.openFromDialog(href, filename));
+                    document.querySelector("#fileSaveFromDialogBtn").addEventListener("click",() => this.saveFromDialog(href, filename));
+                    document.querySelector("#fileCloseDialog").addEventListener("click",() => this.closeFromDialog());
+                    document.querySelector("#fileOpenDialog").showModal();
+                }
+                return;
             }
             else{
                 const aElement = document.createElement('a');
                 aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
                 Object.assign(aElement, {
-                  href,
-                  download: decodeURI(filename)
+                href,
+                download: decodeURI(filename)
                 }).click();
             }
         }
+    }
+
+    openFromDialog(href,filename){
+        const pdfWin = window.open(href);
+        //pdfWin.document.title = decodeURI(filename);
+        setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
+        this.closeFromDialog();
+    }
+    
+    saveFromDialog(href,filename){
+        const aElement = document.createElement('a');
+        aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
+        Object.assign(aElement, {
+        href,
+        download: decodeURI(filename)
+        }).click();
+        this.closeFromDialog();
+    }
+    
+    closeFromDialog(){
+        document.querySelector("#fileOpenDialog").close();
     }
     
 }

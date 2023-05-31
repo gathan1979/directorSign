@@ -39,6 +39,11 @@ const fileOpenModal =
 
 	</dialog>`;
 
+const fileMoveModal = 
+	`<dialog id="fileMoveDialog">
+
+	</dialog>`;
+
 const loadingModal = 
 	`<dialog id="loadingDialog">
 		<div class="spinner-border" role="status">
@@ -139,6 +144,7 @@ function pagesCommonCode(){
 		document.querySelector("#fileOpenDialog").remove();
 	}
 	document.body.insertAdjacentHTML("beforeend",fileOpenModal);
+	document.body.insertAdjacentHTML("beforeend",fileMoveModal);
 
 	if (document.querySelector("#loadingDialog")){
 		document.querySelector("#loadingDialog").remove();

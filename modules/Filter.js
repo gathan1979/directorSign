@@ -260,6 +260,7 @@ function addListeners(){
 
 export async function getFilteredData(){
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
+	document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 	updateFilterStorage();
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	
@@ -283,6 +284,7 @@ export async function getFilteredData(){
 	const res = await fetch("/api/showTableData_test.php?"+urlpar,init); 
 	if (!res.ok){
 		document.querySelector("#recordsSpinner").style.display = 'none';
+		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 		if (res.status == 401){
 			const refRes = await refreshToken();
 			if (refRes !==1){
@@ -299,15 +301,17 @@ export async function getFilteredData(){
 		}
 	}
 	else{
-		document.querySelector("#recordsSpinner").style.display = 'none';
 		const result = await res.json();
 		fillChargesTable(result);
+		document.querySelector("#recordsSpinner").style.display = 'none';
+		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
 		
 	}
 }
 
 export function fillChargesTable(result){
 	const table = document.querySelector('#chargesTable>tbody');
+	table.innerHTML="";
 	for (let i = 0; i <= result.length; i++) {
 		let tr = document.createElement('tr');
 		for (let k = 0; k < 11; k++) {
@@ -343,8 +347,8 @@ function openProtocolRecord(subject,record,event){
 	console.log("record no ..."+record)
 	const protocolWindowContent = 
 	`<div id="bottomSection">
-		<div class="" name="bottomSectionTitleBar" id="bottomSectionTitleBar">
-			<div style="padding-right:10px;" name="bottomSectionTitle" id="bottomSectionTitle">
+		<div class="" name="bottomSectionTitleBar" id="bottomSectionTitleBar" >
+			<div style="padding-right:10px;display:flex;gap:10px;" name="bottomSectionTitle" id="bottomSectionTitle">
 			</div>
 			<div style="display:flex; gap:0.2em;" name="bottomSectionButtons" id="bottomSectionButtons">
 				
@@ -578,6 +582,8 @@ function openProtocolRecord(subject,record,event){
 
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
+	const currentYear = (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear);
+
 	document.querySelector("#protocolRecordDialog").showModal();
 	//event.currentTarget.style.backgroundColor = "green";
 	document.querySelector("#protocolRecordDialog").innerHTML = protocolWindowContent;
@@ -593,13 +599,11 @@ function openProtocolRecord(subject,record,event){
 		`<button class="btn btn-info ektos mr-2" name="publishToSite" id="publishToSite" onclick="publishToSite();" data-toggle="tooltip" title="Αίτημα Ανάρτησης στη Σελίδα"><i class="fas fa-cloud-upload-alt"></i></button>`;
 	}
 	document.querySelector("#bottomSectionButtons").innerHTML += `<button class="btn btn-warning ektos mr-2" name="makeUnread" id="makeUnread" onclick="makeMessageUnread()" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
-	document.querySelector("#bottomSectionTitle").innerHTML = `<button id="editRecord" style="margin-right:10px;" class="btn btn-info"><i class="fas fa-edit"></i></button>`+subject;
+	document.querySelector("#bottomSectionTitle").innerHTML = `<button id="editRecord" class="btn btn-info"><i class="fas fa-edit"></i></button>`+'<span style="font-weight:bold;">'+record+"/"+currentYear+'</span>'+"<span>"+subject+"</span>";
 	document.querySelector("#editRecord").addEventListener("click", ()=> document.querySelector("#editRecordModal").showModal());
-
 
 	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
 	document.querySelector("#closeModalBtn").addEventListener("click", ()=> document.querySelector("#protocolRecordDialog").close());
-	
 }
 
 
