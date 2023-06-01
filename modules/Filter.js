@@ -260,7 +260,7 @@ function addListeners(){
 
 export async function getFilteredData(){
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
-	document.querySelector("#myNavBar").classList.toggle("disabledDiv");
+	document.querySelector("#myNavBar").classList.add("disabledDiv");
 	updateFilterStorage();
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	
@@ -284,7 +284,7 @@ export async function getFilteredData(){
 	const res = await fetch("/api/showTableData_test.php?"+urlpar,init); 
 	if (!res.ok){
 		document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
+		document.querySelector("#myNavBar").classList.remove("disabledDiv");
 		if (res.status == 401){
 			const refRes = await refreshToken();
 			if (refRes !==1){
@@ -304,17 +304,16 @@ export async function getFilteredData(){
 		const result = await res.json();
 		fillChargesTable(result);
 		document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
-		
+		document.querySelector("#myNavBar").classList.remove("disabledDiv");
 	}
 }
 
 export function fillChargesTable(result){
 	const table = document.querySelector('#chargesTable>tbody');
 	table.innerHTML="";
-	for (let i = 0; i <= result.length; i++) {
+	for (let i = 0; i < result.length; i++){
 		let tr = document.createElement('tr');
-		for (let k = 0; k < 11; k++) {
+		for (let k = 0; k < 11; k++){
 			//console.log(result[k])
 			let td = document.createElement('td');
 			td.innerHTML = result[i][k];

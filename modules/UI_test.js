@@ -40,7 +40,7 @@ const fileOpenModal =
 	</dialog>`;
 
 const fileMoveModal = 
-	`<dialog id="fileMoveDialog">
+	`<dialog id="fileMoveDialog" style="width:30%;">
 
 	</dialog>`;
 
@@ -551,7 +551,52 @@ function updateRolesUI(){
 	return;
 }
 
-function setRole(index){
+async function fixRole(){
+	const {jwt,role} = getFromLocalStorage();
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+
+	//const comment = document.getElementById('signText').value;
+	let formData = new FormData();
+	// signDocument(aa, isLast=0, objection=0)
+	formData.append("role", role);
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+	const res = await fetch("/api/fixSessionRoles.php",init);
+	if (!res.ok){
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ==1){
+				fixRole();
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");
+			}
+		}
+		else if (res.status==403){
+			alert("Σφάλμα στην αλλαγή ρόλου");
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		else{
+			alert("Σφάλμα!!!");
+		}
+	}
+	else {
+		if (res.status ==  200){
+			console.log("ο ρόλος δεν έχει αλλάξει");
+		}
+		else if (res.status ==  201){
+			window.location.reload();
+			console.log("επιτυχής αλλαγή ιδιότητας στο SESSION. Θα καταργηθεί σύντομα!");
+			
+		}
+	}
+
+}
+
+async function setRole(index){
+	await fixRole(); // Θα αφαιρεθεί όταν απαλλαγεί και το πρωτόκολλο από τα  SESSION. Αλλάζει το χρήστη στο SESSION
 	localStorage.setItem("currentRole",index);									
 	updateRolesUI();
     switch (page){

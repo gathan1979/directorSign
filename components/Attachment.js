@@ -214,7 +214,7 @@ class Attachments extends HTMLElement {
             for (let key1=0;key1<result.length;key1++) {
                 this.shadow.querySelector("#openAtt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa']));
                 if (this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa'])){
-                    this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa']),1);
+                    this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa'],1));
                 }
             }
             let zipBut = this.shadow.getElementById('zipFileButton').addEventListener("click",async function(){
@@ -289,6 +289,7 @@ class Attachments extends HTMLElement {
     }
 
     async viewAttachment(attachmentNo, showProtocol=0){   // 15-12-2022 Θα αντικαταστήσει το παραπάνω ΚΑΙ ΤΟ VIEWATTACHMENTWITHPROTOCOL
+        console.log("show ...",showProtocol)
         const loginData = JSON.parse(localStorage.getItem("loginData"));
         const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear;
         const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol});

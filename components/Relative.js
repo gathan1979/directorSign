@@ -28,7 +28,7 @@ const relativeContent = `
         </div>
     </div>
     <dialog id="addRelativeModal" class="customDialog" >
-      <div class="customDialogContent">
+        <div class="customDialogContent">
             <button style="margin-left:20px;align-self:flex-end;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
             <form>
                 <div class="flexVertical" style="padding:5px;">

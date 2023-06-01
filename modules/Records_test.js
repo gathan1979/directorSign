@@ -405,7 +405,7 @@ export async function getSigRecords(){
 	const res = await fetch("/api/getSigRecords.php?"+params,init);
 	if (!res.ok){
 		document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
+		document.querySelector("#myNavBar").classList.remove("disabledDiv");
 		if (res.status == 401){
 			const reqToken = await refreshToken();
 			if (reqToken ==1){
@@ -431,7 +431,7 @@ export async function getSigRecords(){
 		//return res;
 		//console.log(res.statusText);
 		document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
+		document.querySelector("#myNavBar").classList.remove("disabledDiv");
 		fillTableToBeSigned(await res.json());
 		return "ok";
 	}
@@ -619,7 +619,7 @@ export function fillTableToBeSigned(result){
 	createSearch();
 }
 
-function openMoveToProtocolDialog(filename, folder=""){
+function openMoveToProtocolDialog(filename, folder=""){   // filename το όνομα αρχείου, folder η ημερομηνία
 	if (document.querySelector("#fileMoveDialog")){
 		document.querySelector("#fileMoveDialog").innerHTML =
 		`
@@ -639,19 +639,81 @@ function openMoveToProtocolDialog(filename, folder=""){
 			</div>
 			<div id="searchProtocolResultDiv"></div>
 		<div>`;
-		document.querySelector("#saveFileMoveDialogBtn").addEventListener("click",() => moveSignedToProtocol(filename,folder,document.querySelector("#linkRelativeField")).value,document.querySelector("#linkRelativeYearField").value);
-		document.querySelector("#closeFileMoveModalBtn").addEventListener("click",() => closeFileMoveDialog());
-
-		const debouncedFilter = debounce( () => findRelativeProtocol(document.querySelector("#linkRelativeField").value,document.querySelector("#linkRelativeYearField").value));
-		
-		document.querySelector("#linkRelativeField").addEventListener("keydown",() => debouncedFilter());
-		document.querySelector("#linkRelativeYearField").addEventListener("keydown",() => debouncedFilter());
+		document.querySelector("#linkRelativeField").addEventListener("keyup",() => prepareFindProtocolDebounce());
+		document.querySelector("#linkRelativeYearField").addEventListener("keyup",() => prepareFindProtocolDebounce());
+		document.querySelector("#saveFileMoveDialogBtn").addEventListener("click",() =>prepeareMoveSignedToProtocol(filename, folder));
+		document.querySelector("#closeFileMoveModalBtn").addEventListener("click",() => closeFileMoveDialog());		
 		document.querySelector("#fileMoveDialog").showModal();
 	}
 } 
 
-function findRelativeProtocol(protocolNo, year){
-	console.log(protocolNo,year);
+function prepeareMoveSignedToProtocol(filename, folder){
+	if(filename === ""){
+		alert("Δεν έχει οριστεί όνομα αρχείου. Επικοινωνήστε με το διαχειριστή");
+		return;
+	}
+	if(folder === ""){
+		alert("Δεν έχει οριστεί ημερομηνία αρχείου. Επικοινωνήστε με το διαχειριστή");
+		return;
+	}
+	else if(document.querySelector("#linkRelativeField").value == ""){
+		alert("Δεν έχει οριστεί σχετικό πρωτόκολλο για μεταφορά");
+		return;
+	}
+	else if(document.querySelector("#linkRelativeYearField").value == ""){
+		alert("Δεν έχει οριστεί σχετικό έτος πρωτοκόλλου για μεταφορά");
+		return;
+	}
+	moveSignedToProtocol(filename,folder,document.querySelector("#linkRelativeField").value,document.querySelector("#linkRelativeYearField").value);
+}
+
+function prepareFindProtocolDebounce(){
+	const debouncedFilter = debounce( () => findLinkProtocol(document.querySelector("#linkRelativeField").value,document.querySelector("#linkRelativeYearField").value));
+	debouncedFilter();
+}
+
+async function findLinkProtocol(protocolNo, currentYear){
+	if(protocolNo == ""){
+		document.querySelector("#searchProtocolResultDiv").innerHTML = "";
+		return;
+	}
+	else if(currentYear == ""){
+		document.querySelector("#searchProtocolResultDiv").innerHTML = "";
+		return;
+	}
+	console.log("pass")
+	const {jwt,role} = getFromLocalStorage();
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let urlParams = new URLSearchParams({protocolNo, currentYear});
+
+	let init = {method: 'GET', headers : myHeaders};
+	const res = await fetch("/api/getLinkProtocol.php?"+urlParams,init);
+	if (!res.ok){
+		const resdec = await res.json();
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ==1){
+				findLinkProtocol(protocolNo, year);
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");
+			}
+		}
+		else if (res.status==403){
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+		}
+		else if (res.status==404){
+			alert("το πρωτόκολλο δε βρέθηκε");
+		}
+		else{
+			alert("Σφάλμα!!!");
+		}
+	}
+	else {
+		const resdec = await res.json();
+		document.querySelector("#searchProtocolResultDiv").innerHTML = resdec;
+	}
 }
 
 function closeFileMoveDialog(){
@@ -659,18 +721,6 @@ function closeFileMoveDialog(){
 }
 
 async function moveSignedToProtocol(filename, folder="",protocolNo, year){
-	if(filename === ""){
-		alert("Δεν έχει οριστεί όνομα αρχείου");
-		return;
-	}
-	else if(!Number.isInteger(protocolNo)){
-		alert("Δεν έχει οριστεί σχετικό πρωτόκολλο για μεταφορά");
-		return;
-	}
-	else if(!Number.isInteger(year)){
-		alert("Δεν έχει οριστεί σχετικό έτος πρωτοκόλλου για μεταφορά");
-		return;
-	}
 	const formdata = new FormData();
 	formdata.append("filename", filename);
 	formdata.append("folder",folder);
@@ -1762,7 +1812,7 @@ export async function getSignedRecords(){
 	if (!res.ok){
 		if (res.status == 401){
 			document.querySelector("#recordsSpinner").style.display = 'none';
-			document.querySelector("#myNavBar").classList.toggle("disabledDiv");
+			document.querySelector("#myNavBar").classList.remove("disabledDiv");
 			const reqToken = await refreshToken();
 			if (reqToken ==1){
 				getSignedRecords();
@@ -1787,7 +1837,7 @@ export async function getSignedRecords(){
 		//return res;
 		fillTableWithSigned(await res.json());
 		document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.toggle("disabledDiv");
+		document.querySelector("#myNavBar").classList.remove("disabledDiv");
 		return "ok";
 	}
 }
