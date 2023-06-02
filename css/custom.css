@@ -406,6 +406,15 @@ td .fa-crosshairs{
     border-radius: 15px;
 }
 
+.customDialogContentTitle{
+	display: flex;
+	justify-content: space-between;
+    gap: 10px;
+    border-radius: 15px;
+	margin-bottom:10px;
+	align-items: flex-start;
+}
+
 .disabledDiv {
     pointer-events: none;
     opacity: 0.4;

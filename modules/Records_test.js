@@ -619,16 +619,19 @@ export function fillTableToBeSigned(result){
 	createSearch();
 }
 
-function openMoveToProtocolDialog(filename, folder=""){   // filename το όνομα αρχείου, folder η ημερομηνία
+function openMoveToProtocolDialog(filename, folder="",relevantDocs){   // filename το όνομα αρχείου, folder η ημερομηνία
 	if (document.querySelector("#fileMoveDialog")){
 		document.querySelector("#fileMoveDialog").innerHTML =
 		`
-		<div class="customDialogContent">
-			<button style="margin-left:20px;align-self:flex-end;" class="btn btn-secondary" name="closeFileMoveModalBtn" id="closeFileMoveModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+		<div class="customDialogContentTitle">
+			<span>${filename}</span>
+			<button class="btn btn-secondary" name="closeFileMoveModalBtn" id="closeFileMoveModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+		</div>
+		<div class="customDialogContent">	
 			<div>
 				<form>
 					<div class="flexVertical" style="padding:5px;">
-						<span >Σχετικό Πρωτόκολλο</span>
+						<span >Μεταφορά σε Πρωτόκολλο</span>
 						<div class="flexHorizontal">
 							<input type="number" class="form-control form-control-sm" id="linkRelativeField" placeholder="αρ.πρωτ" value="">&nbsp/&nbsp
 							<input type="number" class="form-control form-control-sm" id="linkRelativeYearField" value="${localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear()}">
@@ -637,17 +640,18 @@ function openMoveToProtocolDialog(filename, folder=""){   // filename το όν�
 					</div>
 				</form>
 			</div>
-			<div id="searchProtocolResultDiv"></div>
+			<div id="searchProtocolResultDiv" style="font-style:italic;"></div>
 		<div>`;
 		document.querySelector("#linkRelativeField").addEventListener("keyup",() => prepareFindProtocolDebounce());
-		document.querySelector("#linkRelativeYearField").addEventListener("keyup",() => prepareFindProtocolDebounce());
-		document.querySelector("#saveFileMoveDialogBtn").addEventListener("click",() =>prepeareMoveSignedToProtocol(filename, folder));
+		//document.querySelector("#linkRelativeYearField").addEventListener("keyup",() => prepareFindProtocolDebounce());
+		document.querySelector("#linkRelativeYearField").addEventListener("input",() => prepareFindProtocolDebounce());
+		document.querySelector("#saveFileMoveDialogBtn").addEventListener("click",() =>prepeareMoveSignedToProtocol(filename, folder,relevantDocs));
 		document.querySelector("#closeFileMoveModalBtn").addEventListener("click",() => closeFileMoveDialog());		
 		document.querySelector("#fileMoveDialog").showModal();
 	}
 } 
 
-function prepeareMoveSignedToProtocol(filename, folder){
+function prepeareMoveSignedToProtocol(filename, folder, relevantDocs){
 	if(filename === ""){
 		alert("Δεν έχει οριστεί όνομα αρχείου. Επικοινωνήστε με το διαχειριστή");
 		return;
@@ -664,7 +668,7 @@ function prepeareMoveSignedToProtocol(filename, folder){
 		alert("Δεν έχει οριστεί σχετικό έτος πρωτοκόλλου για μεταφορά");
 		return;
 	}
-	moveSignedToProtocol(filename,folder,document.querySelector("#linkRelativeField").value,document.querySelector("#linkRelativeYearField").value);
+	moveSignedToProtocol(filename,folder, relevantDocs, document.querySelector("#linkRelativeField").value,document.querySelector("#linkRelativeYearField").value);
 }
 
 function prepareFindProtocolDebounce(){
@@ -681,7 +685,7 @@ async function findLinkProtocol(protocolNo, currentYear){
 		document.querySelector("#searchProtocolResultDiv").innerHTML = "";
 		return;
 	}
-	console.log("pass")
+	//console.log("pass")
 	const {jwt,role} = getFromLocalStorage();
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -720,10 +724,11 @@ function closeFileMoveDialog(){
 	document.querySelector("#fileMoveDialog").close();
 }
 
-async function moveSignedToProtocol(filename, folder="",protocolNo, year){
+async function moveSignedToProtocol(filename, folder="",relevantDocs, protocolNo, year){
 	const formdata = new FormData();
 	formdata.append("filename", filename);
 	formdata.append("folder",folder);
+	formdata.append("relevantDocs",relevantDocs);
 	formdata.append("protocolNo",protocolNo);
 	formdata.append("year",year);
 	const {jwt,role} = getFromLocalStorage();
@@ -742,7 +747,7 @@ async function moveSignedToProtocol(filename, folder="",protocolNo, year){
 			}
 		}
 		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πρωτόκολλο");
 		}
 		else if (res.status==404){
 			alert("το αρχείο δε βρέθηκε");
@@ -755,7 +760,8 @@ async function moveSignedToProtocol(filename, folder="",protocolNo, year){
 		}
 	}
 	else {
-		
+		alert("Το αρχείο μεταφέρθηκε με επιτυχία");
+		document.querySelector("#fileMoveDialog").close();
 	}
 }
 
@@ -1942,7 +1948,7 @@ export function fillTableWithSigned(result){
 				requestExactCopy(event).then((msg)=>{alert(msg)},(msg)=>{alert(msg)})
 			});
 			document.querySelector("#signedBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['lastFilename'],result[key].date));
-			document.querySelector("#moveSignedBtn_"+result[key]['aa']).addEventListener("click",()=> openMoveToProtocolDialog(result[key]['lastFilename'],result[key].date));
+			document.querySelector("#moveSignedBtn_"+result[key]['aa']).addEventListener("click",()=> openMoveToProtocolDialog(result[key]['lastFilename'],result[key].date,result[key].relevantDocs));
 			//document.querySelector("#moveSignedBtn_"+result[key]['aa']).addEventListener("click",()=>moveSignedToProtocol(result[key]['lastFilename'],result[key].date));
             if (result[key]['exactCopyStatus'] == -1){
                 document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>alert("Δεν έχετε αιτηθεί ακριβές αντίγραφο. Πατήστε το καμπανάκι ..."));
