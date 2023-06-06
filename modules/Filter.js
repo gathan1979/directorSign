@@ -337,12 +337,12 @@ export function fillChargesTable(result){
 			}
 			tr.appendChild(td);
 		}
-		tr.addEventListener("click", (event) => openProtocolRecord(result[i]["subjectField"], result[i]["aaField"],event));
+		tr.addEventListener("click", (event) => openProtocolRecord(result[i]["subjectField"], result[i]["aaField"], result[i]["insertDateField"], event));
 		table.appendChild(tr);
 	}
 }
 
-function openProtocolRecord(subject,record,event){
+function openProtocolRecord(subject,record,recordDate, event){
 	console.log("record no ..."+record)
 	const protocolWindowContent = 
 	`<div id="bottomSection">
@@ -357,10 +357,10 @@ function openProtocolRecord(subject,record,event){
 		<div id="bottomSectionBody">
 			<div  class="firstBottomSectionColumn">
 
-				<record-attachments style="max-height:40%;" protocolNo="${record}"></record-attachments>
-				<record-relative style="max-height:20%;" protocolNo="${record}"></record-relative>
-				<record-comment style="max-height:20%;" protocolNo="${record}"></record-comment>
-				<record-history style="max-height:20%;" protocolNo="${record}"></record-history>
+				<record-attachments style="max-height:40%;" protocolDate="${recordDate}" protocolNo="${record}"></record-attachments>
+				<record-relative style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-relative>
+				<record-comment style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-comment>
+				<record-history style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-history>
 
 				<div class="table-responsive mt-2 pt-2" id="kshde" style="background: rgba(122, 160, 126, 0.2)!important;">
 					<table class="table" id="kshdeTableInProtocol">
@@ -581,7 +581,7 @@ function openProtocolRecord(subject,record,event){
 
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
-	const currentYear = (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear);
+	const currentYear = (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear());
 
 	document.querySelector("#protocolRecordDialog").showModal();
 	//event.currentTarget.style.backgroundColor = "green";

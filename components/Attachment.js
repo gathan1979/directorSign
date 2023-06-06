@@ -37,11 +37,18 @@ const content =
             </div>
         </form>
     </div>
+</dialog>
+
+<dialog id="loadingDialog">
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
 </dialog>`;
 
 
 class Attachments extends HTMLElement {
     protocolNo;
+    protocolDate;
     shadow;
 
     constructor() {
@@ -52,8 +59,11 @@ class Attachments extends HTMLElement {
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = content;
         this.protocolNo = this.attributes.protocolNo.value;
+        this.protocolDate = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         //console.log(this.protocolNo);
-        this.shadow.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFile());
+        const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):2023;
+        //this.uploadFile(undefined,this.protocolNo,this.currentYear)
+        this.shadow.querySelector("#uploadFileButton").addEventListener("click",(event)=> {event.preventDefault();this.uploadFileAA(undefined,this.protocolNo,this.protocolDate)});
         this.shadow.querySelector("#showAttachmentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addAttachmentModal").showModal());
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addAttachmentModal").close());
         this.loadAttachments(1);
@@ -63,22 +73,23 @@ class Attachments extends HTMLElement {
     
     }
 
-    async uploadFile(uploadURL="/api/uploadAttFile.php"){
+    async uploadFileAA(uploadURL="/api/uploadProtocolAtt.php",protocolNo, year){
         this.shadow.querySelector("#loadingDialog").showModal();
         const {jwt,role} = getFromLocalStorage();	
-        
+        console.log(this.shadow.getElementById('selectedFile'))
         const files = this.shadow.getElementById('selectedFile').files;
-        let numFiles = files.length;
-        let data = new FormData();
-
-        if (numFiles==0){
+    
+        if (files.length==0){
             alert("Παρακαλώ επιλέξτε το αρχείο που θα προσθέσετε στα συνημμένα");
             this.shadow.querySelector("#loadingDialog").close();
             return;
         }
 
+        let data = new FormData();
         data.append('selectedFile', this.shadow.getElementById('selectedFile').files[0]);
-        data.append('role',role);
+        data.append('currentRole',role);
+        data.append('protocolNo',protocolNo);
+        data.append('year',year);
             
         const myHeaders = new Headers();
         myHeaders.append('Authorization', jwt);
@@ -90,23 +101,26 @@ class Attachments extends HTMLElement {
             if (res.status == 401){
                 const resRef = await refreshToken();
                 if (resRef ===1){
-                    uploadFile(uploadURL);
+                    this.uploadFile(uploadURL="/api/uploadProtocolAtt.php",protocolNo, year);
                 }
                 else{
                     alert("Σφάλμα εξουσιοδότησης");	
                 }
             }
+            else if (res.status==400){
+                alert("Σφάλμα αιτήματος.Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
+            }
             else if (res.status==403){
-                window.open('unAuthorized.html', '_blank');
+                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πρωτόκολλο");
             }
             else if (res.status==404){
                 alert("το αρχείο δε βρέθηκε");
             }
             else if (res.status==500){
-                alert("Σφάλμα! Επικοινωνήστε με το διαχειριστή του συστήματος");
+                alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
             }
-            else{
-                alert("Σφάλμα!!!");
+            else {
+                alert("Σφάλμα");
             }
         }
         else {
@@ -125,8 +139,7 @@ class Attachments extends HTMLElement {
         this.shadow.querySelectorAll("#attachments tbody").innerHTML = "";
         this.shadow.querySelectorAll("#attachmentsTitle").innerHTML = '<div id="attachmentsSpinner" class="spinner-border" style="margin-left:1em;width: 1rem; height: 1rem;" role="status"></div>';
         const loginData = JSON.parse(localStorage.getItem("loginData"));
-        const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):2023;
-        const urlpar = new URLSearchParams({currentYear , protocolNo : this.protocolNo, currentRole : role});
+        const urlpar = new URLSearchParams({currentYear : this.protocolDate, protocolNo : this.protocolNo, currentRole : role});
        
         if (level!=-1){
             level = +loginData.user.roles[localStorage.getItem("currentRole")].protocolAccessLevel;
@@ -190,7 +203,7 @@ class Attachments extends HTMLElement {
                 
                 let removeFileString = "";
                 if (level!=-1){
-                    removeFileString = '<button id="removeAtt_'+result[key1]['aa']+'" data-toggle="tooltip" title="Διαγραφή συνημμένου" class="btn btn-sm  btn-danger" onclick="removeAttachment('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\')"><i class="far fa-minus-square"></i></button>';
+                    removeFileString = '<button id="removeAtt_'+result[key1]['aa']+'" data-toggle="tooltip" title="Διαγραφή συνημμένου" class="btn btn-sm  btn-danger" ><i class="far fa-minus-square"></i></button>';
                 }
                 //let openFileString = '<button type="button" class="btn-success" data-toggle="tooltip" title="Άνοιγμα αρχείου" onclick="viewAttachmentNew('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="fas fa-folder-open"></i></button>';
                 let openFileImage = '<i class="fas fa-download"></i>';
@@ -213,6 +226,7 @@ class Attachments extends HTMLElement {
             }
             for (let key1=0;key1<result.length;key1++) {
                 this.shadow.querySelector("#openAtt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa']));
+                this.shadow.querySelector("#removeAtt_"+result[key1]['aa']).addEventListener("click",()=> this.removeAttachment(result[key1]['aa'], this.protocolNo, this.protocolDate));
                 if (this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa'])){
                     this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa'],1));
                 }
@@ -244,19 +258,20 @@ class Attachments extends HTMLElement {
         }		
     }
 
-    async removeAttachment(aa,record,filename){
+    async removeAttachment(aa,protocolNo, year){
         const procc = confirm("Πρόκειται να διαγράψετε ενα συνημμένο έγγραφο");
         if ( procc == true) {
             const {jwt,role} = getFromLocalStorage();	
             let data = new FormData();
-            data.append('aa',aa);
-            data.append('record',record);
-            data.append('filename',filename);
+            data.append('attAA',aa);
+            data.append('currentRole',role);
+            data.append('protocolNo',protocolNo);
+            data.append('year',year);
                 
             const myHeaders = new Headers();
             myHeaders.append('Authorization', jwt);
             let init = {method: 'POST', headers : myHeaders, body : data};
-            const res = await fetch("/api/removeAttachment.php",init); 
+            const res = await fetch("/api/removeProtocolAtt.php",init); 
             if (!res.ok){
                 this.shadow.querySelector("#loadingDialog").close();
                 if (res.status == 401){
@@ -291,7 +306,7 @@ class Attachments extends HTMLElement {
     async viewAttachment(attachmentNo, showProtocol=0){   // 15-12-2022 Θα αντικαταστήσει το παραπάνω ΚΑΙ ΤΟ VIEWATTACHMENTWITHPROTOCOL
         console.log("show ...",showProtocol)
         const loginData = JSON.parse(localStorage.getItem("loginData"));
-        const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear;
+        const currentYear = this.protocolDate;
         const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol});
         const jwt = loginData.jwt;
         const myHeaders = new Headers();

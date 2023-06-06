@@ -6,7 +6,7 @@ export const uploadComponents = `<div class="col-md-12 d-flex flex-column p-2" >
 		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/>
 		<div class="col-md-12 d-flex flex-row mt-1" id="viewSelectedFiles"></div>
 		<div class="d-flex flex-row bd-highlight mt-3 mb-3 gap-5">
-			<textarea class="form-control" type="text" name="authorComment" id="authorComment" rows="2" cols="50" placeholder="Προαιρετικό κείμενο"></textarea>
+			<textarea style="max-width:600px;" class="form-control" type="text" name="authorComment" id="authorComment" rows="2" cols="50" placeholder="Προαιρετικό κείμενο"></textarea>
 			<button disabled style="margin-top : 5px;" class="btn btn-primary" id="uploadFileButton"><i class="fas fa-upload"></i></button>
 		</div>`;
 
