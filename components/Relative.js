@@ -9,8 +9,11 @@ const relativeContent = `
         
         <div style="display:flex;justify-content: space-between;align-items:center;">
             <div>
-                <span id="relativeTableTitle" style="font-size:14px;font-weight:bold;">Σχετικά</span> 
+                <span style="font-weight:bold;">Σχετικά</span>
                 <span class="badge bg-secondary" id="relativeTableTitleBadge"></span>
+                <div id="relativeSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
             <div>
                 <button id="fullRelativeTree" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-sitemap"></i></button>
@@ -56,6 +59,7 @@ class Relative extends HTMLElement {
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = relativeContent;
         this.protocolNo = this.attributes.protocolNo.value;
+        this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>loadRelativeFull(1));
         this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>saveRelative());
         this.loadRelative(this.protocolNo,1);
@@ -85,7 +89,7 @@ class Relative extends HTMLElement {
             if (res.status ==  401){
                 const resRef = await refreshToken();
                 if (resRef ==1){
-                    loadRelative(active);
+                    loadRelative(protocolNo,active);
                 }
                 else{
                     alert("σφάλμα εξουσιοδότησης");
@@ -107,7 +111,7 @@ class Relative extends HTMLElement {
 
             for (let key1=0;key1<resdec.length;key1++) {
                 let temp="";
-                const removeRelative = '<button class="btn btn-sm btn-danger" onclick="removeRelative('+resdec[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
+                const removeRelative = '<button id="removeRelative_'+resdec[key1]['aaField']+'" class="btn btn-sm btn-danger" onclick="removeRelative('+resdec[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
                 const spacesString ='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
                 const subject = '&nbsp&nbsp&nbsp'+resdec[key1][4].substring(0, 50)+ "...";
                 const subjectRel = '&nbsp&nbsp&nbsp'+resdec[key1][5].substring(0, 50)+ "...";
@@ -190,8 +194,41 @@ class Relative extends HTMLElement {
     }
 
     async removeRelative (aa){
-        var r = confirm("Πρόκειται να διαγράψετε ενα σχετικό έγγραφο");
-        if (r == true) {
+        const res = confirm("Πρόκειται να διαγράψετε ενα σχετικό έγγραφο");
+        if (res == true) {
+            const {jwt,role} = getFromLocalStorage();
+            const myHeaders = new Headers();
+            myHeaders.append('Authorization', jwt);
+            let urlparams = new URLSearchParams({postData : this.protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
+            
+            let init = {method: 'GET', headers : myHeaders};
+            const res = await fetch("/api/getRelative.php?"+urlparams,init);
+            if (!res.ok){
+                const resdec = res.json();
+                if (res.status ==  401){
+                    const resRef = await refreshToken();
+                    if (resRef ==1){
+                        loadRelative(active);
+                    }
+                    else{
+                        alert("σφάλμα εξουσιοδότησης");
+                    }
+                }
+                else if (res.status==403){
+                    alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+                }
+                else if (res.status==404){
+                    alert("το αρχείο δε βρέθηκε");
+                }
+                else{
+                    alert("Σφάλμα!!!");
+                }
+            }
+            else{
+                
+            }
+
+
             $.ajax({
                 type: "post",
                 data: {"aa" : aa},
@@ -214,8 +251,44 @@ class Relative extends HTMLElement {
     }
    
     async saveRelative(){
-        var relative = this.shadow.getElementById("insertRelativeField").value;
-        var year = this.shadow.getElementById("insertRelativeYearField").value;
+        const relativeNo = this.shadow.getElementById("insertRelativeField").value;
+        const relativeYear = this.shadow.getElementById("insertRelativeYearField").value;
+        const {jwt,role} = getFromLocalStorage();
+        const myHeaders = new Headers();
+        myHeaders.append('Authorization', jwt);
+        const formData = new FormData();
+        formData.append(protocolNo,this.protocolNo);
+        formData.append(protocolYear,this.protocolYear);
+        formData.append(relativeNo,this.relativeNo);
+        formData.append(relativeYear,this.relativeYear);
+        
+        let init = {method: 'POST', headers : myHeaders, body :formData};
+        const res = await fetch("/api/saveRelative.php");
+        if (!res.ok){
+            const resdec = res.json();
+            if (res.status ==  401){
+                const resRef = await refreshToken();
+                if (resRef ==1){
+                    loadRelative(active);
+                }
+                else{
+                    alert("σφάλμα εξουσιοδότησης");
+                }
+            }
+            else if (res.status==403){
+                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+            }
+            else if (res.status==404){
+                alert("το αρχείο δε βρέθηκε");
+            }
+            else{
+                alert("Σφάλμα!!!");
+            }
+        }
+        else{
+            
+        }
+     
         //console.log(comment);
         $.ajax({
                 type: "post",
@@ -246,8 +319,5 @@ class Relative extends HTMLElement {
     }
     
 }
-
-
-
 
 customElements.define("record-relative", Relative);

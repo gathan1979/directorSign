@@ -418,8 +418,10 @@ function updateRolesUI(){
 	return;
 }
 
-function setRole(index){
-	localStorage.setItem("currentRole",index);									
+async function setRole(index){
+	
+	localStorage.setItem("currentRole",index);	
+	await fixRole();								
 	updateRolesUI();
     switch (page){
         case "signature" :
@@ -458,6 +460,50 @@ function setRole(index){
 		}
 	}	
 	//createUIstartUp();
+}
+
+async function fixRole(){
+	const {jwt,role} = getFromLocalStorage();
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+
+	//const comment = document.getElementById('signText').value;
+	let formData = new FormData();
+	// signDocument(aa, isLast=0, objection=0)
+	formData.append("role", role);
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+	const res = await fetch("/api/fixSessionRoles.php",init);
+	if (!res.ok){
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ==1){
+				fixRole();
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");
+			}
+		}
+		else if (res.status==403){
+			alert("Σφάλμα στην αλλαγή ρόλου");
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		else{
+			alert("Σφάλμα!!!");
+		}
+	}
+	else {
+		if (res.status ==  200){
+			console.log("ο ρόλος δεν έχει αλλάξει");
+		}
+		else if (res.status ==  201){
+			window.location.reload();
+			console.log("επιτυχής αλλαγή ιδιότητας στο SESSION. Θα καταργηθεί σύντομα!");
+			
+		}
+	}
+
 }
 
 export function getToSignRecordsAndFill(){

@@ -344,7 +344,7 @@ td .fa-crosshairs{
 }
 
 .isButton {
-	cursor : pointer;
+	cursor : pointer!important;
 }
 
 .isGreen {
@@ -377,6 +377,10 @@ td .fa-crosshairs{
 	padding-bottom: 0.2em;
 }
 
+#bottomSectionTitle{
+	font-size: 1.2em;
+}
+
 #bottomSectionBody {
 	display: flex;
 	flex-direction: row;
@@ -385,7 +389,23 @@ td .fa-crosshairs{
 	gap:10px;
 }
 
-.firstBottomSectionColumn,.secondBottomSectionColumn,.thirdBottomSectionColumn{
+.firstBottomSectionColumn{
+	display : flex;
+	flex-direction: column;
+	gap : 15px;
+	flex-basis:50%;
+	flex-grow: 1;
+}
+
+.secondBottomSectionColumn{
+	display : flex;
+	flex-direction: column;
+	gap : 15px;
+	flex-basis:20%;
+	flex-grow: 1;
+}
+
+.thirdBottomSectionColumn{
 	display : flex;
 	flex-direction: column;
 	gap : 15px;
