@@ -6,8 +6,11 @@ import refreshToken from "./RefreshToken.js";
 
 let loginData = null;
 export let page = null;
+export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed'};
+Object.freeze(Pages);
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
 const pwdBtn = '<button class="btn btn-warning btn-sm" id="changePwdBtn" data-bs-toggle="modal" data-bs-target="#passwordModal" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtn"></i></button>';
+
 
 const passwordModalDiv =
 `<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
@@ -62,20 +65,7 @@ const navBarDiv = `<div id="myNavBar">
 	<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
 	</div><!-- /.container-fluid -->`;
 
-const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
-		<div class="flexVertical" id="uploadBtnDiv">
-		</div>
-		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
-		<div id="userRoles" ></div>
-		<div id="outerFilterDiv" class="flexVertical smallPadding">
-			<div id="generalFilterDiv" class="flexHorizontal ">
-				<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
-				<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
-				<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
-			</div>
-		</div>
-		<div id="recentProtocolsDiv"></div>
-	</div>`;
+
 
 const signTable = `<table id="dataToSignTable" class="table">
 	<thead>
@@ -124,6 +114,42 @@ const protocolRecordModal =
 
 
 function pagesCommonCode(){
+	loginData = localStorage.getItem("loginData");
+	let cRole = null;
+	if (loginData === null){
+		window.location.href = "index.php";
+		alert("Δεν υπάρχουν στοιχεία χρήστη");
+		return;
+	}
+	else{
+		loginData = JSON.parse(loginData);
+		//Πρόσβαση στο Πρωτόκολλο λεκτικό
+		cRole = localStorage.getItem("currentRole");
+	}
+	
+	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
+		<div class="flexVertical" id="uploadBtnDiv">
+		</div>
+		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
+		<div id="userRoles" class="verticalFlexWithPadding"></div>
+		<div id="outerFilterDiv" class="flexVertical smallPadding">
+			<div id="generalFilterDiv" class="flexHorizontal ">
+				<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
+				<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
+				<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
+			</div>
+		</div>
+		<div id="topMenuAdminBtnsDiv" class="verticalFlexWithPadding" >	
+			${
+				+loginData.user.roles[cRole].protocolAccessLevel?
+				`<div><a rel="opener"   rel="referer" target="_blank" href="../mich_login.php"><i class="fas fa-envelope  fa-lg"></i>&nbspEmails</a></div>
+				<div><a rel="opener"   rel="referer" target="_blank" href="../kside/index.php"><i class="fas fa-inbox  fa-lg"></i>&nbspΚΣΗΔΕ</a></div>`:``
+			}
+		</div>
+		<div id="recentProtocolsDiv"></div>
+	</div>`;
+
+	
 	console.log("common page code executing...");
 	if (document.querySelector("#myNavBar")!==null){
 		document.querySelector("#myNavBar").remove();
@@ -170,19 +196,19 @@ function pagesCommonCode(){
 	}
 
 	switch (page){
-		case "signature" :
+		case Pages.SIGNATURE :
 			document.body.insertAdjacentHTML("beforeend",signTable);
 			document.querySelector("#ipogegrammena>a").classList.remove("active");
 			document.querySelector("#xreoseis>a").classList.remove("active");
 			document.querySelector("#prosIpografi>a").classList.add("active");
 			break;
-		case "signed" :
+		case Pages.SIGNED :
 			document.body.insertAdjacentHTML("beforeend",signTable);
 			document.querySelector("#ipogegrammena>a").classList.add("active");
 			document.querySelector("#xreoseis>a").classList.remove("active");
 			document.querySelector("#prosIpografi>a").classList.remove("active");
 			break;
-		case "charges" :
+		case Pages.CHARGES :
 			document.body.insertAdjacentHTML("beforeend",chargesTable);
 			document.body.insertAdjacentHTML("beforeend",protocolRecordModal);
 			document.querySelector("#ipogegrammena>a").classList.remove("active");
@@ -194,47 +220,40 @@ function pagesCommonCode(){
 			return;
 	}
 
-	loginData = localStorage.getItem("loginData");
-	if (loginData === null){
-		window.location.href = "index.php";
-		alert("Δεν υπάρχουν στοιχεία χρήστη");
-	}
-	else{
-		loginData = JSON.parse(loginData);
-		//Πρόσβαση στο Πρωτόκολλο λεκτικό
-		let cRole = localStorage.getItem("currentRole");
-		if (cRole !== null){
-			if (+loginData.user.roles[cRole].protocolAccessLevel){
-				document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
-			}
-			else{
-				document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
-			}
+	//Πρόσβαση στο Πρωτόκολλο λεκτικό
+	
+	if (cRole !== null){
+		if (+loginData.user.roles[cRole].protocolAccessLevel){
+			document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
 		}
 		else{
-			alert("Δεν υπάρχουν στοιχεία ιδιότητας χρήστη");	
+			document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
 		}
-
-		//Πρόσβαση στο Παρουσιολόγιο
-		if (+loginData.user.roles[cRole].privilege){
-            const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
-			document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
-		}
-		//const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
-		//document.querySelector("#userRoles").innerHTML = basicBtns;
-        document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
-        document.querySelector("#myNavBarLogoContent").innerHTML += pwdBtn;
-		document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning btn-sm" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
-		document.querySelector("#logoutBtn").addEventListener("click",logout);	
-		
-        document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
-        document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
-		document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);			
 	}
+	else{
+		alert("Δεν υπάρχουν στοιχεία ιδιότητας χρήστη");	
+	}
+
+	//Πρόσβαση στο Παρουσιολόγιο
+	if (+loginData.user.roles[cRole].privilege){
+		const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
+		document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
+	}
+	//const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
+	//document.querySelector("#userRoles").innerHTML = basicBtns;
+	document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
+	document.querySelector("#myNavBarLogoContent").innerHTML += pwdBtn;
+	document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning btn-sm" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
+	document.querySelector("#logoutBtn").addEventListener("click",logout);	
+	
+	document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
+	document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
+	document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);			
+
 
 	//create Roles UI	
 	document.querySelector("#userRoles").innerHTML = "";
-	const cRole = localStorage.getItem("currentRole");
+	//const cRole = localStorage.getItem("currentRole");
 	loginData.user.roles.forEach((role,index)=>{
 		let newRole;
 		if(index == cRole){
@@ -267,13 +286,13 @@ function pagesCommonCode(){
 
 	document.querySelector("#syncRecords").addEventListener("click", ()=>  { 
 		switch (page){
-			case "signature" :
+			case Pages.SIGNATURE:
 				getToSignRecordsAndFill();
 				break;
-			case "signed" :
+			case Pages.SIGNED :
 				getSignedRecordsAndFill();
 				break;
-			case "charges" :
+			case Pages.CHARGES :
 				getFilteredData();
 				break;
 			default :
@@ -290,8 +309,10 @@ function pagesCommonCode(){
 
 async function createChargesUIstartUp(){
 	console.log("charges");
-	page = "charges";
+	page = Pages.CHARGES;
 	pagesCommonCode();
+	document.querySelector('#showEmployeesBtn').style.display = "none"; 
+	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
 	let cRole = localStorage.getItem("currentRole");
 	const chargesFilterMenuDiv =`<div id="chargesFilterMenu" class="flexVertical ">
 		<div id="topSettingsDiv" class="flexHorizontal" >	
@@ -324,13 +345,6 @@ async function createChargesUIstartUp(){
 				</button>
 			</div>
 
-			<div id="topMenuAdminBtnsDiv" class="col-lg-2 col-sm-12" >	
-				${
-					+loginData.user.roles[cRole].protocolAccessLevel?
-					`<div><a rel="opener"   rel="referer" target="_blank" href="../mich_login.php"><i class="fas fa-envelope  fa-lg"></i>&nbspEmails</a></div>
-					<div><a rel="opener"   rel="referer" target="_blank" href="../kside/index.php"><i class="fas fa-inbox  fa-lg"></i>&nbspΚΣΗΔΕ</a></div>`:``
-				}
-			</div>
 		</div>
 		<div id="recentProtocolsDiv" class="col-lg-5 col-sm-12" >	
 		</div>
@@ -381,8 +395,11 @@ async function createChargesUIstartUp(){
 export function createUIstartUp(){
 	
 	console.log("signature");
-    page = "signature";
+    page = Pages.SIGNATURE;
 	pagesCommonCode();
+
+	document.querySelector('#showEmployeesBtn').style.display = "inline-block"; 
+	document.querySelector('#showToSignOnlyBtn').style.display = "inline-block"; 
 
 	const uploadBtn=`<button class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadDiv"><i class="far fa-plus-square"></i></button>`;
 	document.querySelector("#uploadBtnDiv").innerHTML =uploadBtn;
@@ -412,8 +429,11 @@ export function createUIstartUp(){
 export function createSignedUIstartUp(){
 	
     console.log("signed");
-    page = "signed";
+    page = Pages.SIGNED;
 	pagesCommonCode();
+
+	document.querySelector('#showEmployeesBtn').style.display = "inline-block"; 
+	document.querySelector('#showToSignOnlyBtn').style.display = "inline-block"; 
 
 	//Γέμισμα πίνακα με εγγραφές χρήστη
 	getSignedRecordsAndFill();
@@ -600,13 +620,13 @@ async function setRole(index){
 	localStorage.setItem("currentRole",index);									
 	updateRolesUI();
     switch (page){
-        case "signature" :
+        case Pages.SIGNATURE :
             getToSignRecordsAndFill();
             break;
-        case "signed" :
+        case Pages.SIGNED :
             getSignedRecordsAndFill();
             break;
-		case "charges" :
+		case Pages.CHARGES :
 			getChargesAndFill();
 			break;
         default :

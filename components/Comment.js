@@ -28,15 +28,19 @@ const commentContent = `
     </div>
 
     <dialog id="addCommentModal" class="customDialog">
+        <div class="customDialogContentTitle">
+            <span style="font-weight:bold;">Νέο Σχόλιο</span>
+            <button class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        </div>
         <div class="customDialogContent">
-            <button style="margin-left:20px;align-self:flex-end;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
-            <form>
-                <div class="flexVertical" style="padding:5px;">
-                    <span >Νέο Σχόλιο</span>
-                    <textarea type="text" cols="100" rows="2" class="form-control form-control-sm " id="insertCommentField"></textarea>
-                    <button id="saveCommentBtn" type="button" class="btn-sm btn-success mb-2">Εισαγωγή</button>	
-                </div>
-            </form>
+            <div class="flexVertical">
+                <form>
+                    <div class="flexHorizontal">
+                        <textarea type="text" cols="100" rows="2" class="form-control form-control-sm " id="insertCommentField"></textarea>
+                    </div>
+                </form>
+                <button id="saveCommentBtn" type="button" class="btn-sm btn-success mb-2">Εισαγωγή</button>	
+            </div>
         </div>
     </dialog>`;
 
@@ -54,7 +58,7 @@ class Comment extends HTMLElement {
         this.shadow.innerHTML = commentContent;
         this.protocolNo = this.attributes.protocolNo.value;
         this.shadow.querySelector("#showAddCommentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addCommentModal").showModal());
-        this.shadow.querySelector("#saveCommentBtn").addEventListener("click",()=>saveComment());
+        this.shadow.querySelector("#saveCommentBtn").addEventListener("click",()=>{ const comment = this.shadow.getElementById("insertCommentField").value; saveComment(this.protocolNo, comment);});
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addCommentModal").close());
         this.loadComments(this.protocolNo,1);
     }
@@ -62,30 +66,6 @@ class Comment extends HTMLElement {
     disconnectedCallback() {
     
     }
-
-
-    async saveComment(aaUser){
-        const comment = this.shadow.getElementById("insertCommentField").value;
-
-        $.ajax({
-               type: "post",
-               data: {"postData" : selectedIndex, "commentField": comment,"aaUser": aaUser },
-               url: "saveComment.php",
-               success: function(msg){
-                    //alert(msg);
-                   if (msg="success"){
-                       $(".message").html("επιτυχής καταχώρηση");
-                        $("#alert").show();
-                   }
-                   else{
-                       $(".message").html("σφάλμα στην καταχώρηση");
-                        $("#alert1").show();
-                   }
-                   loadComments(1);
-               }
-        });	
-    }
-
     
     async loadComments(protocolNo, active){
         this.shadow.querySelector("#insertCommentField").value = "";
@@ -94,7 +74,7 @@ class Comment extends HTMLElement {
         const {jwt,role} = getFromLocalStorage();
         const myHeaders = new Headers();
         myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({postData : protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
+        let urlparams = new URLSearchParams({protocolNo, role, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
         let init = {method: 'GET', headers : myHeaders};
         const res = await fetch("/api/getComments.php?"+urlparams,init);
         if (!res.ok){
@@ -102,7 +82,7 @@ class Comment extends HTMLElement {
             if (res.status ==  401){
                 const resRef = await refreshToken();
                 if (resRef ==1){
-                    loadRelative(active);
+                    this.loadComments(protocolNo, active);
                 }
                 else{
                     alert("σφάλμα εξουσιοδότησης");
@@ -124,48 +104,152 @@ class Comment extends HTMLElement {
             this.shadow.querySelector("#commentTableTitleBadge").textContent = resdec.length;
             let html = "";
             for (let key1=0;key1<resdec.length;key1++) {
-                const removeComment = '<button class="btn btn-sm btn-danger" onclick="removeComment('+resdec[key1]['aaField']+')"><i class="far fa-minus-square"></i></button>';
-                const spacesString ='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+                const commentUser = '<div class="verticalFlexWithPadding">'+resdec[key1]['userField']+"</div>";
+                const removeComment = '<button id="removeCommentBtn-'+resdec[key1]['aaField']+'" class="btn btn-sm btn-danger"><i class="far fa-minus-square"></i></button>';
+                const commentString = '<div>'+resdec[key1]['commentField']+(resdec[key1]['insertDateField'] !=null? " - στις <b>"+resdec[key1]['insertDateField']:"")+"</b></div>";;
                 let temp = "";
                 if (active){
-                    temp = "<tr><td>"+resdec[key1]['userField']+" - "+resdec[key1]['commentField']+(resdec[key1]['insertDateField'] !=null? " - στις <b>"+resdec[key1]['insertDateField']:"")+"</b>"+spacesString+removeComment+"</td></tr>";
-                //console.log(temp);
+                    temp = "<tr><td><div style='display:flex;gap:10px;align-items:center;'>"+commentUser+commentString+removeComment+"</div></td></tr>";
                 }
                 else{
-                    temp = "<tr><td>"+resdec[key1]['userField']+" - "+resdec[key1]['commentField']+(resdec[key1]['insertDateField'] !=null? " - στις <b>"+resdec[key1]['insertDateField']:"")+"</b>"+spacesString+"</td></tr>";
+                    temp = "<tr><td><div style='display:flex;gap:10px;align-items:center;'>"+commentUser+commentString+"</div></td></tr>";
                 }
                 html += temp;
             }
             this.shadow.querySelector("#commentsTable tbody").innerHTML = html;
+            //onclick="removeComment('+resdec[key1]['aaField']+')"
+            for (let key1=0;key1<resdec.length;key1++) {
+                   this.shadow.querySelector("#removeCommentBtn-"+resdec[key1]['aaField']).addEventListener("click", ()=>{this.removeComment(this.protocolNo,resdec[key1]['aaField'])}); 
+            }
         }
     }
 
-
-    async removeComment (aa){
+    async removeComment (protocolNo, protocolYear, aa){
         var r = confirm("Πρόκειται να διαγράψετε ενα σχόλιο");
-        if (r == true) {
-                $.ajax({
-                type: "post",
-                data: {"aa" : aa},
-                url: "removeComment.php",
-                success: function(msg){
-                        console.log(msg);
-                    if (msg=="success"){
-                        $(".message").html("επιτυχής διαγραφή");
-                            $("#alert").show();
-                    }
-                    else{
-                        $(".message").html(msg);
-                            $("#alertError").show();
-                    }
-                    loadComments(1); 
-                    }
-                });	  		
-        } else {
-            
+        if (r !== true) {
+            //console.log(protocolNo, " - ", aa);
+            return;
         }
-    } 
+        const {jwt,role} = getFromLocalStorage();
+        const myHeaders = new Headers();
+        myHeaders.append('Authorization', jwt);
+        let formData = new FormData();
+        formData.append("aaField",aa);
+        formData.append("protocolNo",protocolNo);
+        formData.append("protocolYear",protocolYear);
+        formData.append("role",role);
+        let init = {method: 'POST', headers : myHeaders, body : formData};
+        const res = await fetch("/api/removeComment.php", init);
+        if (!res.ok){
+            this.shadow.querySelector("#commentsSpinner").display = "none"; 
+            if (res.status ==  401){
+                const resRef = await refreshToken();
+                if (resRef ==1){
+                    this.removeComment(protocolNo, aa);
+                }
+                else{
+                    alert("σφάλμα εξουσιοδότησης");
+                }
+            }
+            else if (res.status==403){
+                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+            }
+            else if (res.status==404){
+                alert("το αρχείο δε βρέθηκε");
+            }
+            else{
+                alert("Σφάλμα!!!");
+            }
+        }
+        else{
+            this.loadComments(this.protocolNo,1);
+        }    
+    }
 
+    async saveComment(protocolNo, protocolYear, comment){
+        const {jwt,role} = getFromLocalStorage();
+        const myHeaders = new Headers();
+        myHeaders.append('Authorization', jwt);
+        let formData = new FormData();
+        formData.append("commentField",comment);
+        formData.append("protocolNo",protocolNo);
+        formData.append("protocolYear",protocolYear);
+        formData.append("role",role);
+        let init = {method: 'POST', headers : myHeaders, body : formData};
+        const res = await fetch("/api/removeComment.php", init);
+        if (!res.ok){
+           // this.shadow.querySelector("#commentsSpinner").display = "none"; 
+            if (res.status ==  401){
+                const resRef = await refreshToken();
+                if (resRef ==1){
+                    this.saveComment(protocolNo, comment);
+                }
+                else{
+                    alert("σφάλμα εξουσιοδότησης");
+                }
+            }
+            else if (res.status==403){
+                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+            }
+            else if (res.status==404){
+                alert("το αρχείο δε βρέθηκε");
+            }
+            else{
+                alert("Σφάλμα!!!");
+            }
+        }
+        else{
+          //  this.shadow.querySelector("#commentsSpinner").display = "none"; 
+            this.loadComments(this.protocolNo,1);
+        }    
+    }
+
+
+    // async saveComment(aaUser){
+    //     const comment = this.shadow.getElementById("insertCommentField").value;
+    //     $.ajax({
+    //            type: "post",
+    //            data: {"postData" : selectedIndex, "commentField": comment,"aaUser": aaUser },
+    //            url: "saveComment.php",
+    //            success: function(msg){
+    //                 //alert(msg);
+    //                if (msg="success"){
+    //                    $(".message").html("επιτυχής καταχώρηση");
+    //                     $("#alert").show();
+    //                }
+    //                else{
+    //                    $(".message").html("σφάλμα στην καταχώρηση");
+    //                     $("#alert1").show();
+    //                }
+    //                loadComments(1);
+    //            }
+    //     });	
+    // }
+
+    // async removeComment (aa){
+    //     var r = confirm("Πρόκειται να διαγράψετε ενα σχόλιο");
+    //     if (r == true) {
+    //             $.ajax({
+    //             type: "post",
+    //             data: {"aa" : aa},
+    //             url: "removeComment.php",
+    //             success: function(msg){
+    //                     console.log(msg);
+    //                 if (msg=="success"){
+    //                     $(".message").html("επιτυχής διαγραφή");
+    //                         $("#alert").show();
+    //                 }
+    //                 else{
+    //                     $(".message").html(msg);
+    //                         $("#alertError").show();
+    //                 }
+    //                 loadComments(1); 
+    //                 }
+    //             });	  		
+    //     } else {
+            
+    //     }
+    // } 
 }
 
 customElements.define("record-comment", Comment);

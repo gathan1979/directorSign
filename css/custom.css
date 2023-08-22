@@ -238,7 +238,7 @@ td .fa-crosshairs{
 	align-items : center;
 }
 
-#userRoles {
+.verticalFlexWithPadding {
 	display : flex;	
 	flex-flow: column nowrap;
 	gap : 0.2em;

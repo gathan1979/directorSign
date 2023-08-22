@@ -127,7 +127,7 @@ class Attachments extends HTMLElement {
         this.shadow.querySelector("#closeAttModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#attachmentModal").close());
         this.shadow.querySelector("#closeGdprModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#gdprModal").close());
         await this.loadAttachments(1);
-        this.users = await this.getUsers(1);  // get all active protocol users
+        // ??????this.users = await this.getUsers(1);  // get all active protocol users
     }
 
     disconnectedCallback() {

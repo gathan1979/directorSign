@@ -1,4 +1,5 @@
 import refreshToken from "./RefreshToken.js";
+import getFromLocalStorage from "./LocalStorage.js";
 let filter = {};
 
 if (localStorage.getItem("filter") !== null){
@@ -258,12 +259,12 @@ function addListeners(){
 
 // Filters ----
 
-export async function getFilteredData(){
+export async function getFilteredData(){   											//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	document.querySelector("#myNavBar").classList.add("disabledDiv");
 	updateFilterStorage();
-	const loginData = JSON.parse(localStorage.getItem("loginData"));
-	
+	const {jwt,role} = getFromLocalStorage();
+	//const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentFilter = JSON.parse(localStorage.getItem("filter"));
 	const currentFilterAsArray = Object.entries(currentFilter);
 	const filtered = currentFilterAsArray.filter(([key, value]) => !(value==0 || value=="" || value==null));
@@ -271,12 +272,13 @@ export async function getFilteredData(){
 	const filteredObject = Object.fromEntries(filtered);
 
 	const  completeOblect= Object.assign({
-		role : loginData.user.roles[localStorage.getItem("currentRole")].aa_role,
+		role,
+		//role : loginData.user.roles[localStorage.getItem("currentRole")].aa_role,
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
 	},filteredObject);
 	const urlpar = new URLSearchParams(completeOblect);
 	
-	const jwt = loginData.jwt;
+	//const jwt = loginData.jwt;
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
 	let init = {method: 'GET', headers : myHeaders};
