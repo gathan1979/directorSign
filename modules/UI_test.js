@@ -1,11 +1,11 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
-import {createActionsTemplate,getSigRecords, getSignedRecords, createSearch}  from "./Records_test.js";
+import {createActionsTemplate,getSigRecords, getSignedRecords}  from "./Records_test.js";
 import getFromLocalStorage from "./LocalStorage.js";
-import createFilter,{updateBtnsFromFilter,getFilteredData} from "./Filter.js"
+import createFilter,{updateBtnsFromFilter,getFilteredData, createSearch} from "./Filter.js";
 import refreshToken from "./RefreshToken.js";
 
 let loginData = null;
-export let page = null;
+let page = null;
 export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed'};
 Object.freeze(Pages);
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
@@ -112,6 +112,9 @@ const protocolRecordModal =
 
 	</dialog>`;
 
+export function getPage(){
+	return page;
+}
 
 function pagesCommonCode(){
 	loginData = localStorage.getItem("loginData");
@@ -132,7 +135,7 @@ function pagesCommonCode(){
 		</div>
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
 		<div id="userRoles" class="verticalFlexWithPadding"></div>
-		<div id="outerFilterDiv" class="flexVertical smallPadding">
+		<div id="outerFilterDiv" class="flexHorizontal smallPadding">
 			<div id="generalFilterDiv" class="flexHorizontal ">
 				<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
 				<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
@@ -281,8 +284,13 @@ function pagesCommonCode(){
 	document.querySelector("#setPwd").addEventListener("click",changePassword);	
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
-	document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
-	document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
+	console.log("keyup listener added");
+	if (document.querySelector('#showEmployeesBtn')){
+		document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
+	}
+	if (document.querySelector('#showToSignOnlyBtn')){
+		document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
+	}
 
 	document.querySelector("#syncRecords").addEventListener("click", ()=>  { 
 		switch (page){
@@ -314,23 +322,24 @@ async function createChargesUIstartUp(){
 	document.querySelector('#showEmployeesBtn').style.display = "none"; 
 	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
 	let cRole = localStorage.getItem("currentRole");
-	const chargesFilterMenuDiv =`<div id="chargesFilterMenu" class="flexVertical ">
+	const chargesFilterMenuDiv = 
+	`<div id="chargesFilterMenu" class="flexVertical ">
 		<div id="topSettingsDiv" class="flexHorizontal" >	
 			<div id="recordChangesBtnDiv" >
-				<button class="btn btn-danger " type="button" id="openChangesBtn" data-toggle="tooltip" data-original-title="Αλλαγές σε πρωτόκολλα">
+				<button class="btn btn-primary btn-sm" type="button" id="openChangesBtn" data-toggle="tooltip" data-original-title="Αλλαγές σε πρωτόκολλα">
 					<i class="fas fa-info"></i>
 				</button>
 				
 			</div>
 			<div id="filterBtnDiv" >
-				<button class="btn btn-danger" type="button" id="openFilterBtn" data-toggle="tooltip" data-original-title="Φίλτρο">
+				<button class="btn btn-primary btn-sm" type="button" id="openFilterBtn" data-toggle="tooltip" data-original-title="Φίλτρο">
 					<i class="fas fa-filter"></i>
 				</button>
 				
 			</div>
 			<div id="yearDiv" class="yearDiv">
 				<div class="dropdown col-7">
-					<button class="btn btn-danger dropdown-toggle" type="button" id="yearDropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="yearDropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 						
 					</button>
 					<div class="dropdown-menu" id="yearDropdownMenu" aria-labelledby="yearDropdownMenuButton">
@@ -338,9 +347,8 @@ async function createChargesUIstartUp(){
 					</div>
 				</div>
 			</div>
-			
 			<div id="removeNotificationsBtnDiv" >
-				<button class="btn btn-danger" name="removeNotifications" id="removeNotifications" onclick="removeNotifications()" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
+				<button class="btn btn-primary btn-sm" name="removeNotifications" id="removeNotifications" onclick="removeNotifications()" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
 				<i class="fab fa-stack-overflow"></i>
 				</button>
 			</div>
@@ -348,11 +356,9 @@ async function createChargesUIstartUp(){
 		</div>
 		<div id="recentProtocolsDiv" class="col-lg-5 col-sm-12" >	
 		</div>
-	
-
 	</div>`;
 
-	const filterDiv= `<dialog id="changesDiv" class="customModal">
+	const changesFilterDiv= `<dialog id="changesDiv" class="customModal">
 						<div id="changesTitle" class="customTitle">
 							<div>Τελευταίες αλλαγές</div>
 							<div id="changesDatesDiv"> 
@@ -379,7 +385,7 @@ async function createChargesUIstartUp(){
 						<div id="filterApplyDiv"></div>
 					</dialog>`;
 	
-	document.body.insertAdjacentHTML("afterend",filterDiv);
+	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
 

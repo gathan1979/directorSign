@@ -123,7 +123,7 @@ class Attachments extends HTMLElement {
             </form>`;
             this.shadow.querySelector("#uploadFileButton").addEventListener("click",(event)=> {event.preventDefault();this.uploadFile(undefined,this.protocolNo,this.protocolYear)});
             this.shadow.querySelector("#attachmentModal").showModal();
-        });
+        });  
         this.shadow.querySelector("#closeAttModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#attachmentModal").close());
         this.shadow.querySelector("#closeGdprModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#gdprModal").close());
         await this.loadAttachments(1);

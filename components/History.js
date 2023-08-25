@@ -56,7 +56,7 @@ class History extends HTMLElement {
             if (res.status ==  401){
                 const resRef = await refreshToken();
                 if (resRef ==1){
-                    loadHistory(protocolNo);
+                    this.loadHistory(protocolNo);
                 }
                 else{
                     alert("σφάλμα εξουσιοδότησης");

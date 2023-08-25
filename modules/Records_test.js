@@ -1,6 +1,7 @@
 import refreshToken from "./RefreshToken.js"
 import getFromLocalStorage from "./LocalStorage.js"
 import {uploadFileTest} from "./Upload.js";
+import { createSearch } from "./Filter.js";
 
 
 const entityMap = {
@@ -1705,98 +1706,7 @@ async function requestOTP(){
 	}
 }
 
-export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
-															// diff = 0 είναι για υπογραφή στο τμήμα
-	const table = document.querySelector("#"+tableName);
 
-	//console.log(searchObject)
-	for (const tempRow of Array.from(table.rows)){                       			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
-		if (tempRow.dataset.author && tempRow.dataset.diff){   	// απορρίπτει γραμμές του header, footer
-			let hide = false;
-			for(const [key,value] of Object.entries(searchObject.dataKeys)){
-				console.log(key,value,tempRow.dataset[key] );
-				if (value != null){
-					if (tempRow.dataset[key] != value){
-						hide = true;
-					}
-				}
-			}
-			let findTextInRow = true;
-			if (searchObject.searchString !== "" && searchObject.searchString !==null){
-				findTextInRow = false;
-				for (const cell of tempRow.cells){
-					if (cell.textContent.indexOf(searchObject.searchString) !== -1){
-						findTextInRow = true;
-						console.log("το κείμενο βρέθηκε στη γραμμή ")
-					}
-				}
-			}
-			if (hide || !findTextInRow){
-				tempRow.setAttribute("hidden","hidden");
-			}
-			else{
-				tempRow.removeAttribute("hidden");
-			}
-		}
-	}
-}
-
-export function createSearch(event) {
-	const loginData = JSON.parse(localStorage.getItem("loginData"));
-	const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
-	const department = loginData.user.roles[currentRole].department;
-	const user = loginData.user.user;
-
-	const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
-	const showEmployeesBtn = document.getElementById('showEmployeesBtn');
-	const tableSearchInput = document.getElementById('tableSearchInput');
-
-	let  filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
-
-	if (event !== undefined){
-		if(event.target.dataset.active == "0"){
-			event.target.classList.remove('btn-danger');
-			event.target.classList.add('btn-success');
-			event.target.dataset.active = "1";
-		}
-		else if(event.target.dataset.active == "1"){
-			event.target.classList.remove('btn-success');
-			event.target.classList.add('btn-danger');
-			event.target.dataset.active = "0";
-		}
-	}
-
-	if (showToSignOnlyBtn.dataset.active == 1){
-		filterObject.dataKeys.currentDep = null;
-	}
-	else{
-		filterObject.dataKeys.currentDep = department;
-	}
-	if (showEmployeesBtn.dataset.active == 1){
-		filterObject.dataKeys.author = user;
-	}
-	else{
-		filterObject.dataKeys.author = null;
-	}
-	if (tableSearchInput.value != ""){
-		filterObject.searchString = tableSearchInput.value;
-	}
-	else{
-		filterObject.searchString = null;
-	}
-	console.log(filterObject)
-	const debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
-	debouncedFilter();
-}
-
-var timer;
-
-function debounce(func, timeout = 500){
-	return (...args) => {
-		clearTimeout(timer);
-		timer = setTimeout(() => { func.apply(this, args); }, timeout);
-	};
-}
 
 
 
@@ -1972,6 +1882,7 @@ export function fillTableWithSigned(result){
 			}
 		}						
 	}
+	createSearch();
 }
 
 async function requestExactCopy(event){

@@ -17,6 +17,7 @@
 		<script type="module" src="components/Relative.js"></script>
 		<script type="module" src="components/Comment.js"></script>
 		<script type="module" src="components/History.js"></script>
+		<script type="module" src="components/Folders.js"></script>
 		
 		<link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
 		<script src="bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>
@@ -28,9 +29,9 @@
 		<!--fontawesome-->
 				
 		<script type="module" >
-			import {createUIstartUp, page, getToSignRecordsAndFill, getSignedRecordsAndFill, getChargesAndFill} from "./modules/UI_test.js";
+			import {createUIstartUp, getPage, getToSignRecordsAndFill, getSignedRecordsAndFill, getChargesAndFill} from "./modules/UI_test.js";
 			createUIstartUp();
-			document.querySelector("#syncRecords").addEventListener("click", ()=>  { switch (page){
+			document.querySelector("#syncRecords").addEventListener("click", ()=>  { switch (getPage()){
 					case "signature" :
 						getToSignRecordsAndFill();
 						break;

@@ -182,13 +182,16 @@ class Relative extends HTMLElement {
             const resdec = await res.json();
             this.shadow.getElementById("relativeTableTitleBadge").textContent = resdec.length;
 
+            if (Array.isArray(resdec)){    
+                resdec.sort((a, b) => a.relative - b.relative);
+            }
             for (let key1=0;key1<resdec.length;key1++) {
                 let temp="";
                 const removeRelative = '<button style="margin-left:0.5em;" id="removeRelative_'+resdec[key1]['aaField']+'" class="btn btn-sm btn-danger"><i class="far fa-minus-square"></i></button>';
                // const spacesString ='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
                 const subject = '&nbsp&nbsp&nbsp'+resdec[key1]["subject"].substring(0, 70)+ "...";
                 const relativeBtn = '<button class="btn btn-info btn-sm" type="button">'+resdec[key1]['relative']+"/"+resdec[key1]['relativeYear']+'</button>';
-                const parentBtn = '<button class="btn btn-light btn-sm" type="button">'+resdec[key1]['parent']+"/"+resdec[key1]['parentYear']+'</button>';
+                const parentBtn = '<button class="btn btn-outline-secondary btn-sm" type="button">'+resdec[key1]['parent']+"/"+resdec[key1]['parentYear']+'</button>';
                 const caretSym = '<i style="margin: 0px 5px 0px 5px;" class="fas fa-caret-square-right"></i>';
                
                 if (active){

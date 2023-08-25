@@ -1,5 +1,7 @@
 import refreshToken from "./RefreshToken.js";
 import getFromLocalStorage from "./LocalStorage.js";
+import {getPage, Pages} from "./UI_test.js";
+
 let filter = {};
 
 if (localStorage.getItem("filter") !== null){
@@ -22,6 +24,108 @@ localStorage.setItem("filter", JSON.stringify(filter));
 //updateFilterStorage();
 	
 	
+export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
+		// diff = 0 είναι για υπογραφή στο τμήμα
+	const table = document.querySelector("#"+tableName);
+
+	//console.log(searchObject)
+	for (const tempRow of Array.from(table.rows)){                       			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
+		if (tempRow.dataset.author && tempRow.dataset.diff){   	// απορρίπτει γραμμές του header, footer
+			let hide = false;
+			for(const [key,value] of Object.entries(searchObject.dataKeys)){
+				console.log(key,value,tempRow.dataset[key] );
+				if (value != null){
+					if (tempRow.dataset[key] != value){
+						hide = true;
+					}
+				}
+			}
+			let findTextInRow = true;
+			if (searchObject.searchString !== "" && searchObject.searchString !==null){
+				findTextInRow = false;
+				for (const cell of tempRow.cells){
+					if (cell.textContent.indexOf(searchObject.searchString) !== -1){
+						findTextInRow = true;
+						console.log("το κείμενο βρέθηκε στη γραμμή ")
+					}
+				}
+			}
+			if (hide || !findTextInRow){
+				tempRow.setAttribute("hidden","hidden");
+			}
+			else{
+				tempRow.removeAttribute("hidden");
+			}
+		}
+	}
+}
+
+export function createSearch(event) {
+	console.log("creating search ...");
+	const loginData = JSON.parse(localStorage.getItem("loginData"));
+	const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
+	const department = loginData.user.roles[currentRole].department;
+	const user = loginData.user.user;
+
+	const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
+	const showEmployeesBtn = document.getElementById('showEmployeesBtn');
+	const tableSearchInput = document.getElementById('tableSearchInput');
+
+	let  filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
+
+	if (event !== undefined){
+		if(event.target.dataset.active == "0"){
+			event.target.classList.remove('btn-danger');
+			event.target.classList.add('btn-success');
+			event.target.dataset.active = "1";
+		}
+		else if(event.target.dataset.active == "1"){
+			event.target.classList.remove('btn-success');
+			event.target.classList.add('btn-danger');
+			event.target.dataset.active = "0";
+		}
+	}
+
+	if (showToSignOnlyBtn.dataset.active == 1){
+		filterObject.dataKeys.currentDep = null;
+	}
+	else{
+		filterObject.dataKeys.currentDep = department;
+	}
+	if (showEmployeesBtn.dataset.active == 1){
+		filterObject.dataKeys.author = user;
+	}
+	else{
+		filterObject.dataKeys.author = null;
+	}
+	if (tableSearchInput.value != ""){
+		filterObject.searchString = tableSearchInput.value;
+	}
+	else{
+		filterObject.searchString = null;
+	}
+	console.log(filterObject);
+	let debouncedFilter = null;
+	const page = getPage();
+	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
+		 debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
+	}
+	else if (page == Pages.CHARGES){
+		 debouncedFilter = debounce( () => filterTable("chargesTable",filterObject));
+	}
+	debouncedFilter();
+}
+
+var timer;
+
+function debounce(func, timeout = 500){
+	return (...args) => {
+	clearTimeout(timer);
+	timer = setTimeout(() => { func.apply(this, args); }, timeout);
+	};
+}
+
+
 export default function createFilter(parentElement){
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
 	const currentRole = localStorage.getItem("currentRole");
@@ -209,20 +313,20 @@ export function updateFilterStorage(){
 	}
 	
 	const filterBtn = document.querySelector('#openFilterBtn');
-	const keys = Object.keys(filter);
+	const vals = Object.values(filter);
 	let filterActive = 0;
-	keys.forEach( key => {
-		if (filter[key]!==0	&& filter[key]!==null && filter[key]!==""){
+	vals.forEach( val => {
+		if (val!==0	&& val!==null && val!==""){
 			filterActive = 1;
 		}
 	});
 	if (filterActive){
-		filterBtn.classList.remove('btn-info');
-		filterBtn.classList.add('btn-danger');	
+		filterBtn.classList.remove('btn-primary');
+		filterBtn.classList.add('btn-warning');	
 	}
 	else{
-		filterBtn.classList.remove('btn-danger');
-		filterBtn.classList.add('btn-info');	
+		filterBtn.classList.remove('btn-warning');
+		filterBtn.classList.add('btn-primary');	
 	}
 	console.log(filter);
 	localStorage.setItem('filter', JSON.stringify(filter));
@@ -236,10 +340,8 @@ function addListeners(){
 	document.getElementById("hideArchieved")?document.getElementById("hideArchieved").addEventListener("change",()=>getFilteredData()):null;
 	//user
 	//head
-	
-	
 	if (userData.roles[currentRole].protocolAccessLevel == 1){
-		console.log("event listener if");
+		console.log("event listener if protocolAccessLevel");
 		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=>getFilteredData()):null;
 		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=>getFilteredData()):null;
 	}
@@ -342,6 +444,7 @@ export function fillChargesTable(result){
 		tr.addEventListener("click", (event) => openProtocolRecord(result[i]["subjectField"], result[i]["aaField"], result[i]["insertDateField"], event));
 		table.appendChild(tr);
 	}
+	createSearch();
 }
 
 function openProtocolRecord(subject,record,recordDate, event){
@@ -378,58 +481,9 @@ function openProtocolRecord(subject,record,recordDate, event){
 				</div>
 
 				<!-- <?php include 'html/tags.php'?> -->
-
 			</div>	
 
-			<div id="foldersDiv" class="secondBottomSectionColumn" style="background: rgba(86, 86, 136, 0.2)!important;">
-				
-				<div class="row" style="padding-top:10px">
-					<div class="col">
-						<button id="saveFoldersButton" type="button" class="btn btn-outline-success"  onclick="saveFolders();" data-toggle="tooltip" data-placement="top" title="Αποθήκευση Αλλαγών στους Φακέλους"><i class="far fa-save"></i></button>
-						<span data-toggle="modal" data-target="#foldersModal"><button id="showFoldersButton" type="button"  class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Εμφάνιση λίστας φακέλων με επεξηγήσεις"><i class="fas fa-list-ol"></i></button></span>
-						<button data-toggle="modal" data-target="#seachfoldersModal" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Αναζήτηση φακέλων" id="seachFolderButton"><i class="fas fa-search"></i></button>
-						</br></br>
-					</div>	
-				</div>
-				<hr>
-				<table id="folders" name="folderList" class="table">
-
-				<thead >
-					<tr >
-						<th colspan="3">Φάκελοι</th>
-					</tr>
-				
-				</thead>
-				<tbody>
-					<?php 		
-						include 'connection.php';
-						mysqli_query($con,"SET NAMES 'UTF8'");
-						$erotima = "select * from folders order by aaField asc"; //ARIS
-						//$erotima = "select * from folders order by aaField asc";
-						$result1 = mysqli_query($con,$erotima) or die ("database read error - show folders");
-						$i = 0;
-						$rowcount=mysqli_num_rows($result1);
-						while ($row1 = mysqli_fetch_array($result1, MYSQLI_BOTH)){	
-							if (($i % 3) ==0){
-								echo '<tr>';
-							}
-							if ($row1['subfolderField'] == null){ 
-								$fullFolder = $row1['folderField']; 
-							} 
-							else{ 
-								$fullFolder = $row1['folderField'].".".$row1['subfolderField']; 
-							} 
-							echo '<td style="padding:1px"><button class="btn btn-secondary btn-sm" id="folder'.$row1['aaField'].'" onclick="changeFolderStatus(\'folder'.$row1['aaField'].'\')" >'.$fullFolder.'</button></td>';
-							//echo '<td style="padding:1px"><button class="btn btn-secondary btn-sm" id="folder'.$row1['aaField'].'" onclick="changeFolderStatus(\'folder'.$row1['aaField'].'\')" >'.$row1['folderField'].'</button></td>';													
-							if (($i % 3) ==2){
-								echo '</tr>';
-							}
-							$i++;
-						}
-					?>
-				</tbody>
-				</table>
-			</div>
+			<record-folders style="max-width: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
 
 			
 			<div class="thirdBottomSectionColumn" id="assignmentsDiv" class="mt-2 mt-sm-0 col-<?php if (($_SESSION['protocolAccessLevel'] == 1) || (strpos($_SERVER['REQUEST_URI'], 'protocolBook.php') == true)){echo '12 col-md-4';}else{echo '12 col-md-4';}?> small" >
