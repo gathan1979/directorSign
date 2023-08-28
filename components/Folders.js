@@ -64,18 +64,62 @@ const foldersContent = `
             font-size: 0.8em;
         }
 
+        .customDialogContent{
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            border-radius: 15px;
+        }
+        
+        .customDialogContentTitle{
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            border-radius: 15px;
+            margin-bottom:10px;
+            align-items: flex-start;
+        }
+
     </style>
     <div id="foldersDiv" class="secondBottomSectionColumn" style="background: rgba(86, 86, 136, 0.2)!important;">	
         <link href="css/all.css" rel="stylesheet">
         <div  style="padding-top:10px; display: flex; padding: 15px; gap: 5px;">
-            <button id="saveFoldersButton" type="button" class="isButton"  onclick="saveFolders();" data-toggle="tooltip" data-placement="top" title="Αποθήκευση Αλλαγών στους Φακέλους"><i class="far fa-save"></i></button>
-            <button id="showFoldersButton" type="button"  class="isButton"  style="background-color:chocolate;" data-toggle="tooltip" data-placement="top" title="Εμφάνιση λίστας φακέλων με επεξηγήσεις"><i class="fas fa-list-ol"></i></button>
-            <button class="isButton" data-toggle="tooltip" data-placement="top"  style="background-color:chocolate;" title="Αναζήτηση φακέλων" id="seachFolderButton"><i class="fas fa-search"></i></button>
+            <button id="saveFoldersButton" type="button" class="isButton"  title="Αποθήκευση Αλλαγών στους Φακέλους"><i class="far fa-save"></i></button>
+            <button id="showFoldersButton" type="button"  class="isButton"  style="background-color:chocolate;" title="Εμφάνιση λίστας φακέλων με επεξηγήσεις"><i class="fas fa-list-ol"></i></button>
+            <button id="seachFolderModalButton" class="isButton" style="background-color:chocolate;" title="Αναζήτηση φακέλων" ><i class="fas fa-search"></i></button>
         </div>
         <div id="folderList" name="folderList" style="padding: 15px; display:flex; flex-wrap: wrap;gap:5px;">
            
         </div>
-    </div>`;
+    </div>
+    <dialog id="foldersDetailsModal" class="customDialog" >
+        <div class="customDialogContentTitle">
+            <span style="font-weight:bold;">Φάκελοι Αρχειοθέτησης</span>
+            <button class="isButton " name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        </div>
+        <hr>
+        <div class="customDialogContent">
+            
+        </div>
+    </dialog>
+    <dialog id="seachfoldersModal" class="customDialog" >
+        <div class="customDialogContentTitle">
+            <span style="font-weight:bold;">Αναζήτηση φακέλων αρχειοθέτησης</span>
+            <button class="isButton " name="closeModalBtn2" id="closeModalBtn2" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        </div>
+        <div class="customDialogContent">
+                <div>
+                    <span id="basic-addon1">Λέξη κλειδί</span>
+                </div>
+                <input id="folderSearchText" type="text"  placeholder="keyword">
+                <button id="searchFoldersBtn" type="button" class="isButton active">Αναζήτηση</button>
+            </div>
+            <hr>
+            <div id="searchResults" style="display:flex; flex-direction : column; gap: 5px;"></>
+            </div>
+        </div>
+    </dialog>`;
 
 
 class Folders extends HTMLElement {
@@ -101,14 +145,30 @@ class Folders extends HTMLElement {
         else{
             folderList = await this.getFoldersList();
         }
-        this.protocolFolders = await this.getFolders(this.protocolNo);
+        const foldersArrFromDb = await this.getFolders(this.protocolNo);
+        this.protocolFolders = foldersArrFromDb.map((item)=>{return item.folderField;})
+        console.log(this.protocolFolders);
         this.selectedFolders = [...this.protocolFolders];
 
         this.shadow.querySelector("#folderList").innerHTML = folderList.join("");
-        this.shadow.querySelectorAll("#folderList > button").forEach((element,index)=> {element.addEventListener("click",(event)=>{this.changeFolderStatus(element.dataset.folderAa)})});
+        this.shadow.querySelectorAll("#folderList > button").forEach((element,index)=> {
+            if (this.protocolFolders.indexOf(element.dataset.folderAa) !== -1){
+                element.dataset.active = 1;
+            }
+            element.addEventListener("click",(event)=>{this.changeFolderStatus(element.dataset.folderAa)})
+            this.shadow.querySelector(".customDialogContent").innerHTML += '<div><b>'+element.innerText+"</b> : "+element.title+'</div>';
+        });
         this.showFolders(this.protocolFolders);
-
-        //this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>this.saveRelative());
+        this.shadow.querySelector("#saveFoldersButton").addEventListener("click",()=>this.saveFolders());
+        this.shadow.querySelector("#closeModalBtn").addEventListener("click",()=>this.shadow.querySelector("#foldersDetailsModal").close());
+        this.shadow.querySelector("#closeModalBtn2").addEventListener("click",()=>this.shadow.querySelector("#seachfoldersModal").close());
+        this.shadow.querySelector("#showFoldersButton").addEventListener("click",()=>{
+                this.shadow.querySelector("#foldersDetailsModal").showModal();
+            });
+        this.shadow.querySelector("#seachFolderModalButton").addEventListener("click",()=>{
+                this.shadow.querySelector("#seachfoldersModal").showModal();
+            });
+        this.shadow.querySelector("#searchFoldersBtn").addEventListener("click",()=>{this.searchFolders()});
         //this.loadRelativeFull(this.protocolNo,1, true);
         //this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
         //this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
@@ -138,6 +198,18 @@ class Folders extends HTMLElement {
             this.shadow.getElementById('saveFoldersButton').classList.add('active');
             this.shadow.querySelector("#saveFoldersButton  i").classList.add('faa-shake');
             this.shadow.querySelector("#saveFoldersButton  i").classList.add('animated');
+        }
+        //update selectedFolders var
+        this.selectedFolders= [];
+        this.selectedFolders = Array.from(this.shadow.querySelectorAll("#folderList > button")).map((element,index)=>{ 
+            if (element.dataset.active == "1"){return element.dataset.folderAa;}else{return null;}
+                }).filter(item=>{if (item == null){return 0;}else{return 1;}});
+        console.log(this.selectedFolders);
+        if (this.protocolFolders.sort().toString() == this.selectedFolders.sort().toString()){
+            console.log("no change to folders");
+            this.shadow.getElementById('saveFoldersButton').classList.remove('active');
+            this.shadow.querySelector("#saveFoldersButton  i").classList.remove('faa-shake');
+            this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');
         }
     }
 
@@ -212,10 +284,96 @@ class Folders extends HTMLElement {
         }    
     }
 
-    showFolders(arrayOfObjects){
-        arrayOfObjects.forEach( elem => { 
-            this.shadow.querySelector('[data-folder-aa="'+elem.folderField+'"]').classList.add("active"); 
+    showFolders(arrayOfProtocols){
+        arrayOfProtocols.forEach( elem => { 
+            this.shadow.querySelector('[data-folder-aa="'+elem+'"]').classList.add("active"); 
         });
+    }
+
+    async saveFolders(){
+        const {jwt,role} = getFromLocalStorage();
+        const myHeaders = new Headers();
+        myHeaders.append('Authorization', jwt);
+
+        const formdata = new FormData();
+        formdata.append('protocolNo',this.protocolNo);
+        formdata.append('protocolYear',this.protocolYear);
+        formdata.append('folders',JSON.stringify(this.selectedFolders));
+        formdata.append('currentRole',role);
+        
+        let init = {method: 'POST', headers : myHeaders, body :formdata};
+        const res = await fetch("/api/saveFolders.php",init);
+        if (!res.ok){
+            const resdec = res.json();
+            if (res.status ==  400){
+                alert(resdec['message']);
+            }
+            else if (res.status ==  401){
+                const resRef = await refreshToken();
+                if (resRef ==1){
+                    this.saveFolders();
+                }
+                else{
+                    alert("σφάλμα εξουσιοδότησης");
+                }
+            }
+            else if (res.status==403){
+                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+            }
+            else if (res.status==404){
+                alert("το αρχείο δε βρέθηκε");
+            }
+            else if (res.status==500){
+                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
+            }
+            else{
+                alert("Σφάλμα!!!");
+            }
+        }
+        else{
+            const resdec = await res.json();
+            console.log(resdec['message']);
+            if (resdec['success']){
+                alert("επιτυχής ανανέωση φακέλων αρχειοθέτησης");
+                this.shadow.getElementById('saveFoldersButton').classList.remove('active');
+                this.shadow.querySelector("#saveFoldersButton  i").classList.remove('faa-shake');
+                this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');
+            }
+        }
+    }
+
+    searchFolders(){
+        const searchValue = this.shadow.getElementById("folderSearchText").value;
+        this.shadow.querySelector("#searchResults").innerHTML = "";
+        this.shadow.querySelectorAll("#folderList > button").forEach((element,index)=> {
+            //console.log(element.title.toLowerCase());
+            //console.log(searchValue.toLowerCase());
+            if (element.title.toLowerCase().includes(searchValue.toLowerCase())){
+                console.log(element.title);
+                let newButtonText = '<button style="margin-bottom:0.5em;margin-left:0.5em;" type="button" class="isButton" >';
+                // /onclick="selectSearchFolder('+result[key]['aaField']+');"    
+                newButtonText +="Φ"+element.innerText+" "+element.title+'</button>';
+                console.log(newButtonText);
+                this.shadow.querySelector("#searchResults").innerHTML += newButtonText;
+            }
+        });
+    }
+    
+    selectSearchFolder(folderAA){
+        const tempUserElement= document.getElementById('folder'+folderAA);
+        if (tempUserElement.classList.contains('btn-secondary')){
+            tempUserElement.classList.remove('btn-secondary');
+            tempUserElement.classList.add('btn-success');
+        }
+        else{
+            tempUserElement.classList.remove('btn-success');
+            tempUserElement.classList.add('btn-secondary');
+        }
+        if (document.getElementById('saveFoldersButton').classList.contains('btn-outline-success')){
+            document.getElementById('saveFoldersButton').classList.remove('btn-outline-success');
+            document.getElementById('saveFoldersButton').classList.add('btn-success');
+        }
+        $("#saveFoldersButton  i ").addClass('faa-shake animated');
     }
     
 }

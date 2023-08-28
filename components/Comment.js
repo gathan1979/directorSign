@@ -104,16 +104,13 @@ class Comment extends HTMLElement {
             this.shadow.querySelector("#commentTableTitleBadge").textContent = resdec.length;
             let html = "";
             for (let key1=0;key1<resdec.length;key1++) {
-                const commentUser = '<div class="verticalFlexWithPadding">'+resdec[key1]['userField']+"</div>";
-                const removeComment = '<button id="removeCommentBtn-'+resdec[key1]['aaField']+'" class="btn btn-sm btn-danger"><i class="far fa-minus-square"></i></button>';
-                const commentString = '<div>'+resdec[key1]['commentField']+(resdec[key1]['insertDateField'] !=null? " - στις <b>"+resdec[key1]['insertDateField']:"")+"</b></div>";;
-                let temp = "";
+                const commentUser = '<div style="background-color: lightgray; padding: 5px;border-radius: 5px;">'+resdec[key1]['userField']+"</div>";
+                let removeComment = "";
                 if (active){
-                    temp = "<tr><td><div style='display:flex;gap:10px;align-items:center;'>"+commentUser+commentString+removeComment+"</div></td></tr>";
+                    removeComment = '<button style="margin-left:5px;" id="removeCommentBtn-'+resdec[key1]['aaField']+'" class="btn btn-sm btn-danger"><i class="far fa-minus-square"></i></button>';
                 }
-                else{
-                    temp = "<tr><td><div style='display:flex;gap:10px;align-items:center;'>"+commentUser+commentString+"</div></td></tr>";
-                }
+                const commentString = '<div>'+resdec[key1]['commentField']+(resdec[key1]['insertDateField'] !=null? " - στις <b>"+resdec[key1]['insertDateField']:"")+"</b>"+removeComment+"</div>";;
+                let temp = '<tr><td><div style="display:flex; flex-direction : column;align-items:flex-start; border-left: solid;padding-left: 10px;border-color:#b5b9bd;">'+commentUser+commentString+"</div></td></tr>";
                 html += temp;
             }
             this.shadow.querySelector("#commentsTable tbody").innerHTML = html;
