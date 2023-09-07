@@ -460,7 +460,7 @@ function openProtocolRecord(subject,record,recordDate, event){
 		</div>
 		
 		<div id="bottomSectionBody">
-			<div  class="firstBottomSectionColumn">
+			<div style="flex-basis: 50%;" class="firstBottomSectionColumn">
 
 				<record-attachments style="max-height:40%;" protocolDate="${recordDate}" protocolNo="${record}"></record-attachments>
 				<record-relative style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-relative>
@@ -483,81 +483,8 @@ function openProtocolRecord(subject,record,recordDate, event){
 				<!-- <?php include 'html/tags.php'?> -->
 			</div>	
 
-			<record-folders style="max-width: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
-
-			
-			<div class="thirdBottomSectionColumn" id="assignmentsDiv" class="mt-2 mt-sm-0 col-<?php if (($_SESSION['protocolAccessLevel'] == 1) || (strpos($_SERVER['REQUEST_URI'], 'protocolBook.php') == true)){echo '12 col-md-4';}else{echo '12 col-md-4';}?> small" >
-				<div class="col-12" style="background: rgba(155, 130, 136, 0.2)!important;">	
-					<div class="row" style="padding-top:10px">
-						<div class="col-7">
-							<button <?php if($_SESSION['accessLevel']||$_SESSION['protocolAccessLevel'] == 1){ echo ''; }else{echo 'disabled';}?>  id="saveAssignmentButton" type="button" class="btn btn-outline-success trn" data-toggle="modal" data-target="#assignmentModal" data-whatever="assign" onclick="saveAssignments();"><i class="far fa-save"></i></button>
-							<button <?php if($_SESSION['accessLevel']||$_SESSION['protocolAccessLevel'] == 1){ echo ''; }else{echo 'disabled';}?>   id="addNotificationButton" type="button" class="btn btn-info trn" data-toggle="modal" data-target="#assignmentModal" data-whatever="assign" onclick="selectAllforNotification();"><i class="far fa-bell"></i></button>
-							<button <?php if($_SESSION['accessLevel']||$_SESSION['protocolAccessLevel'] == 1){ echo ''; }else{echo 'disabled';}?>   id="deselectUsersButton" type="button" class="btn btn-danger trn" data-toggle="modal" data-target="#assignmentModal" data-whatever="assign" onclick="deselectAllAssignments();"><i class="fas fa-user-slash"></i></button>
-						</div>
-						<div>
-							<div class="row"><div class="alert alert-success" style="padding:0.5em"></div>&nbspΧρέωση</div>
-							<div class="row"><div class="alert alert-info" style="padding:0.5em"></div>&nbspΚοιν.</div>
-						</div>
-					</div>
-					<hr>
-						<b>
-							<div id="assignmentsTitle" style="color: DarkRed;font-size: 12px;">Χρεώσεις</div>
-						</b>
-					<hr>
-					<br>
-				</div>
-				<div class="col-12" id="assignments" name="assignments" style="padding-top:10px;background: rgba(155, 130, 136, 0.2)!important;">
-				<!--<table id="assignments" name="assignments" class="table">
-				<thead>
-					<tr>
-						<th>Χρεώσεις</th>
-					</tr>
-
-				</thead>
-				<tbody>-->
-				<?php 		
-						include 'connectionAdeies.php';
-						include 'findLevels.php';
-						mysqli_query($con1,"SET NAMES 'UTF8'");
-						$erotimadep = "select  aa,departmentName,parent,last_parent from departmentstypes where parent=0"; 
-						$resultdep = mysqli_query($con1,$erotimadep) or die ("database read error - show table attachments");
-						//sto headDeps apothikeuontai oi arxikoi komvoi. Sinithos einai enas p.x. o Perifereiakos Dieuthintis
-						//$headDeps=array();
-						//while ($rowdep = mysqli_fetch_array($resultdep, MYSQLI_BOTH)){
-							//if ($rowdep['parent'] == 0){
-								//$headDeps[] = $rowdep;
-							//}	
-				//}
-						//var_dump($headDeps);
-						//echo '<br>----------';
-						//$deps = array();
-						//$deps = depsOneLevelDown($headDeps[0]['aa'],$deps);
-						
-						$headDep = mysqli_fetch_array($resultdep, MYSQLI_BOTH);
-						
-						
-						if (strpos($_SERVER['REQUEST_URI'], 'protocolBook.php') == true){
-							$html = createTree($headDep,-1);
-						}
-						else if ($_SESSION['protocolAccessLevel'] == 1){
-							$html = createTree($headDep,1);
-						}
-						else if ($_SESSION['accessLevel']==1){
-							$html = createTree($headDep,0);
-						}
-						else{
-							$html = createTree($headDep,-1);
-						}
-						echo $html;
-					
-					echo '<div id="assignmentsToAbsent" style="background: rgba(155, 130, 136, 0.2)!important;">';
-					echo '</div>';
-				?>
-				</div>
-				<!--</tbody>
-				</table>-->
-			</div>
-				
+			<record-folders style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
+			<record-assignments style="flex-basis: 30%;" protocolDate="${recordDate}" protocolNo="${record}"></record-assignments>
 
 		</div>
 	</div>

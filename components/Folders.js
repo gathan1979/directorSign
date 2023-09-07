@@ -81,6 +81,16 @@ const foldersContent = `
             align-items: flex-start;
         }
 
+        .customDialog::backdrop{
+            background-color: rgba(0, 0, 0, 0.8);
+        
+        }
+
+        #folderSearchText{
+            min-height: 2em;
+            border-radius : 5px;
+        }
+
     </style>
     <div id="foldersDiv" class="secondBottomSectionColumn" style="background: rgba(86, 86, 136, 0.2)!important;">	
         <link href="css/all.css" rel="stylesheet">
@@ -109,11 +119,7 @@ const foldersContent = `
             <button class="isButton " name="closeModalBtn2" id="closeModalBtn2" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
         <div class="customDialogContent">
-                <div>
-                    <span id="basic-addon1">Λέξη κλειδί</span>
-                </div>
-                <input id="folderSearchText" type="text"  placeholder="keyword">
-                <button id="searchFoldersBtn" type="button" class="isButton active">Αναζήτηση</button>
+                <input id="folderSearchText" type="text"  placeholder="Αναζήτηση εδώ (τουλάχιστον 3 χαρακτήρες)">
             </div>
             <hr>
             <div id="searchResults" style="display:flex; flex-direction : column; gap: 5px;"></>
@@ -166,9 +172,11 @@ class Folders extends HTMLElement {
                 this.shadow.querySelector("#foldersDetailsModal").showModal();
             });
         this.shadow.querySelector("#seachFolderModalButton").addEventListener("click",()=>{
+                this.shadow.querySelector("#folderSearchText").value = "";
+                this.shadow.querySelector("#searchResults").innerHTML = "";
                 this.shadow.querySelector("#seachfoldersModal").showModal();
             });
-        this.shadow.querySelector("#searchFoldersBtn").addEventListener("click",()=>{this.searchFolders()});
+        this.shadow.querySelector("#folderSearchText").addEventListener("keyup",()=>{this.searchFolders()});
         //this.loadRelativeFull(this.protocolNo,1, true);
         //this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
         //this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
@@ -178,40 +186,6 @@ class Folders extends HTMLElement {
     
     }
 
-    changeFolderStatus(folderAa){
-        let tempUserElement= this.shadow.querySelector('#folderList [data-folder-aa="'+folderAa+'"]');
-        const active = tempUserElement.dataset.active;
-        console.log(this.selectedFolders);
-        if (active == "1"){
-            //tempUserElement.style.backgroundColor = "lightGray";
-            tempUserElement.classList.remove('active')
-            tempUserElement.dataset.active = 0;
-        }
-        else{
-            tempUserElement.classList.add('active')
-            tempUserElement.dataset.active = 1;
-        }
-        if (this.shadow.getElementById('saveFoldersButton').classList.contains('active')){
-            
-        }
-        else{
-            this.shadow.getElementById('saveFoldersButton').classList.add('active');
-            this.shadow.querySelector("#saveFoldersButton  i").classList.add('faa-shake');
-            this.shadow.querySelector("#saveFoldersButton  i").classList.add('animated');
-        }
-        //update selectedFolders var
-        this.selectedFolders= [];
-        this.selectedFolders = Array.from(this.shadow.querySelectorAll("#folderList > button")).map((element,index)=>{ 
-            if (element.dataset.active == "1"){return element.dataset.folderAa;}else{return null;}
-                }).filter(item=>{if (item == null){return 0;}else{return 1;}});
-        console.log(this.selectedFolders);
-        if (this.protocolFolders.sort().toString() == this.selectedFolders.sort().toString()){
-            console.log("no change to folders");
-            this.shadow.getElementById('saveFoldersButton').classList.remove('active');
-            this.shadow.querySelector("#saveFoldersButton  i").classList.remove('faa-shake');
-            this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');
-        }
-    }
 
     async getFoldersList(){
         const {jwt,role} = getFromLocalStorage();
@@ -262,7 +236,7 @@ class Folders extends HTMLElement {
             if (res.status ==  401){
                 const resRef = await refreshToken();
                 if (resRef ==1){
-                    this.getFoldersList();
+                    this.getFolders();
                 }
                 else{
                     alert("σφάλμα εξουσιοδότησης");
@@ -344,38 +318,81 @@ class Folders extends HTMLElement {
 
     searchFolders(){
         const searchValue = this.shadow.getElementById("folderSearchText").value;
+        if (searchValue.length <3){
+            this.shadow.querySelector("#searchResults").innerHTML = "";
+            return;
+        }
         this.shadow.querySelector("#searchResults").innerHTML = "";
         this.shadow.querySelectorAll("#folderList > button").forEach((element,index)=> {
             //console.log(element.title.toLowerCase());
             //console.log(searchValue.toLowerCase());
             if (element.title.toLowerCase().includes(searchValue.toLowerCase())){
-                console.log(element.title);
-                let newButtonText = '<button style="margin-bottom:0.5em;margin-left:0.5em;" type="button" class="isButton" >';
+                //console.log(element.title);
+                let isActive = 0;
+                if (this.shadow.querySelector('#folderList [data-folder-aa="'+element.dataset.folderAa+'"]').dataset.active == "1"){
+                    isActive = 1;
+                }
+                let newButtonText = '<button data-active="'+isActive+'" data-folder-search-aa="'+element.dataset.folderAa+'" id="searchFoldersRes_'+element.dataset.folderAa+'" style="margin-bottom:0.5em;margin-left:0.5em;" type="button" class="isButton small '+(isActive?"active":"")+'" >';
                 // /onclick="selectSearchFolder('+result[key]['aaField']+');"    
                 newButtonText +="Φ"+element.innerText+" "+element.title+'</button>';
-                console.log(newButtonText);
+                //console.log(newButtonText);
                 this.shadow.querySelector("#searchResults").innerHTML += newButtonText;
+                this.shadow.querySelector('#searchFoldersRes_'+element.dataset.folderAa).addEventListener("click",(event)=>{
+                    this.selectSearchFolder(event.currentTarget.dataset.folderSearchAa);
+                })
             }
         });
     }
     
-    selectSearchFolder(folderAA){
-        const tempUserElement= document.getElementById('folder'+folderAA);
-        if (tempUserElement.classList.contains('btn-secondary')){
-            tempUserElement.classList.remove('btn-secondary');
-            tempUserElement.classList.add('btn-success');
+    selectSearchFolder(folderAa){
+        let tempUserElement= this.shadow.querySelector('#searchFoldersRes_'+folderAa);
+        console.log(tempUserElement);
+        const active = tempUserElement.dataset.active;
+        //console.log(this.selectedFolders);
+        if (active == "1"){
+            //tempUserElement.style.backgroundColor = "lightGray";
+            tempUserElement.classList.remove('active');
+            tempUserElement.dataset.active = 0;
         }
         else{
-            tempUserElement.classList.remove('btn-success');
-            tempUserElement.classList.add('btn-secondary');
+            tempUserElement.classList.add('active');
+            tempUserElement.dataset.active = 1;
         }
-        if (document.getElementById('saveFoldersButton').classList.contains('btn-outline-success')){
-            document.getElementById('saveFoldersButton').classList.remove('btn-outline-success');
-            document.getElementById('saveFoldersButton').classList.add('btn-success');
-        }
-        $("#saveFoldersButton  i ").addClass('faa-shake animated');
+        this.changeFolderStatus(folderAa)
     }
-    
+
+    changeFolderStatus(folderAa){
+        let tempUserElement= this.shadow.querySelector('#folderList [data-folder-aa="'+folderAa+'"]');
+        const active = tempUserElement.dataset.active;
+        console.log(this.selectedFolders);
+        if (active == "1"){
+            //tempUserElement.style.backgroundColor = "lightGray";
+            tempUserElement.classList.remove('active')
+            tempUserElement.dataset.active = 0;
+        }
+        else{
+            tempUserElement.classList.add('active')
+            tempUserElement.dataset.active = 1;
+        }
+        if (!this.shadow.getElementById('saveFoldersButton').classList.contains('active')){
+            this.shadow.getElementById('saveFoldersButton').classList.add('active');
+            this.shadow.querySelector("#saveFoldersButton  i").classList.add('faa-shake');
+            this.shadow.querySelector("#saveFoldersButton  i").classList.add('animated');
+        }
+        //update selectedFolders var
+        this.selectedFolders= [];
+        this.selectedFolders = Array.from(this.shadow.querySelectorAll("#folderList > button")).map((element,index)=>{ 
+            if (element.dataset.active == "1"){return element.dataset.folderAa;}else{return null;}
+                }).filter(item=>{if (item == null){return 0;}else{return 1;}});
+        console.log(this.selectedFolders);
+        if (this.protocolFolders.sort().toString() == this.selectedFolders.sort().toString()){
+            console.log("no change to folders");
+            this.shadow.getElementById('saveFoldersButton').classList.remove('active');
+            this.shadow.querySelector("#saveFoldersButton  i").classList.remove('faa-shake');
+            this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');
+        }
+    }
 }
+
 
 customElements.define("record-folders", Folders);
