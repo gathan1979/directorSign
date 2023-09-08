@@ -236,7 +236,7 @@ class Folders extends HTMLElement {
             if (res.status ==  401){
                 const resRef = await refreshToken();
                 if (resRef ==1){
-                    this.getFolders();
+                    this.getFolders(protocolNo);
                 }
                 else{
                     alert("σφάλμα εξουσιοδότησης");

@@ -101,6 +101,11 @@ const assignmentsContent = `
             margin-left:10px;
         }
 
+        [disabled]{
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
 
     </style>
     <link href="css/all.css" rel="stylesheet">
@@ -122,10 +127,10 @@ const assignmentsContent = `
 
 
 class Assignments extends HTMLElement {
-    protocolNo;
+    protocolNo;   
     protocolYear;
     shadow;
-    protocolCharges;
+    protocolCharges;  //{assignedTo : null, type: null}
     selectedCharges;
 
     constructor() {
@@ -136,7 +141,7 @@ class Assignments extends HTMLElement {
     async connectedCallback(){
         const loginData = JSON.parse(localStorage.getItem("loginData"));
 	    const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
-        console.log(currentRoleObject);
+        //console.log(currentRoleObject);
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = assignmentsContent;
         this.protocolNo = this.attributes.protocolNo.value;
@@ -198,10 +203,33 @@ class Assignments extends HTMLElement {
             })
         });
 
+        //Listeners πάνω κουμπιών
         this.shadow.querySelector("#saveAssignmentButton").addEventListener("click",()=>this.saveAssignments());
         this.shadow.querySelector("#addNotificationButton").addEventListener("click",()=>this.selectAllforNotification());
         this.shadow.querySelector("#deselectUsersButton").addEventListener("click",()=>this.deselectAllAssignments());
         this.shadow.querySelector("#undoUsersButton").addEventListener("click",()=>this.undoUserChanges());
+
+        //Απενεργοποίηση εργαζομένων ανάλογα με δικαιώματα επεξεργασίας χρεώσεων currentRoleObject
+        if (currentRoleObject.protocolAccessLevel == 1){
+            // Προς το παρόν δεν κάνει κάτι
+        }
+        else if (currentRoleObject.accessLevel == 1){
+            // ενεργοποίηση μόνο για τμήμα
+            this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
+                if (element.parentNode.parentNode.dataset.dep == currentRoleObject.department){
+                    element.removeAttribute("disabled");
+                }
+                else{
+                    element.setAttribute("disabled","disabled");
+                }
+            });
+        }
+        else{
+            // απενεργοποίηση όλων
+            this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
+                element.setAttribute("disabled","disabled");
+            });
+        }
     }
 
     disconnectedCallback() {
@@ -361,7 +389,7 @@ class Assignments extends HTMLElement {
             if (res.status ==  401){
                 const resRef = await refreshToken();
                 if (resRef ==1){
-                    this.getCharges();
+                    this.getCharges(protocolNo);
                 }
                 else{
                     alert("σφάλμα εξουσιοδότησης");
@@ -393,6 +421,7 @@ class Assignments extends HTMLElement {
         formdata.append('protocolNo',this.protocolNo);
         formdata.append('protocolYear',this.protocolYear);
         formdata.append('charges',JSON.stringify(this.selectedCharges));
+        formdata.append('oldCharges',JSON.stringify(this.protocolCharges));
         formdata.append('currentRole',role);
         
         let init = {method: 'POST', headers : myHeaders, body :formdata};
@@ -434,9 +463,7 @@ class Assignments extends HTMLElement {
                 this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');
             }
         }
-    }
-
-   
+    } 
 }
 
 customElements.define("record-assignments", Assignments);
