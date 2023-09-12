@@ -3,6 +3,8 @@ import getFromLocalStorage from "./LocalStorage.js";
 import {getPage, Pages} from "./UI_test.js";
 
 let filter = {};
+export let pagingStart = 0; 
+export let pagingSize = 100; 
 
 if (localStorage.getItem("filter") !== null){
 	filter = JSON.parse(localStorage.getItem("filter"));	
@@ -336,32 +338,32 @@ function addListeners(){
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;
 	const currentRole = localStorage.getItem("currentRole");
 	//administrator
-	document.getElementById("showForArchive")?document.getElementById("showForArchive").addEventListener("change",()=>getFilteredData()):null;
-	document.getElementById("hideArchieved")?document.getElementById("hideArchieved").addEventListener("change",()=>getFilteredData()):null;
+	document.getElementById("showForArchive")?document.getElementById("showForArchive").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+	document.getElementById("hideArchieved")?document.getElementById("hideArchieved").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
 	//user
 	//head
 	if (userData.roles[currentRole].protocolAccessLevel == 1){
 		console.log("event listener if protocolAccessLevel");
-		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=>getFilteredData()):null;
-		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=>getFilteredData()):null;
+		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
 	}
 	else if (userData.roles[currentRole].accessLevel == 1){
 		console.log("event listener else if");
-		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=>getFilteredData()):null;
-		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=>getFilteredData()):null;
-		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=>getFilteredData()):null;
-		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=>getFilteredData()):null;
+		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
 	}
 	else{
 		console.log("event listener else");
-		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=>getFilteredData()):null;
-		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=>getFilteredData()):null;
+		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
 	}
 }
 
 // Filters ----
 
-export async function getFilteredData(){   											//εγγραφές χρεώσεων πρωτοκόλλου
+export async function getFilteredData(pagingStart, pagingSize){   											//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	document.querySelector("#myNavBar").classList.add("disabledDiv");
 	updateFilterStorage();
@@ -375,11 +377,12 @@ export async function getFilteredData(){   											//εγγραφές χρε�
 
 	const  completeOblect= Object.assign({
 		role,
+		pagingStart,
+		pagingSize,
 		//role : loginData.user.roles[localStorage.getItem("currentRole")].aa_role,
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
 	},filteredObject);
 	const urlpar = new URLSearchParams(completeOblect);
-	
 	//const jwt = loginData.jwt;
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -395,7 +398,7 @@ export async function getFilteredData(){   											//εγγραφές χρε�
 				alert("Σφάλμα ανανέωσης εξουσιοδότησης");
 			}
 			else{
-				getFilteredData();
+				getFilteredData(pagingStart, pagingSize);
 			}
 		}
 		else{
@@ -405,44 +408,48 @@ export async function getFilteredData(){   											//εγγραφές χρε�
 		}
 	}
 	else{
-		const result = await res.json();
-		fillChargesTable(result);
+		const response = await res.json();
+		fillChargesTable(response);
 		document.querySelector("#recordsSpinner").style.display = 'none';
 		document.querySelector("#myNavBar").classList.remove("disabledDiv");
 	}
 }
 
-export function fillChargesTable(result){
+export function fillChargesTable(response){
 	const table = document.querySelector('#chargesTable>tbody');
 	table.innerHTML="";
-	for (let i = 0; i < result.length; i++){
-		let tr = document.createElement('tr');
-		for (let k = 0; k < 11; k++){
-			//console.log(result[k])
-			let td = document.createElement('td');
-			td.innerHTML = result[i][k];
-			if(result[i]["isRead"]==1){
-				td.style.fontWeight = "normal";
+	const result = response.data;
+	let tableContent = "";
+	for (const record of result){
+		tableContent +='<tr data-record="'+record.aaField+'">';
+		for (const [key, value] of Object.entries(record)){
+			if((key == "linkField") || (key=="insertDateField")){
+				continue;
+			}
+			tableContent +="<td "
+			if(record["isRead"]==1){
+				tableContent += 'style="font-weight :normal" ';
 			}
 			else{
-				td.style.fontWeight = "bold";
+				tableContent += 'style="font-weight :bold" ';
 			}
-			if(result[i]["status"]==1){ //Προς αρχείο
-				td.style.backgroundColor = "DarkOrange";
+			if(record["status"]==1){ //Προς αρχείο
+				tableContent += 'style="background-color : DarkOrange" ';
 			}
-			else if(result[i]["status"]==2){ // Αρχείο
-				td.style.fontWeight = "gray";
+			else if(record["status"]==2){ // Αρχείο
+				tableContent += 'style="background-color : Gray" ';
 			}
-			else if(result[i]["status"]==0){ //Εκκρεμ.
-				td.style.fontWeight = "bold";
+			else if(record["status"]==0){ //Εκκρεμ.
+				tableContent += 'style="font-weight :bold" ';
 			}
-			if(k>=9){
-				td.style.display = "none";
-			}
-			tr.appendChild(td);
+			
+			tableContent +=">"+value+"</td>"	
 		}
-		tr.addEventListener("click", (event) => openProtocolRecord(result[i]["subjectField"], result[i]["aaField"], result[i]["insertDateField"], event));
-		table.appendChild(tr);
+		tableContent +="</tr>"
+	}
+	document.querySelector("#chargesTable>tbody").innerHTML = tableContent;
+	for (const record of result){
+		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], event));
 	}
 	createSearch();
 }
@@ -489,78 +496,16 @@ function openProtocolRecord(subject,record,recordDate, event){
 		</div>
 	</div>
 	
-	<dialog id="editRecordModal" class="customDialog">
-		<div class="flexHorizontal">
-			<span style="font-weight:bold;padding:5px;">Επεξεργασία Εγγραφής</span>
-		</div>
-		<div class="customDialogContent" style="margin-top:10px;">
-			<form id="editRecordForm">
-				<div class="form-group row">
-					<label for="aaField" class="col-sm-2 col-form-label">AA*</label>
-					<div class="col-sm-10">
-						<input required="" placeholder="int(11)  " type="number" step="1" class="form-control" id="aaField" disabled=""></div>
-					</div>
-					<div class="form-group row">
-						<label for="fromField" class="col-sm-2 col-form-label">ΑΠΟΣΤΟΛΕΑΣ*</label>
-						<div class="col-sm-10"><input required="" placeholder="varchar(200)  " type="text" class="form-control" id="fromField" disabled=""></div>
-					</div>
-					<div class="form-group row">
-						<label for="subjectField" class="col-sm-2 col-form-label">ΘΕΜΑ*</label>
-						<div class="col-sm-10"><input required="" placeholder="varchar(200)  " type="text" class="form-control" id="subjectField" disabled=""></div>
-					</div>
-					<div class="form-group row">
-						<label for="docDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΠΑΡΑΛ.*</label>
-						<div class="col-sm-10"><input required="" placeholder="datetime" "="" type="text" class="form-control" id="docDate" disabled=""></div>
-					</div>
-					<div class="form-group row">
-						<label for="docNumber" class="col-sm-2 col-form-label">ΑΡΙΘΜ. ΕΙΣ.*</label>
-						<div class="col-sm-10"><input required="" placeholder="varchar(100)  " type="text" class="form-control" id="docNumber"></div>
-					</div>
-					<hr style="border:4px solid orange; border-radius: 2px;">
-					<div class="form-group row">
-						<label for="toField" class="col-sm-2 col-form-label">ΠΡΟΣ*</label>
-						<div class="col-sm-10"><input required="" placeholder="varchar(200)  " type="text" class="form-control" id="toField"></div>
-					</div>
-					<div class="form-group row">
-						<label for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.*</label>
-						<div class="col-sm-10"><input required="" placeholder="varchar(400)  " type="text" class="form-control" id="outSubjectField"></div>
-					</div>
-					<div class="form-group row">
-						<label for="outDocDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΞΕΡΧ.*</label><div class="col-sm-10">
-						<input required="" placeholder="date  " type="date" class="form-control" id="outDocDate"></div>
-					</div>
-					<div class="form-group row">
-						<label for="statusField" class="col-sm-2 col-form-label">ΚΑΤΑΣΤ.*</label>
-						<div class="col-sm-10">
-							<input required="" placeholder="tinyint(11)  " type="number" step="1" class="form-control" id="statusField" disabled="">
-						</div>
-					</div>
-					<div class="form-group row">
-						<label for="linkField" class="col-sm-2 col-form-label">ΣΤΟΙΧΕΙΑ EMAIL*</label>
-						<div class="col-sm-10"><input required="" placeholder="varchar(300)  " type="text" class="form-control" id="linkField" disabled=""></div>
-					</div>
-					<div class="form-group row">
-						<label for="insertDateField" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ*</label>
-						<div class="col-sm-10"><input required="" placeholder="date  " type="date" class="form-control" id="insertDateField" disabled="">
-					</div>
-				</div>
-			</form>
-		</div>
-		<div class="modal-footer">
-			<?php 
-			if ($_SESSION['protocolAccessLevel'] == 1){
-				echo '<button id="restoreButtonModal" type="button" class="btn btn-info trn" >Restore Record</button>';	
-				echo '<button id="archiveButtonModal" type="button" class="btn btn-warning trn" >Save and Archive Record</button>';	
-			}
-			else{
-				echo '<button id="finishButtonModal" type="button" class="btn btn-warning trn" >Close Record</button>';
-			}
-			?>
-			<button id="saveButtonModal" type="button" class="btn btn-sm btn-success">Save Record</button>
-			<button id="editButtonModal" type="button" class="btn btn-sm btn-success" >Save Changes</button>
-			<button id="closeButtonModal" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
-		</div>			
-	</dialog>`;
+	<dialog id="editRecordModal" class="customDialog" >
+        <div class="customDialogContentTitle">
+            <span style="font-weight:bold;">Επεξεργασία Εγγραφής</span>
+            <button class="isButton " name="closeEditModalBtn" id="closeEditModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        </div>
+        <hr>
+        <div class="customDialogContent">
+			<record-edit protocolDate="${recordDate}" protocolNo="${record}"></record-edit>
+        </div>
+    </dialog>`;
 
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
@@ -586,6 +531,7 @@ function openProtocolRecord(subject,record,recordDate, event){
 
 	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
 	document.querySelector("#closeModalBtn").addEventListener("click", ()=> document.querySelector("#protocolRecordDialog").close());
+	document.querySelector("#closeEditModalBtn").addEventListener("click", ()=> document.querySelector("#editRecordModal").close());
 }
 
 

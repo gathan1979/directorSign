@@ -1,7 +1,7 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
 import {createActionsTemplate,getSigRecords, getSignedRecords}  from "./Records_test.js";
 import getFromLocalStorage from "./LocalStorage.js";
-import createFilter,{updateBtnsFromFilter,getFilteredData, createSearch} from "./Filter.js";
+import createFilter,{updateBtnsFromFilter,getFilteredData, createSearch, pagingStart, pagingSize} from "./Filter.js";
 import refreshToken from "./RefreshToken.js";
 
 let loginData = null;
@@ -681,7 +681,7 @@ export function getSignedRecordsAndFill(){
 }
 
 export function getChargesAndFill(){
-	const records = getFilteredData().then( res => {
+	const records = getFilteredData(pagingStart,pagingSize).then( res => {
 		//createSearch();
 	}, rej => {});			
 }
