@@ -496,15 +496,8 @@ function openProtocolRecord(subject,record,recordDate, event){
 		</div>
 	</div>
 	
-	<dialog id="editRecordModal" class="customDialog" >
-        <div class="customDialogContentTitle">
-            <span style="font-weight:bold;">Επεξεργασία Εγγραφής</span>
-            <button class="isButton " name="closeEditModalBtn" id="closeEditModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
-        </div>
-        <hr>
-        <div class="customDialogContent">
-			<record-edit protocolDate="${recordDate}" protocolNo="${record}"></record-edit>
-        </div>
+	<dialog id="editRecordModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
+		<record-edit protocolDate="${recordDate}" protocolNo="${record}" style="display:flex; flex-direction:column; gap: 10px;"></record-edit>
     </dialog>`;
 
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
@@ -531,7 +524,6 @@ function openProtocolRecord(subject,record,recordDate, event){
 
 	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
 	document.querySelector("#closeModalBtn").addEventListener("click", ()=> document.querySelector("#protocolRecordDialog").close());
-	document.querySelector("#closeEditModalBtn").addEventListener("click", ()=> document.querySelector("#editRecordModal").close());
 }
 
 

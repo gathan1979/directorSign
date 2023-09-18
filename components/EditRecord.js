@@ -1,7 +1,7 @@
 import refreshToken from "../modules/RefreshToken.js";
 import getFromLocalStorage from "../modules/LocalStorage.js";
 
-const assignmentsContent = `
+const editContent = `
     <style>
 
         /* SHAKE */
@@ -61,6 +61,15 @@ const assignmentsContent = `
             background-color: var(--bs-blue);
         }
 
+        .warning{
+            background-color: var(--bs-warning);
+            color : black;
+        }
+
+        .secondary{
+            background-color: var(--bs-gray);
+        }
+
         .outline{
             background-color: rgba(255,255,255,0.6);
             color: black;
@@ -102,7 +111,7 @@ const assignmentsContent = `
         }
 
         [disabled]{
-            opacity: 0.5;
+            opacity: 0.7;
             pointer-events: none;
         }
 
@@ -131,10 +140,15 @@ const assignmentsContent = `
 
     </style>
     <link href="css/all.css" rel="stylesheet">
-    <div class="flexHorizontal">
-        <span style="font-weight:bold;padding:5px;">Επεξεργασία Εγγραφής</span>
-    </div>
 
+    <div class="customDialogContentTitle">
+        <span style="font-weight:bold;">Επεξεργασία Εγγραφής</span>
+        <div class="topButtons" style="display:flex;gap: 7px;">
+            <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton active"><i class="far fa-save"></i></button>
+            <button id="undoBtn" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
+            <button class="isButton " name="closeEditModalBtn" id="closeEditModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        </div>
+    </div>
     <div class="customDialogContent" style="margin-top:10px;">
         <form id="editRecordForm">
             <div id="editFormDiv">
@@ -187,18 +201,6 @@ const assignmentsContent = `
         </form>
     </div>
     <div class="modal-footer">
-        <?php 
-        if ($_SESSION['protocolAccessLevel'] == 1){
-            echo '<button id="restoreButtonModal" type="button" class="btn btn-info trn" >Restore Record</button>';	
-            echo '<button id="archiveButtonModal" type="button" class="btn btn-warning trn" >Save and Archive Record</button>';	
-        }
-        else{
-            echo '<button id="finishButtonModal" type="button" class="btn btn-warning trn" >Close Record</button>';
-        }
-        ?>
-        <button id="saveButtonModal" type="button" class="btn btn-sm btn-success">Save Record</button>
-        <button id="editButtonModal" type="button" class="btn btn-sm btn-success" >Save Changes</button>
-        <button id="closeButtonModal" type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
     </div>`;
 
 
@@ -218,166 +220,83 @@ class EditRecord extends HTMLElement {
 	    const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
         //console.log(currentRoleObject);
         this.shadow = this.attachShadow({mode: 'open'});
-        this.shadow.innerHTML = assignmentsContent;
+        this.shadow.innerHTML = editContent;
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; 
         //this.shadow.querySelector("#assignments").innerHTML = employeesTree;
 
-        const propertiesArrFromDb = await this.getRecord(this.protocolNo, this.protocolYear);
-        this.protocolProperties = propertiesArrFromDb.map((item)=>{
-            const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment)};
-            return charge;
-        });
-        console.log(this.protocolCharges);
-        this.selectedCharges = [...this.protocolCharges];
+        this.protocolProperties = await this.getRecord(this.protocolNo, this.protocolYear);
+        console.log(this.protocolProperties);
+        this.changedProperties = {...this.protocolProperties};
         //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
-        this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-            //console.log(element);
-            const found = this.protocolCharges.find(el => el.assignedTo == element.dataset.user);    
-            if (found !== undefined){
-                element.dataset.charge = 1;
-                element.dataset.chargeType = found.type;
-                if (found.type == "0"){
-                    element.classList.add("notification");
-                }
-                else{
-                    element.classList.add("active");
-                }
-            }
-            else{
-                element.classList.remove("active");
-                element.classList.remove("notification");
-            }
-            element.addEventListener("click",(event)=>{this.changeAssignmentStatus(element.dataset.user)})
-            //this.shadow.querySelector(".customDialogContent").innerHTML += '<div><b>'+element.innerText+"</b> : "+element.title+'</div>';
+
+        //Συμπλήρωση περιεχομένου πεδίων και ενεργοποίηση ανάλογα με την ιδιότητα
+        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
+           element.value = this.protocolProperties[element.id];
+           if (currentRoleObject.protocolAccessLevel == 1){
+                element.removeAttribute("disabled");
+           }
+           element.addEventListener("keyup", (event) => this.updateChangedProperties(event));
         });
-
-        //Listeners πάνω κουμπιών
-        this.shadow.querySelector("#saveAssignmentButton").addEventListener("click",()=>this.saveAssignments());
-        this.shadow.querySelector("#addNotificationButton").addEventListener("click",()=>this.selectAllforNotification());
-        this.shadow.querySelector("#deselectUsersButton").addEventListener("click",()=>this.deselectAllAssignments());
-        this.shadow.querySelector("#undoUsersButton").addEventListener("click",()=>this.undoUserChanges());
-
-        //Απενεργοποίηση εργαζομένων ανάλογα με δικαιώματα επεξεργασίας χρεώσεων currentRoleObject
+ 
+        // Προσθήκη κουμπιών ενεργειών με βάση την ιδιότητα .
+        let tempFooterBtns = this.shadow.querySelector(".topButtons");
         if (currentRoleObject.protocolAccessLevel == 1){
-            // Προς το παρόν δεν κάνει κάτι
-        }
-        else if (currentRoleObject.accessLevel == 1){
-            // ενεργοποίηση μόνο για τμήμα
-            this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-                if (element.parentNode.parentNode.dataset.dep == currentRoleObject.department){
-                    element.removeAttribute("disabled");
-                }
-                else{
-                    element.setAttribute("disabled","disabled");
-                }
-            });
+            tempFooterBtns.innerHTML = '<button id="archiveButtonModal" title="Αρχειοθέτηση" type="button" class="isButton warning" ><i class="fas fa-file-archive"></i></button>' + tempFooterBtns.innerHTML;	
+            if (+this.protocolProperties.statusField !== 0){
+                tempFooterBtns.innerHTML = '<button id="restoreButtonModal" title="Επαναφορά" type="button" class="isButton" ><i class="fas fa-trash-restore"></i>ς</button>' + tempFooterBtns.innerHTML;
+            }	
         }
         else{
-            // απενεργοποίηση όλων
-            this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-                element.setAttribute("disabled","disabled");
-            });
+            tempFooterBtns += '<button id="finishButtonModal" type="button" class="btn btn-warning trn" >Close Record</button>';
         }
+        this.shadow.querySelector("#closeEditModalBtn").addEventListener("click", ()=>this.parentElement.close());
+
+        //Listeners πάνω κουμπιών
+        //this.shadow.querySelector("#archiveButtonModal").addEventListener("click",()=>this.saveAssignments());
+        //this.shadow.querySelector("#restoreButtonModal").addEventListener("click",()=>this.saveAssignments());
+        this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>this.saveRecord());
+        this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.undoChanges());
     }
 
     disconnectedCallback() {
     
     }
 
-    deselectAllAssignments(){
-        this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-            element.dataset.charge = 0;
-            element.dataset.chargeType = 0;
-            element.classList.remove("active");
-            element.classList.remove("notification");
+    updateChangedProperties(event){
+        //Ανανέωση αντικειμένου changedProperties με τιμές πεδίων
+        this.changedProperties = {};
+        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
+            this.changedProperties[element.id] = element.value;
+            if (element.type == "date" && element.value == ""){
+                this.changedProperties[element.id] = "0000-00-00"
+            }
         });
-        this.updateSelectedCharges();
-    }
-
-    undoUserChanges(){
-        this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-            //console.log(element);
-            const found = this.protocolCharges.find(el => el.assignedTo == element.dataset.user);    
-            if (found !== undefined){
-                element.dataset.charge = 1;
-                element.dataset.chargeType = found.type;
-                if (found.type == "0"){
-                    element.classList.add("notification");
-                }
-                else{
-                    element.classList.add("active");
-                }
-            }
-            else{
-                element.dataset.charge = 0;
-                element.dataset.chargeType = 0;
-                element.classList.remove("active");
-                element.classList.remove("notification");
-            }
-        }); 
-        this.updateSelectedCharges();
-    }
-
-    updateSelectedCharges(){
-        //update selected charges  {assignedTo : null, type: null};
-        this.selectedCharges= [];
-        this.selectedCharges = Array.from(this.shadow.querySelectorAll(".departmentEmployees>button")).map((element,index)=>{ 
-                if (element.dataset.charge == 1){
-                    if (element.dataset.chargeType == 1){
-                        return {assignedTo :element.dataset.user, type: 1};
-                    }
-                    else{
-                        return {assignedTo :element.dataset.user, type: 0};    
-                    }
-                }
-                else{
-                    return null;
-                }
-            }).filter(item=>{if (item == null){return 0;}else{return 1;}});
-
-        if (this.protocolCharges.sort((a,b) =>{ if (Number(a.assignedTo) > Number(b.assignedTo)){ return 1;}else{return 0;}}).toString() == this.selectedCharges.sort((a,b) =>{ if (Number(a.assignedTo) > Number(b.assignedTo)){ return 1;}else{return 0;}}).toString()){
-            console.log("no change to charges");
-            this.shadow.getElementById('saveAssignmentButton').classList.remove('active');
-            this.shadow.querySelector("#saveAssignmentButton  i").classList.remove('faa-shake');
-            this.shadow.querySelector("#saveAssignmentButton  i").classList.remove('animated');
-        }  
+        console.log(this.changedProperties);
+        //Έλεγχος ισότητας changedProperties με protocolProperties
+        const shallowCompare = (obj1, obj2) => {
+                return ( (Object.keys(obj1).length === Object.keys(obj2).length) &&
+                Object.keys(obj1).every(key => {console.log(obj1[key], obj2[key]); return obj2.hasOwnProperty(key) && obj1[key] === obj2[key]}))
+            };
+        //Αν υπάρχει τροποποίηση στα δεδομένα από το χρήστη αλλάζει κουμπί αποθήκευσης
+        if (shallowCompare(this.changedProperties, this.protocolProperties)){
+            this.shadow.getElementById('saveRecordBtn').classList.remove('active');
+            this.shadow.querySelector("#saveRecordBtn  i").classList.remove('faa-shake');
+            this.shadow.querySelector("#saveRecordBtn  i").classList.remove('animated');     
+        }
         else{
-            if (!this.shadow.getElementById('saveAssignmentButton').classList.contains('active')){
-                this.shadow.getElementById('saveAssignmentButton').classList.add('active');
-                this.shadow.querySelector("#saveAssignmentButton  i").classList.add('faa-shake');
-                this.shadow.querySelector("#saveAssignmentButton  i").classList.add('animated');
-            }
+            this.shadow.getElementById('saveRecordBtn').classList.add('active');
+            this.shadow.querySelector("#saveRecordBtn  i").classList.add('faa-shake');
+            this.shadow.querySelector("#saveRecordBtn  i").classList.add('animated');    
         }
-        //console.log(this.protocolCharges);
-        //console.log("---------------")
-        //console.log(this.selectedCharges);
     }
 
-    changeAssignmentStatus(user){
-        let tempUserElement= this.shadow.querySelector('.departmentEmployees [data-user="'+user+'"]');
-        const charged = tempUserElement.dataset.charge;
-        const chargedType = tempUserElement.dataset.chargeType;
-        if (charged == 0){ 
-            //tempUserElement.style.backgroundColor = "lightGray";
-            tempUserElement.classList.remove('notification')
-            tempUserElement.classList.add('active')
-            tempUserElement.dataset.charge = 1;
-            tempUserElement.dataset.chargeType = 1;
-        }
-        else if (charged == 1 && chargedType == 1){
-            tempUserElement.classList.add('notification');
-            tempUserElement.classList.remove('active');
-            tempUserElement.dataset.charge = 1;
-            tempUserElement.dataset.chargeType = 0;
-        }
-        else if (charged == 1 && chargedType == 0){
-            tempUserElement.classList.remove('notification');
-            tempUserElement.classList.remove('active');
-            tempUserElement.dataset.charge = 0;
-            tempUserElement.dataset.chargeType = 0;
-        }
-        this.updateSelectedCharges();
+
+    undoChanges(){
+        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
+            element.value = this.protocolProperties[element.id];
+        });
+        this.updateChangedProperties();
     }
 
     async getRecord(protocolNo){
@@ -416,7 +335,7 @@ class EditRecord extends HTMLElement {
     }
 
 
-    async saveAssignments(){
+    async saveRecord(){
         const {jwt,role} = getFromLocalStorage();
         const myHeaders = new Headers();
         myHeaders.append('Authorization', jwt);

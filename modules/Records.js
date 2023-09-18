@@ -519,10 +519,10 @@ export function fillTableToBeSigned(result){
 		}
 		
 		if (!result[key].isExactCopy){
-			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-warning" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
+			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-warning" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
 		}
 		else{
-			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton isGreen fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
+			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
 		}
 
 		let attention = ""
@@ -1752,10 +1752,10 @@ export function fillTableWithSigned(result){
 		}						
 		
 		if (!rejected){
-			filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-success btn-sm" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton  fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
+			filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-success btn-sm" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
 		}
 		else{
-			filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-danger btn-sm" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton  fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
+			filenameBtn = '<div class="filenameDiv"><button id="btn_'+result[key]['revisionId']+'" class="btn btn-danger btn-sm" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton  outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+"</div>";
 		}
 		
 		temp1[0] = filenameBtn;
