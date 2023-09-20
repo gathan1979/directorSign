@@ -1,7 +1,7 @@
 import refreshToken from "../modules/RefreshToken.js";
 import getFromLocalStorage from "../modules/LocalStorage.js";
 
-const editContent = `
+const addContent = `
     <style>
 
         /* SHAKE */
@@ -131,7 +131,7 @@ const editContent = `
             height : 2em;
         }
 
-        #editFormDiv{
+        #addFormDiv{
             display:flex;
             flex-direction : column;
             gap: 10px;
@@ -141,35 +141,19 @@ const editContent = `
     <link href="css/all.css" rel="stylesheet">
 
     <div class="customDialogContentTitle">
-        <span style="font-weight:bold;">Επεξεργασία Εγγραφής</span>
+        <span style="font-weight:bold;">Νέο Πρωτόκολλο</span>
         <div class="topButtons" style="display:flex;gap: 7px;">
-            <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
+            <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton active"><i class="far fa-save"></i></button>
             <button id="undoBtn" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
             <button class="isButton " name="closeEditModalBtn" id="closeEditModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
     </div>
     <div class="customDialogContent" style="margin-top:10px;">
-        <form id="editRecordForm">
-            <div id="editFormDiv">
-                <div class="formRow">
-                    <label class="formItem" for="aaField" class="col-sm-2 col-form-label">AA*</label>
-                    <input class="formInput" required=""  type="number" step="1"  id="aaField" disabled="">
-                </div>
-                <div class="formRow">   
-                    <label class="formItem" for="fromField" class="col-sm-2 col-form-label">ΑΠΟΣΤΟΛΕΑΣ*</label>
-                    <input class="formInput" required=""  type="text"  id="fromField" disabled="">
-                </div>
+        <form id="addRecordForm">
+            <div id="addFormDiv">
                 <div class="formRow">    
                     <label class="formItem" for="subjectField" class="col-sm-2 col-form-label">ΘΕΜΑ*</label>
-                    <textarea class="formInput" required=""  type="text"  id="subjectField" disabled=""></textarea>
-                </div>
-                <div class="formRow">
-                    <label class="formItem" for="docDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΠΑΡΑΛ.*</label>
-                    <input class="formInput" required=""  type="text"  id="docDate" disabled="">
-                </div>
-                <div class="formRow">    
-                    <label class="formItem" for="docNumber" class="col-sm-2 col-form-label">ΑΡΙΘΜ. ΕΙΣ.*</label>
-                    <input class="formInput" required=""  type="text"  id="docNumber">
+                    <textarea class="formInput" required=""  type="text"  id="subjectField" ></textarea>
                 </div>
                 <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
                 <div class="formRow">    
@@ -180,22 +164,6 @@ const editContent = `
                     <label class="formItem" for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.*</label>
                     <input class="formInput" required=""  type="text"  id="outSubjectField">
                 </div>
-                <div class="formRow">
-                    <label class="formItem" for="outDocDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΞΕΡΧ.*</label>
-                    <input class="formInput" required="" type="date"  id="outDocDate">
-                </div>
-                <div class="formRow">    
-                    <label class="formItem" for="statusField" class="col-sm-2 col-form-label">ΚΑΤΑΣΤ.*</label>
-                    <input class="formInput" required="" type="number" step="1"  id="statusField" disabled="">
-                </div>
-                <div class="formRow">
-                    <label class="formItem" for="linkField" class="col-sm-2 col-form-label">ΣΤΟΙΧΕΙΑ EMAIL*</label>
-                    <input class="formInput" required="" type="text"  id="linkField" disabled="">
-                </div>
-                <div class="formRow">
-                    <label class="formItem" for="insertDateField" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ*</label>
-                    <input class="formInput" required="" type="date"  id="insertDateField" disabled="">
-                </div>
             </div>
         </form>
     </div>
@@ -203,12 +171,8 @@ const editContent = `
     </div>`;
 
 
-class EditRecord extends HTMLElement {
-    protocolNo;   
-    protocolYear;
+class AddRecord extends HTMLElement {
     shadow;
-    protocolProperties;  //{assignedTo : null, type: null}
-    changedProperties;
 
     constructor() {
         super();
@@ -219,47 +183,24 @@ class EditRecord extends HTMLElement {
 	    const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
         //console.log(currentRoleObject);
         this.shadow = this.attachShadow({mode: 'open'});
-        this.shadow.innerHTML = editContent;
-        this.protocolNo = this.attributes.protocolNo.value;
-        this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; 
-        //this.shadow.querySelector("#assignments").innerHTML = employeesTree;
-
-        this.protocolProperties = await this.getRecord(this.protocolNo, this.protocolYear);
-        console.log(this.protocolProperties);
-        this.changedProperties = {...this.protocolProperties};
-        //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
-
-        //Συμπλήρωση περιεχομένου πεδίων και ενεργοποίηση ανάλογα με την ιδιότητα
-        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
-           element.value = this.protocolProperties[element.id];
-           if (currentRoleObject.protocolAccessLevel == 1){
-                element.removeAttribute("disabled");
-           }
-           if (element.type == "date"){
-                element.addEventListener("change", (event) => this.updateChangedProperties(event)); // Διόρθωση για τα date onchange
-           }
-           else{
-                element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); // Διόρθωση για τα date onchange
-           }
-        });
+        this.shadow.innerHTML = addContent;
  
         // Προσθήκη κουμπιών ενεργειών με βάση την ιδιότητα .
         let tempFooterBtns = this.shadow.querySelector(".topButtons");
-        if (currentRoleObject.protocolAccessLevel == 1){
-            tempFooterBtns.innerHTML = '<button id="archiveButtonModal" title="Αρχειοθέτηση" type="button" class="isButton warning" ><i class="fas fa-archive"></i></button>' + tempFooterBtns.innerHTML;	
-            if (+this.protocolProperties.statusField !== 0){
-                tempFooterBtns.innerHTML = '<button id="restoreButtonModal" title="Επαναφορά" type="button" class="isButton" ><i class="fas fa-trash-restore"></i>ς</button>' + tempFooterBtns.innerHTML;
-            }	
-        }
-        else{
-            tempFooterBtns += '<button id="finishButtonModal" type="button" class="btn btn-warning trn" >Close Record</button>';
-        }
+        
         this.shadow.querySelector("#closeEditModalBtn").addEventListener("click", ()=>this.parentElement.close());
 
         //Listeners πάνω κουμπιών
         //this.shadow.querySelector("#archiveButtonModal").addEventListener("click",()=>this.saveAssignments());
         //this.shadow.querySelector("#restoreButtonModal").addEventListener("click",()=>this.saveAssignments());
-        this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>this.editRecord());
+        this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>{
+                if (currentRoleObject.protocolAccessLevel == 1){
+                    this.addRecord();
+                }
+                else{
+                    this.requestRecord();
+                }    
+            });
         this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.undoChanges());
     }
 
@@ -338,7 +279,7 @@ class EditRecord extends HTMLElement {
     }
 
 
-    async editRecord(){
+    async addRecord(){
         const {jwt,role} = getFromLocalStorage();
         const myHeaders = new Headers();
         myHeaders.append('Authorization', jwt);
@@ -354,7 +295,7 @@ class EditRecord extends HTMLElement {
         formdata.append('currentRole',role);
 
         let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/editRecord.php",init);
+        const res = await fetch("/api/addRecord.php",init);
         if (!res.ok){
             const resdec = res.json();
             if (res.status ==  400){
@@ -386,7 +327,63 @@ class EditRecord extends HTMLElement {
             const resdec = await res.json();
             console.log(resdec['message']);
             if (resdec['success']){
-                alert("επιτυχής ανανέωση φακέλων αρχειοθέτησης");
+                alert("επιτυχής εισαγωγή εγγραφής");
+                this.shadow.getElementById('saveRecordButton').classList.remove('active');
+                this.shadow.querySelector("#saveRecordButton  i").classList.remove('faa-shake');
+                this.shadow.querySelector("#saveRecordButton  i").classList.remove('animated');
+            }
+        }
+    } 
+
+    async requestRecord(){
+        const {jwt,role} = getFromLocalStorage();
+        const myHeaders = new Headers();
+        myHeaders.append('Authorization', jwt);
+
+        const formdata = new FormData();
+        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
+            element.value = this.changedProperties[element.id];
+            formdata.append(element.id, element.value);
+         });
+  
+        formdata.append('protocolNo',this.protocolNo);
+        formdata.append('protocolYear',this.protocolYear);
+        formdata.append('currentRole',role);
+
+        let init = {method: 'POST', headers : myHeaders, body :formdata};
+        const res = await fetch("/api/addRecord.php",init);
+        if (!res.ok){
+            const resdec = res.json();
+            if (res.status ==  400){
+                alert(resdec['message']);
+            }
+            else if (res.status ==  401){
+                const resRef = await refreshToken();
+                if (resRef ==1){
+                    this.requestRecord();
+                }
+                else{
+                    alert("σφάλμα εξουσιοδότησης");
+                }
+            }
+            else if (res.status==403){
+                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+            }
+            else if (res.status==404){
+                alert("το αρχείο δε βρέθηκε");
+            }
+            else if (res.status==500){
+                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
+            }
+            else{
+                alert("Σφάλμα!!!");
+            }
+        }
+        else{
+            const resdec = await res.json();
+            console.log(resdec['message']);
+            if (resdec['success']){
+                alert("επιτυχής αίτηση εγγραφής");
                 this.shadow.getElementById('saveRecordButton').classList.remove('active');
                 this.shadow.querySelector("#saveRecordButton  i").classList.remove('faa-shake');
                 this.shadow.querySelector("#saveRecordButton  i").classList.remove('animated');
@@ -395,4 +392,4 @@ class EditRecord extends HTMLElement {
     } 
 }
 
-customElements.define("record-edit", EditRecord);
+customElements.define("record-add", AddRecord);

@@ -363,7 +363,7 @@ function addListeners(){
 
 // Filters ----
 
-export async function getFilteredData(pagingStart, pagingSize){   											//εγγραφές χρεώσεων πρωτοκόλλου
+export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize){   											//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	document.querySelector("#myNavBar").classList.add("disabledDiv");
 	updateFilterStorage();
@@ -377,8 +377,8 @@ export async function getFilteredData(pagingStart, pagingSize){   											//�
 
 	const  completeOblect= Object.assign({
 		role,
-		pagingStart,
-		pagingSize,
+		customPagingStart,
+		customPagingSize,
 		//role : loginData.user.roles[localStorage.getItem("currentRole")].aa_role,
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
 	},filteredObject);
@@ -398,7 +398,7 @@ export async function getFilteredData(pagingStart, pagingSize){   											//�
 				alert("Σφάλμα ανανέωσης εξουσιοδότησης");
 			}
 			else{
-				getFilteredData(pagingStart, pagingSize);
+				getFilteredData(customPagingStart, customPagingSize);
 			}
 		}
 		else{

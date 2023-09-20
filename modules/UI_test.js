@@ -37,6 +37,11 @@ const passwordModalDiv =
 	</div>
 </div>`;
 
+const addProtocolModal = 
+	`<dialog id="addProtocolDialog" style="min-width:60%;max-width:80%;">
+		<record-add></record-add>
+	</dialog>`;
+
 const fileOpenModal = 
 	`<dialog id="fileOpenDialog">
 
@@ -146,7 +151,8 @@ function pagesCommonCode(){
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
 				`<div><a rel="opener"   rel="referer" target="_blank" href="../mich_login.php"><i class="fas fa-envelope  fa-lg"></i>&nbspEmails</a></div>
-				<div><a rel="opener"   rel="referer" target="_blank" href="../kside/index.php"><i class="fas fa-inbox  fa-lg"></i>&nbspΚΣΗΔΕ</a></div>`:``
+				<div><a rel="opener"   rel="referer" target="_blank" href="../kside/index.php"><i class="fas fa-inbox  fa-lg"></i>&nbspΚΣΗΔΕ</a></div>`:
+				`<button id="reqProtocolBtn" name="reqProtocolBtn" class="isButton" title="Aίτηση νέου πρωτοκόλλου" ><i class="fas fa-phone-volume"></i></button>`
 			}
 		</div>
 		<div id="recentProtocolsDiv"></div>
@@ -172,8 +178,10 @@ function pagesCommonCode(){
 	if (document.querySelector("#fileOpenDialog") !== null){
 		document.querySelector("#fileOpenDialog").remove();
 	}
-	document.body.insertAdjacentHTML("beforeend",fileOpenModal);
-	document.body.insertAdjacentHTML("beforeend",fileMoveModal);
+
+	document.body.insertAdjacentHTML("beforeend", fileOpenModal);
+	document.body.insertAdjacentHTML("beforeend", fileMoveModal);
+	document.body.insertAdjacentHTML("beforeend", addProtocolModal);
 
 	if (document.querySelector("#loadingDialog")){
 		document.querySelector("#loadingDialog").remove();
@@ -290,6 +298,11 @@ function pagesCommonCode(){
 	}
 	if (document.querySelector('#showToSignOnlyBtn')){
 		document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
+	}
+	if (document.querySelector('#reqProtocolBtn')){
+		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
+			document.querySelector('#addProtocolDialog').showModal();
+		});
 	}
 
 	document.querySelector("#syncRecords").addEventListener("click", ()=>  { 
