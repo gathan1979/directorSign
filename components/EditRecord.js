@@ -236,10 +236,10 @@ class EditRecord extends HTMLElement {
                 element.removeAttribute("disabled");
            }
            if (element.type == "date"){
-                element.addEventListener("change", (event) => this.updateChangedProperties(event)); // Διόρθωση για τα date onchange
+                element.addEventListener("change", (event) => this.updateChangedProperties(event)); 
            }
            else{
-                element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); // Διόρθωση για τα date onchange
+                element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); 
            }
         });
  

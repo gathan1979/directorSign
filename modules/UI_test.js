@@ -147,14 +147,7 @@ function pagesCommonCode(){
 				<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
 			</div>
 		</div>
-		<div id="topMenuAdminBtnsDiv" class="verticalFlexWithPadding" >	
-			${
-				+loginData.user.roles[cRole].protocolAccessLevel?
-				`<div><a rel="opener"   rel="referer" target="_blank" href="../mich_login.php"><i class="fas fa-envelope  fa-lg"></i>&nbspEmails</a></div>
-				<div><a rel="opener"   rel="referer" target="_blank" href="../kside/index.php"><i class="fas fa-inbox  fa-lg"></i>&nbspΚΣΗΔΕ</a></div>`:
-				`<button id="reqProtocolBtn" name="reqProtocolBtn" class="isButton" title="Aίτηση νέου πρωτοκόλλου" ><i class="fas fa-phone-volume"></i></button>`
-			}
-		</div>
+		
 		<div id="recentProtocolsDiv"></div>
 	</div>`;
 
@@ -299,11 +292,7 @@ function pagesCommonCode(){
 	if (document.querySelector('#showToSignOnlyBtn')){
 		document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
 	}
-	if (document.querySelector('#reqProtocolBtn')){
-		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
-			document.querySelector('#addProtocolDialog').showModal();
-		});
-	}
+	
 
 	document.querySelector("#syncRecords").addEventListener("click", ()=>  { 
 		switch (page){
@@ -335,6 +324,31 @@ async function createChargesUIstartUp(){
 	document.querySelector('#showEmployeesBtn').style.display = "none"; 
 	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
 	let cRole = localStorage.getItem("currentRole");
+	
+	const protocolExtraBtns = `<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center;">	
+			${
+				+loginData.user.roles[cRole].protocolAccessLevel?
+				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αιτήματα</div>
+				<div class="flexHorizontal">
+					<div><button class="isButton"> <i class="fas fa-plus-square"></i></button></div>
+					<div><button class="isButton"> <i class="fas fa-plus-square"></i></button></div>
+				</div>`:
+				`<button id="reqProtocolBtn" name="reqProtocolBtn" class="isButton" title="Aίτηση νέου πρωτοκόλλου" style="background-color:lightseagreen"><i class="fas fa-phone-volume"></i></button>`
+			}
+		</div>
+		<div id="topMenuAdminBtnsDiv" class="flexVertical" style="align-items: center;">	
+			${
+				+loginData.user.roles[cRole].protocolAccessLevel?
+				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Άλλες εφαρμογές</div>
+				<div class=""><div><a rel="opener"  title="Άνοιγμα αλληλογραφίας" rel="referer" target="_blank" href="../mich_login.php"><span style="font-weight: bold;
+				border-radius: 5px; border-style: solid; 
+				border-width: 1px;padding: 2px 6px;color: white; background-color:lightseagreen;border-color:lightseagreen;"><i style="color:white" class="fas fa-mail-bulk  fa-lg"></i></span></a></div>
+				<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="../kside/index.php"><span style="font-size: 0.7rem;font-weight: bold;
+															border-radius: 5px; border-style: solid; 
+															border-width: 1px;padding: 0px 2px;color: white; background-color:lightseagreen;border-color:lightseagreen;">ΚΣΗΔΕ</span></a></div></div>`:``
+			}
+		</div>`;
+
 	const chargesFilterMenuDiv = 
 	`<div id="chargesFilterMenu" class="flexVertical ">
 		<div id="topSettingsDiv" class="flexHorizontal" >	
@@ -401,13 +415,19 @@ async function createChargesUIstartUp(){
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
-
+	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);	
 	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
 	const protocolYears = getProtocolYears();
 	let currentYear = null;
 	if (currentYear = localStorage.getItem(currentYear)){
 		yearDropdownMenuButton.innerHTML = "Έτος "+currentYear;
 	}
+	if (document.querySelector('#reqProtocolBtn')){
+		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
+			document.querySelector('#addProtocolDialog').showModal();
+		});
+	}
+
 	getChargesAndFill();
 }
 
@@ -627,15 +647,17 @@ async function fixRole(){
 		}
 		else if (res.status ==  201){
 			window.location.reload();
-			console.log("επιτυχής αλλαγή ιδιότητας στο SESSION. Θα καταργηθεί σύντομα!");
-			
+			console.log("επιτυχής αλλαγή ιδιότητας στο SESSION. Θα καταργηθεί σύντομα!");	
 		}
 	}
 
 }
 
 async function setRole(index){
+	//Προσοχή να αφαιρεθεί!!!!!!!!!!!!!!
 	await fixRole(); // Θα αφαιρεθεί όταν απαλλαγεί και το πρωτόκολλο από τα  SESSION. Αλλάζει το χρήστη στο SESSION
+	// -----------------------------------------------------------
+
 	localStorage.setItem("currentRole",index);									
 	updateRolesUI();
     switch (page){

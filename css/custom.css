@@ -112,7 +112,9 @@ td .fa-crosshairs{
 
 #chargesTable{
 	margin : 1em;
-	width  : calc(100% - 4em);
+	width  : calc(100% - 2em);
+	background : linear-gradient(to right, transparent, 70%, gray);
+	font-size: 0.875rem;
 }
 
 #chargesTable>tbody>tr{
@@ -130,7 +132,8 @@ td .fa-crosshairs{
 
 #dataToSignTable{
 	margin : 1em;
-	width  : calc(100% - 4em);
+	width  : calc(100% - 2em);
+	background : linear-gradient(to right, transparent, 70%, gray);
 }
 
 #dataToSignTable th:first-child{
@@ -140,7 +143,7 @@ td .fa-crosshairs{
 
 #headmasterExtraMenuDiv{
 	display : flex;	
-	flex-flow: row nowrap;
+	flex-flow: row wrap;
 	gap : 0.5em;
 	padding : 1em;
 	background-color : gray;
@@ -292,7 +295,7 @@ td .fa-crosshairs{
 }
 
 #tableSearchInput {
-	width : 400px;	
+	width : 200px;	
 	flex-basis : auto;
 }
 

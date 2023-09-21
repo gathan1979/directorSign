@@ -143,7 +143,7 @@ const addContent = `
     <div class="customDialogContentTitle">
         <span style="font-weight:bold;">Νέο Πρωτόκολλο</span>
         <div class="topButtons" style="display:flex;gap: 7px;">
-            <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton active"><i class="far fa-save"></i></button>
+            <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
             <button id="undoBtn" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
             <button class="isButton " name="closeEditModalBtn" id="closeEditModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
@@ -171,8 +171,14 @@ const addContent = `
     </div>`;
 
 
-class AddRecord extends HTMLElement {
+class RequestRecord extends HTMLElement {
     shadow;
+    changedProperties;
+    emptyProperties = {
+        subjectField : "",
+        toField  : "",
+        outSubjectField : "" 
+    };
 
     constructor() {
         super();
@@ -184,23 +190,17 @@ class AddRecord extends HTMLElement {
         //console.log(currentRoleObject);
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = addContent;
- 
-        // Προσθήκη κουμπιών ενεργειών με βάση την ιδιότητα .
-        let tempFooterBtns = this.shadow.querySelector(".topButtons");
+        this.changedProperties = {};
         
         this.shadow.querySelector("#closeEditModalBtn").addEventListener("click", ()=>this.parentElement.close());
+        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
+                element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); 
+         });
 
         //Listeners πάνω κουμπιών
         //this.shadow.querySelector("#archiveButtonModal").addEventListener("click",()=>this.saveAssignments());
         //this.shadow.querySelector("#restoreButtonModal").addEventListener("click",()=>this.saveAssignments());
-        this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>{
-                if (currentRoleObject.protocolAccessLevel == 1){
-                    this.addRecord();
-                }
-                else{
-                    this.requestRecord();
-                }    
-            });
+        this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>{ this.requestRecord(); });
         this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.undoChanges());
     }
 
@@ -223,7 +223,7 @@ class AddRecord extends HTMLElement {
                 Object.keys(obj1).every(key => {console.log(obj1[key], obj2[key]); return obj2.hasOwnProperty(key) && obj1[key] === obj2[key]}))
             };
         //Αν υπάρχει τροποποίηση στα δεδομένα από το χρήστη αλλάζει κουμπί αποθήκευσης
-        if (shallowCompare(this.changedProperties, this.protocolProperties)){
+        if (shallowCompare(this.changedProperties, this.emptyProperties)){
             this.shadow.getElementById('saveRecordBtn').classList.remove('active');
             this.shadow.querySelector("#saveRecordBtn  i").classList.remove('faa-shake');
             this.shadow.querySelector("#saveRecordBtn  i").classList.remove('animated');     
@@ -238,102 +238,10 @@ class AddRecord extends HTMLElement {
 
     undoChanges(){
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
-            element.value = this.protocolProperties[element.id];
+            element.value = "";
         });
         this.updateChangedProperties();
     }
-
-    async getRecord(protocolNo){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getRecord.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.getCharges(protocolNo);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
-        }
-        else{
-            const resdec = await res.json();
-            return resdec;
-        }    
-    }
-
-
-    async addRecord(){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-
-        const formdata = new FormData();
-        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
-            element.value = this.changedProperties[element.id];
-            formdata.append(element.id, element.value);
-         });
-  
-        formdata.append('protocolNo',this.protocolNo);
-        formdata.append('protocolYear',this.protocolYear);
-        formdata.append('currentRole',role);
-
-        let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/addRecord.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  400){
-                alert(resdec['message']);
-            }
-            else if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.editRecord();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
-        }
-        else{
-            const resdec = await res.json();
-            console.log(resdec['message']);
-            if (resdec['success']){
-                alert("επιτυχής εισαγωγή εγγραφής");
-                this.shadow.getElementById('saveRecordButton').classList.remove('active');
-                this.shadow.querySelector("#saveRecordButton  i").classList.remove('faa-shake');
-                this.shadow.querySelector("#saveRecordButton  i").classList.remove('animated');
-            }
-        }
-    } 
 
     async requestRecord(){
         const {jwt,role} = getFromLocalStorage();
@@ -344,14 +252,12 @@ class AddRecord extends HTMLElement {
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             element.value = this.changedProperties[element.id];
             formdata.append(element.id, element.value);
-         });
-  
-        formdata.append('protocolNo',this.protocolNo);
-        formdata.append('protocolYear',this.protocolYear);
+        });
+
         formdata.append('currentRole',role);
 
         let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/addRecord.php",init);
+        const res = await fetch("/api/requestRecord.php",init);
         if (!res.ok){
             const resdec = res.json();
             if (res.status ==  400){
@@ -384,12 +290,13 @@ class AddRecord extends HTMLElement {
             console.log(resdec['message']);
             if (resdec['success']){
                 alert("επιτυχής αίτηση εγγραφής");
-                this.shadow.getElementById('saveRecordButton').classList.remove('active');
-                this.shadow.querySelector("#saveRecordButton  i").classList.remove('faa-shake');
-                this.shadow.querySelector("#saveRecordButton  i").classList.remove('animated');
+                this.shadow.getElementById('saveRecordBtn').classList.remove('active');
+                this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
+                this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
+                this.parentElement.close();
             }
         }
     } 
 }
 
-customElements.define("record-add", AddRecord);
+customElements.define("record-add", RequestRecord);
