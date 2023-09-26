@@ -98,6 +98,7 @@ const foldersContent = `
             <button id="saveFoldersButton" type="button" class="isButton"  title="Αποθήκευση Αλλαγών στους Φακέλους"><i class="far fa-save"></i></button>
             <button id="showFoldersButton" type="button"  class="isButton"  style="background-color:chocolate;" title="Εμφάνιση λίστας φακέλων με επεξηγήσεις"><i class="fas fa-list-ol"></i></button>
             <button id="seachFolderModalButton" class="isButton" style="background-color:chocolate;" title="Αναζήτηση φακέλων" ><i class="fas fa-search"></i></button>
+            <button id="undoButton" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
         </div>
         <div id="folderList" name="folderList" style="padding: 15px; display:flex; flex-wrap: wrap;gap:5px;">
            
@@ -177,6 +178,7 @@ class Folders extends HTMLElement {
                 this.shadow.querySelector("#seachfoldersModal").showModal();
             });
         this.shadow.querySelector("#folderSearchText").addEventListener("keyup",()=>{this.searchFolders()});
+        this.shadow.querySelector("#undoButton").addEventListener("click",()=>this.undoChanges());
         //this.loadRelativeFull(this.protocolNo,1, true);
         //this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
         //this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
@@ -258,9 +260,34 @@ class Folders extends HTMLElement {
         }    
     }
 
+    undoChanges(){
+        this.selectedFolders = [...this.protocolFolders];
+        // this.shadow.querySelectorAll("#folderList>button").forEach((element,index)=> {
+        //     if (this.protocolFolders.indexOf(element.dataset.folderAa) !== -1){
+        //         element.dataset.active = 1;
+        //     }
+        //     else{
+        //         element.dataset.active = 0;
+        //     }
+        // });
+        this.showFolders(this.protocolFolders);
+        if (this.protocolFolders.sort().toString() == this.selectedFolders.sort().toString()){
+            console.log("no change to folders");
+            this.shadow.getElementById('saveFoldersButton').classList.remove('active');
+            this.shadow.querySelector("#saveFoldersButton  i").classList.remove('faa-shake');
+            this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');
+        }
+    }
+
     showFolders(arrayOfProtocols){
+        this.shadow.querySelectorAll("#folderList>button").forEach(elem => {
+            elem.classList.remove("active");
+            elem.dataset.active = 0;
+
+        });
         arrayOfProtocols.forEach( elem => { 
             this.shadow.querySelector('[data-folder-aa="'+elem+'"]').classList.add("active"); 
+            this.shadow.querySelector('[data-folder-aa="'+elem+'"]').dataset.active = 1;
         });
     }
 

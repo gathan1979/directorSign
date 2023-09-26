@@ -354,7 +354,7 @@ async function createChargesUIstartUp(){
 				+loginData.user.roles[cRole].protocolAccessLevel?
 				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Νέα Πρωτόκολλα</div>
 				<div class="flexHorizontal" style="padding:0px 5px;">
-					<div><button class="isButton small" style="background-color: var(--bs-success);"> <i class="fas fa-plus-square"></i></button></div>
+					<div><button id="addProtocolBtn" title="Νέο πρωτόκολλο" class="isButton small" style="background-color: var(--bs-success);"> <i class="fas fa-plus-square"></i></button></div>
 					<div><button class="isButton small" style="background-color: var(--bs-orange);"> 
 						<span id="peddingRequestsNo" name="peddingRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span></button>
 					</div>
@@ -362,9 +362,13 @@ async function createChargesUIstartUp(){
 						<button id="refreshPeddingReqsBtn" title="Ανανέωση Αιτημάτων" type="button" class="isButton small"><i class="fas fa-sync"></i></button>
 					</div>
 				</div>`:
-				`<button id="reqProtocolBtn" name="reqProtocolBtn" class="isButton" title="Aίτηση νέου πρωτοκόλλου" style="background-color:lightseagreen"><i class="fas fa-phone-volume"></i></button>`
+				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Νέα Πρωτόκολλα</div>
+				<div class="flexHorizontal" style="padding:0px 5px;">
+					<button id="reqProtocolBtn" name="reqProtocolBtn" class="isButton" title="Aίτηση νέου πρωτοκόλλου" style="background-color:lightseagreen"><i class="fas fa-phone-volume"></i></button>
+				</div>`
 			}
 		</div>
+
 		<div id="topMenuAdminBtnsDiv" class="flexVertical" style="align-items: center;align-self: stretch;">	
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
@@ -381,6 +385,11 @@ async function createChargesUIstartUp(){
 				</div>`:``
 			}
 		</div>`;
+
+	const addRecordDialog =
+		`<dialog id="addRecordModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
+			<record-add  style="display:flex; flex-direction:column; gap: 10px;"></record-add>
+    	</dialog>`;
 
 	const chargesFilterMenuDiv = 
 	`<div id="chargesFilterMenu" class="flexVertical ">
@@ -457,6 +466,7 @@ async function createChargesUIstartUp(){
 	
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
+	document.body.insertAdjacentHTML("afterend",addRecordDialog);
 	
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
@@ -472,6 +482,13 @@ async function createChargesUIstartUp(){
 			document.querySelector('#addProtocolDialog').showModal();
 		});
 	}
+	
+	if (document.querySelector('#addProtocolBtn')){
+		document.querySelector('#addProtocolBtn').addEventListener("click", ()=>{
+			document.querySelector('#addRecordModal').showModal();
+		});
+	}
+
 	if (document.querySelector('#peddingRequestsNo')){
 		document.querySelector('#peddingRequestsNo').parentElement.addEventListener("click", ()=>{
 			document.querySelector('#peddingRequestsModal').showModal();
@@ -906,11 +923,20 @@ async function rejectPeddingReq(aa){
 		}
 	}
 	else{
+		getPeddingProtocolReqs();
+		const reqItems = document.querySelectorAll('[data-req="'+aa+'"]');
+
+		reqItems.forEach((elem) => {
+			elem.remove();
+		})
 		alert("Το αίτημα πρωτοκόλου έχει απορριφθεί");
 	}
 }
 
 async function acceptPeddingReq(aa){
+	if (!confirm("Εισαγωγή στο βιβλίο πρωτοκόλλο;")){
+		return;
+	}
 	const {jwt,role} = getFromLocalStorage();	
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
