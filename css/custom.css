@@ -113,7 +113,7 @@ td .fa-crosshairs{
 #chargesTable{
 	margin : 1em;
 	width  : calc(100% - 2em);
-	background : linear-gradient(to right, transparent, 70%, gray);
+	background : linear-gradient(to right, transparent, 70%, lightgray);
 	font-size: 0.875rem;
 }
 
@@ -133,7 +133,7 @@ td .fa-crosshairs{
 #dataToSignTable{
 	margin : 1em;
 	width  : calc(100% - 2em);
-	background : linear-gradient(to right, transparent, 70%, gray);
+	background : linear-gradient(to right, transparent, 70%, lightgray);
 }
 
 #dataToSignTable th:first-child{
@@ -206,16 +206,18 @@ td .fa-crosshairs{
 	text-decoration: underline;
 }
 #myNavBar a{
+	padding : 10px;
 	color:white;
 	font-size : 1.1em;
 	text-decoration: none;
 }
 #myNavBar a.active{
+
 	color:white;
 	font-size : 1.1em;
 	text-decoration: underline;
 	text-decoration-color: #ffca2c;
-	text-decoration-thickness: 8px;
+	text-decoration-thickness: 3px;
 	text-decoration-skip-ink: none;
 }
 
@@ -228,10 +230,11 @@ td .fa-crosshairs{
 }
 
 #myNavBarLogoContent{
-	background-color : coral;
+	color: white;
+	background-color : #484a54;
 	padding : 10px;
 	border-radius : 5px;
-	font-size : 0.9em;
+	font-size : 0.8em;
 	font-weight : bold;
 	flex-grow: 0;
 	display : flex;
@@ -495,4 +498,24 @@ td .fa-crosshairs{
 	background-color: rgba(255,255,255,0.6);
 	color: black;
 	border: 2px solid RGBA(0,0,0,0.2);
+}
+
+.small{
+	font-size: 0.875rem;
+}
+
+.extraSmall{
+	font-size: 0.75rem;
+}
+
+.active{
+	background-color: var(--bs-success);
+}
+
+.dismiss{
+	background-color: var(--bs-danger);
+}
+
+.customModal{
+	font-family : 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

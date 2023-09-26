@@ -11,6 +11,11 @@ Object.freeze(Pages);
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
 const pwdBtn = '<button class="btn btn-warning btn-sm" id="changePwdBtn" data-bs-toggle="modal" data-bs-target="#passwordModal" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtn"></i></button>';
 
+let interPeddingReqs = null;
+let interCharges = null;
+let interToSign = null;
+let interSigned = null;
+
 
 const passwordModalDiv =
 `<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
@@ -261,10 +266,12 @@ function pagesCommonCode(){
 	loginData.user.roles.forEach((role,index)=>{
 		let newRole;
 		if(index == cRole){
-			newRole = `<div><button id="role_${index}_btn"  type="button" class="btn btn-success btn-sm">${role.roleName}</button></div>`;
+			//newRole = `<div><button id="role_${index}_btn"  type="button" class="btn btn-success btn-sm">${role.roleName}</button></div>`;
+			newRole = `<div><button id="role_${index}_btn"  type="button" class="isButton active extraSmall">${role.roleName}</button></div>`;
 		}
 		else{
-			newRole = `<div><button id="role_${index}_btn"  type="button" class="btn btn-secondary btn-sm">${role.roleName}</button></div>`;
+			//newRole = `<div><button id="role_${index}_btn"  type="button" class="btn btn-secondary btn-sm">${role.roleName}</button></div>`;
+			newRole = `<div><button id="role_${index}_btn"  type="button" class="isButton extraSmall">${role.roleName}</button></div>`;
 		}
 		document.querySelector('#userRoles').innerHTML += newRole;
 	});  
@@ -316,8 +323,24 @@ function pagesCommonCode(){
 	<button id="fileCloseDialog">Κλείσιμο</button>`
 }
 
+function removeIntervals(){
+	if (interPeddingReqs !==null) {
+		clearInterval(interPeddingReqs);
+	}
+	if (interCharges !==null) {
+		clearInterval(interCharges);
+	}
+	if (interToSign !==null) {
+		clearInterval(interToSign);
+	}
+	if (interSigned !==null) {
+		clearInterval(interSigned);
+	}
+}
+
 
 async function createChargesUIstartUp(){
+	removeIntervals();
 	console.log("charges");
 	page = Pages.CHARGES;
 	pagesCommonCode();
@@ -325,27 +348,37 @@ async function createChargesUIstartUp(){
 	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
 	let cRole = localStorage.getItem("currentRole");
 	
-	const protocolExtraBtns = `<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center;">	
+	const protocolExtraBtns = 
+		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;">	
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
-				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αιτήματα</div>
-				<div class="flexHorizontal">
-					<div><button class="isButton"> <i class="fas fa-plus-square"></i></button></div>
-					<div><button class="isButton"> <i class="fas fa-plus-square"></i></button></div>
+				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Νέα Πρωτόκολλα</div>
+				<div class="flexHorizontal" style="padding:0px 5px;">
+					<div><button class="isButton small" style="background-color: var(--bs-success);"> <i class="fas fa-plus-square"></i></button></div>
+					<div><button class="isButton small" style="background-color: var(--bs-orange);"> 
+						<span id="peddingRequestsNo" name="peddingRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span></button>
+					</div>
+					<div>
+						<button id="refreshPeddingReqsBtn" title="Ανανέωση Αιτημάτων" type="button" class="isButton small"><i class="fas fa-sync"></i></button>
+					</div>
 				</div>`:
 				`<button id="reqProtocolBtn" name="reqProtocolBtn" class="isButton" title="Aίτηση νέου πρωτοκόλλου" style="background-color:lightseagreen"><i class="fas fa-phone-volume"></i></button>`
 			}
 		</div>
-		<div id="topMenuAdminBtnsDiv" class="flexVertical" style="align-items: center;">	
+		<div id="topMenuAdminBtnsDiv" class="flexVertical" style="align-items: center;align-self: stretch;">	
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
 				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Άλλες εφαρμογές</div>
-				<div class=""><div><a rel="opener"  title="Άνοιγμα αλληλογραφίας" rel="referer" target="_blank" href="../mich_login.php"><span style="font-weight: bold;
-				border-radius: 5px; border-style: solid; 
-				border-width: 1px;padding: 2px 6px;color: white; background-color:lightseagreen;border-color:lightseagreen;"><i style="color:white" class="fas fa-mail-bulk  fa-lg"></i></span></a></div>
-				<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="../kside/index.php"><span style="font-size: 0.7rem;font-weight: bold;
+				<div class="flexHorizontal">
+					<div><a rel="opener"  title="Άνοιγμα αλληλογραφίας" rel="referer" target="_blank" href="../mich_login.php"><span style="font-weight: bold;
+						border-radius: 5px; border-style: solid; 
+						border-width: 1px;padding: 2px 6px;color: white; background-color:lightseagreen;border-color:lightseagreen;"><i style="color:white" class="fas fa-mail-bulk  fa-lg"></i></span></a>
+					</div>
+					<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="../kside/index.php"><span style="font-size: 0.7rem;font-weight: bold;
 															border-radius: 5px; border-style: solid; 
-															border-width: 1px;padding: 0px 2px;color: white; background-color:lightseagreen;border-color:lightseagreen;">ΚΣΗΔΕ</span></a></div></div>`:``
+															border-width: 1px;padding: 0px 2px;color: white; background-color:lightseagreen;border-color:lightseagreen;">ΚΣΗΔΕ</span></a>
+					</div>
+				</div>`:``
 			}
 		</div>`;
 
@@ -411,8 +444,20 @@ async function createChargesUIstartUp(){
 						<div id="filterContent"></div>
 						<div id="filterApplyDiv"></div>
 					</dialog>`;
+
+	const peddingRequestsDiv= `<dialog id="peddingRequestsModal" class="customModal">
+			<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
+				<span style="font-weight:bold;">Αιτήματα πρωτοκόλλου</span>
+				<div class="topButtons" style="display:flex;gap: 7px;">
+					<button class="isButton " name="peddingReqsCloseBtn" id="peddingReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+				</div>
+			</div>
+			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);"></div>
+		</dialog>`;
 	
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
+	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
+	
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
 	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);	
@@ -427,12 +472,34 @@ async function createChargesUIstartUp(){
 			document.querySelector('#addProtocolDialog').showModal();
 		});
 	}
+	if (document.querySelector('#peddingRequestsNo')){
+		document.querySelector('#peddingRequestsNo').parentElement.addEventListener("click", ()=>{
+			document.querySelector('#peddingRequestsModal').showModal();
+		});
+		document.querySelector('#peddingReqsCloseBtn').addEventListener("click", ()=>{
+			document.querySelector('#peddingRequestsModal').close();
+		});
+		document.querySelector('#refreshPeddingReqsBtn').addEventListener("click", ()=>{
+			if (+loginData.user.roles[cRole].protocolAccessLevel === 1){
+				getPeddingProtocolReqs();
+			}	
+		});
+	}
 
-	getChargesAndFill();
+	if (+loginData.user.roles[cRole].protocolAccessLevel === 1){
+		const peddingReqs = await getPeddingProtocolReqs();
+		interPeddingReqs = setInterval(async ()=>{
+			const peddingReqs = await getPeddingProtocolReqs();
+		},25000)
+	}
+	const chargesRes = await getChargesAndFill(); 
+	interCharges = setInterval(async ()=>{
+		const chargesRes = await getChargesAndFill(); 
+	},60000)
 }
 
-export function createUIstartUp(){
-	
+export async function createUIstartUp(){
+	removeIntervals();
 	console.log("signature");
     page = Pages.SIGNATURE;
 	pagesCommonCode();
@@ -461,12 +528,15 @@ export function createUIstartUp(){
 
 	//Γέμισμα πίνακα με εγγραφές χρήστη
     createActionsTemplate();
-	getToSignRecordsAndFill();
+	const toSignRes = await getToSignRecordsAndFill(); 
+	interToSign = setInterval(async ()=>{
+		const toSignRes = await getToSignRecordsAndFill(); 
+	},60000)
 
 }
 
-export function createSignedUIstartUp(){
-	
+export async function createSignedUIstartUp(){
+	removeIntervals();
     console.log("signed");
     page = Pages.SIGNED;
 	pagesCommonCode();
@@ -475,7 +545,10 @@ export function createSignedUIstartUp(){
 	document.querySelector('#showToSignOnlyBtn').style.display = "inline-block"; 
 
 	//Γέμισμα πίνακα με εγγραφές χρήστη
-	getSignedRecordsAndFill();
+	const signedRes = await getSignedRecordsAndFill();
+	interSigned = setInterval(async ()=>{
+		const signedRes = await getSignedRecordsAndFill();
+	},60000)
 
 }
 
@@ -599,12 +672,14 @@ function updateRolesUI(){
 	const cRole = localStorage.getItem("currentRole");
 	loginData.user.roles.forEach((role,index)=>{
 		if(index == cRole){
-			document.querySelector('#role_'+index+'_btn').classList.remove('btn-secondary'); 
-			document.querySelector('#role_'+index+'_btn').classList.add('btn-success'); 
+			//document.querySelector('#role_'+index+'_btn').classList.remove('btn-secondary'); 
+			//document.querySelector('#role_'+index+'_btn').classList.add('btn-success'); 
+			document.querySelector('#role_'+index+'_btn').classList.add('active'); 
 		}
 		else{
-			document.querySelector('#role_'+index+'_btn').classList.remove('btn-success'); 
-			document.querySelector('#role_'+index+'_btn').classList.add('btn-secondary');  
+			//document.querySelector('#role_'+index+'_btn').classList.remove('btn-success'); 
+			//document.querySelector('#role_'+index+'_btn').classList.add('btn-secondary');  
+			document.querySelector('#role_'+index+'_btn').classList.remove('active'); 
 		}
 	});   
 	return;
@@ -702,20 +777,20 @@ async function setRole(index){
 	//createUIstartUp();
 }
 
-export function getToSignRecordsAndFill(){
+export async function getToSignRecordsAndFill(){
 	const records = getSigRecords().then( res => {
 		createSearch();
 	}, rej => {});		
 }
 
 
-export function getSignedRecordsAndFill(){
+export async function getSignedRecordsAndFill(){
 	const records = getSignedRecords().then( res => {
 		createSearch();
 	}, rej => {});			
 }
 
-export function getChargesAndFill(){
+export async function getChargesAndFill(){
 	const records = getFilteredData(pagingStart,pagingSize).then( res => {
 		//createSearch();
 	}, rej => {});			
@@ -726,4 +801,154 @@ export function getChargesAndFill(){
 function logout(){
 	localStorage.clear();
 	location.href = "/api/logout.php";
+}
+
+async function getPeddingProtocolReqs(){
+	const {jwt,role} = getFromLocalStorage();	
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let init = {method: 'GET', headers : myHeaders};
+	//console.log(init);
+	const params = new URLSearchParams({
+		currentRole: role
+	});
+	
+	const res = await fetch("/api/getPeddingProtocolReqs.php?"+params,init); 
+	if (!res.ok){
+		if (res.status == 401){
+			document.querySelector("#recordsSpinner").style.display = 'none';
+			document.querySelector("#myNavBar").classList.remove("disabledDiv");
+			const reqToken = await refreshToken();
+			if (reqToken ==1){
+				getPeddingProtocolReqs();
+				const error = new Error("token expired")
+				error.code = "400"
+				throw error;
+			}
+			else{
+				alert('σφάλμα εξουσιοδότησης');
+				const error = new Error("token invalid")
+				error.code = "400"
+				throw error;
+			}
+		}
+		else{
+			const error = new Error("unauthorized")
+			error.code = "400"
+			throw error;	
+		}
+	}
+	else{
+		//return res;
+		const resdec =  await res.json();
+		document.querySelector("#peddingRequestsNo").innerText = resdec.requests.length;
+		if(resdec.requests.length == 0){
+			document.querySelector("#peddingRequestsNo").parentElement.style.backgroundColor = "gray";
+			document.querySelector("#peddingRequestsNo").style.backgroundColor = "gray";
+		}
+		else{
+			document.querySelector("#peddingRequestsNo").parentElement.style.backgroundColor = "orange";
+			document.querySelector("#peddingRequestsNo").style.backgroundColor = "orange";
+			document.querySelector("#peddingReqsRecords").innerHTML = `<div><b>Αίτημα από</b></div><div><b>Θέμα</b></div><div><b>Προς</b></div><div><b>Θέμα Εξερχομένου</b></div><div><b>Ενέργειες</b></div>`;
+			resdec.requests.forEach(elem => {
+					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
+					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-plus-square"></i></button>';
+					document.querySelector("#peddingReqsRecords").innerHTML+= 
+						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
+						<div data-req="${elem.aa}" data-name="subjectField" >${elem.subjectField}</div>
+						<div data-req="${elem.aa}" data-name="toField" >${elem.toField}</div>
+						<div data-req="${elem.aa}" data-name="outSubjectField">${elem.outSubjectField}</div>
+						<div data-req="${elem.aa}" data-name="actionsField">${acceptReqBtn+rejectReqBtn}</div>`;
+				}
+			);
+			resdec.requests.forEach(elem => {
+				document.querySelector('[data-action="dismissReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => rejectPeddingReq(event.currentTarget.dataset.req));	
+				document.querySelector('[data-action="acceptReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => acceptPeddingReq(event.currentTarget.dataset.req));	
+			})
+		}
+	}
+}
+
+async function rejectPeddingReq(aa){
+	const {jwt,role} = getFromLocalStorage();	
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	
+	const name = document.querySelector(('[data-name="subjectField"][data-req="'+aa+'"]')).innerText;
+	//console.log(init);
+	const formData = new FormData();
+	formData.append("currentRole", role);
+	formData.append("aa", aa);
+
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+
+	const res = await fetch("/api/rejectPeddingReq.php",init); 
+	if (!res.ok){
+		if (res.status == 401){
+			const reqToken = await refreshToken();
+			if (reqToken ==1){
+				rejectPeddingReq();
+				const error = new Error("token expired")
+				error.code = "400"
+				throw error;
+			}
+			else{
+				alert('σφάλμα εξουσιοδότησης');
+				const error = new Error("token invalid")
+				error.code = "400"
+				throw error;
+			}
+		}
+		else{
+			const error = new Error("unauthorized");
+			error.code = "400";
+			throw error;	
+		}
+	}
+	else{
+		alert("Το αίτημα πρωτοκόλου έχει απορριφθεί");
+	}
+}
+
+async function acceptPeddingReq(aa){
+	const {jwt,role} = getFromLocalStorage();	
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+
+	const name = document.querySelector(('[data-name="subjectField"][data-req="'+aa+'"]')).innerText;
+	//console.log(init);
+	const formData = new FormData();
+	formData.append("currentRole", role);
+	formData.append("aa", aa);
+	formData.append("name", name);
+	
+
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+
+	const res = await fetch("/api/acceptPeddingReq.php",init); 
+	if (!res.ok){
+		if (res.status == 401){
+			const reqToken = await refreshToken();
+			if (reqToken ==1){
+				acceptPeddingReq(aa);
+				const error = new Error("token expired")
+				error.code = "400"
+				throw error;
+			}
+			else{
+				alert('σφάλμα εξουσιοδότησης');
+				const error = new Error("token invalid")
+				error.code = "400"
+				throw error;
+			}
+		}
+		else{
+			const error = new Error("unauthorized")
+			error.code = "400"
+			throw error;	
+		}
+	}
+	else{
+		const chargesRes = await getChargesAndFill(); 
+	}
 }
