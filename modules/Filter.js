@@ -473,6 +473,7 @@ function openProtocolRecord(subject,record,recordDate, event){
 				<record-relative style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-relative>
 				<record-comment style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-comment>
 				<record-history style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-history>
+				<record-tags style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-tags>
 
 				<div class="table-responsive mt-2 pt-2" id="kshde" style="background: rgba(122, 160, 126, 0.2)!important;">
 					<table class="table" id="kshdeTableInProtocol">
@@ -516,7 +517,7 @@ function openProtocolRecord(subject,record,recordDate, event){
 	}
 	if (currentRoleObject.protocolAccessLevel ==1 || currentRoleObject.accessLevel ==1){
 		document.querySelector("#bottomSectionButtons").innerHTML += 
-		`<button class="btn btn-info ektos mr-2" name="publishToSite" id="publishToSite" onclick="publishToSite();" data-toggle="tooltip" title="Αίτημα Ανάρτησης στη Σελίδα"><i class="fas fa-cloud-upload-alt"></i></button>`;
+		`<button class="btn btn-info ektos mr-2" name="publishToSite" id="publishToSite" title="Αίτημα Ανάρτησης στη Σελίδα"><i class="fas fa-cloud-upload-alt"></i></button>`;
 	}
 	document.querySelector("#bottomSectionButtons").innerHTML += `<button class="btn btn-warning ektos mr-2" name="makeUnread" id="makeUnread" onclick="makeMessageUnread()" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
 	document.querySelector("#bottomSectionTitle").innerHTML = `<button title=="Επεξεργασία Πρωτοκόλλου" id="editRecord" class="btn btn-info"><i class="fas fa-edit"></i></button>`+'<span style="font-weight:bold;">'+record+"/"+currentYear+" | "+subject+"</span>";
@@ -524,110 +525,9 @@ function openProtocolRecord(subject,record,recordDate, event){
 
 	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
 	document.querySelector("#closeModalBtn").addEventListener("click", ()=> document.querySelector("#protocolRecordDialog").close());
+
+	document.querySelector("#publishToSite").addEventListener("click", () => publishToSite());
+
 }
 
 
-
-
-// if ( aData[8] == 1 )
-// {
-//   //$('td:eq(8)', nRow).css('background-color', 'orange');
-//   $('td:eq(0)', nRow).css('background-color', 'DarkOrange');
-//   $('td:eq(8)', nRow).html('Προς Αρχ.');
-// }
-// else if ( aData[8] == 2 )
-// {
-//   //$('td:eq(8)', nRow).css('background-color', 'gray');
-//   $('td:eq(0)', nRow).css('background-color', 'gray');
-//   $('td:eq(8)', nRow).html('Αρχείο');
-// }
-// else if ( aData[8] == 0 )
-// {
-//   //$('td:eq(8)', nRow).css('background-color', 'gray');
-//   $('td:eq(8)', nRow).html('Εκκρεμ.');
-// };
-// //aData[0] = aDate[0]+"/"+aDate[10];
-//   if(aData[11] == 0){
-// 		console.log("unread");	
-// 		$(nRow).addClass('unread');
-//   }
-// },
-
-
-
-// table.on( 'select', function ( e, dt, type, indexes ) {
-// 	var temp = table.page.info();
-// 	currPage = temp.page;
-// 	console.log("page="+currPage);
-// 	currRow = dt.row({selected: true}).index();
-// 	console.log("row="+currRow);
-	
-// 	$("#historyArrow").removeClass('fa-rotate-90');
-// 	$("#bottomSection").removeClass("d-none");
-// 	var elmnt = document.getElementById("tableButtonsSection");
-// 	elmnt.scrollIntoView(true);
-// 	$("#attachments tbody tr").remove(); 
-// 	$("#history tbody tr").remove(); 
-// 	$("#commentsTable tbody tr").remove();
-// 	if ( type === 'row' ) {
-// 		//var data = table.rows( indexes ).data().pluck( 'id' );
-// 		var sdata = table.cell('.selected', 0).data();
-// 		selectedIndex = sdata;	
-// 		if (recentProtocols == null){
-// 			recentProtocols = [];
-// 			recentProtocols.push(selectedIndex);
-// 		}
-// 		else if (recentProtocols.length >=5){
-// 			const check = (element) => element == selectedIndex;
-// 			var elementExists = recentProtocols.findIndex(check);
-// 			console.log("vrethike sta prosfata :"+elementExists);
-// 			if (elementExists == -1){
-// 				console.log("tha prostethei");
-// 				recentProtocols.shift();
-// 				recentProtocols.push(selectedIndex);
-// 			}
-// 		}
-// 		else{
-// 			const check = (element) => element == selectedIndex;
-// 			var elementExists = recentProtocols.findIndex(check);
-// 			console.log("vrethike sta prosfata :"+elementExists);
-// 			if (elementExists == -1){
-// 				recentProtocols.push(selectedIndex);
-// 			}
-// 		}
-		
-// 		localStorage.setItem("recentProtocols", JSON.stringify(recentProtocols));	
-// 		loadRecent();						
-// 		//alert(sdata);
-// 		document.getElementById("editButton").disabled = false;
-// 		//document.getElementById("removeButton").disabled = false;
-// 		loadAttachments(<?php echo  $_SESSION['protocolAccessLevel'];?>);
-// 		loadAssignments();
-// 		loadComments(1);
-// 		loadFolders();
-// 		loadKshde();
-// 		if (<?php echo  $_SESSION['protocolAccessLevel'];?>){ 
-// 			loadHistory(); 
-// 		}
-// 		loadRelative(1);
-// 		document.getElementById("bottomSectionTitle").innerHTML  = "<b> Πρωτ. : " + table.cell('.selected', 0).data()+"</b>";
-// 		document.getElementById("bottomSectionTitle").innerHTML  += " ||  <b> (ΕΙΣ.) </b> " + table.cell('.selected', 2).data();
-// 		document.getElementById("bottomSectionTitle").innerHTML  += " || <b> (ΕΞ.)  </b>" + table.cell('.selected', 6).data();
-// 		//console.log("ddd"+table.cell('.selected', 11).data());
-// 		//if (table.cell('.selected', 11).data() == 0){
-// 		messageRead(table.cell('.selected', 0).data(),<?php echo $_SESSION['aa_staff'];?>);
-// 			table.$('tr.selected').removeClass('unread');
-// 		//}
-// 	}
-// 	//window.history.pushState("test", "Title", "10.142.49.10/nocc-1.9.8/protocol/editTable1.php?tn=book&page="+currPage);
-// } );
-
-// table.on( 'deselect', function ( e, dt, type, indexes ) {
-// 	selectedIndex = 0;
-// 	if ( type === 'row' ) {
-// 		//var data = table.rows( indexes ).data().pluck( 'id' );
-// 		document.getElementById("editButton").disabled = true;
-// 		//document.getElementById("removeButton").disabled = true;
-// 		$("#bottomSection").addClass("d-none");
-// 	}
-// } );
