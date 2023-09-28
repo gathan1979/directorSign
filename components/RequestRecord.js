@@ -299,4 +299,4 @@ class RequestRecord extends HTMLElement {
     } 
 }
 
-customElements.define("record-add", RequestRecord);
+customElements.define("record-request", RequestRecord);
