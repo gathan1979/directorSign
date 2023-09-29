@@ -255,10 +255,10 @@ class Attachments extends HTMLElement {
                 }
                 if (level==1){	
                     //<i class="fas fa-pencil-alt"></i>
-                    fileLinkString += '<button title="Μετονομασία" id="renameAtt_'+result[key1]['aa']+'" class="btn btn-secondary btn-sm"><i class="fas fa-pencil-alt"></i></button>'+'<span title="Μετονομασία Συνημμένου" >'+result[key1]['filename']+'</span>';
+                    fileLinkString += '<button title="Μετονομασία" id="renameAtt_'+result[key1]['aa']+'" class="btn btn-secondary btn-sm"><i class="fas fa-pencil-alt"></i></button>'+'<span class="small" >'+result[key1]['filename']+'</span>';
                 }
                 else{
-                    fileLinkString += '<span>'+result[key1]['filename']+'</span>';
+                    fileLinkString += '<span class="small">'+result[key1]['filename']+'</span>';
                 }		
                 fileArray.push(result[key1]['filename']);	
                 year = result[key1]['year'];

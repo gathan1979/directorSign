@@ -2,6 +2,96 @@ import refreshToken from "../modules/RefreshToken.js";
 import getFromLocalStorage from "../modules/LocalStorage.js";
 
 const tagsContent = `
+    <style>
+        /* SHAKE */
+        .faa-shake.animated,
+        .faa-shake.animated-hover:hover,
+        .faa-parent.animated-hover:hover>.faa-shake {
+            animation: wrench 2.5s ease infinite;
+        }
+        
+        .faa-shake.animated.faa-fast,
+        .faa-shake.animated-hover.faa-fast:hover,
+        .faa-parent.animated-hover:hover>.faa-shake.faa-fast {
+            animation: wrench 1.2s ease infinite;
+        }
+        
+        .faa-shake.animated.faa-slow,
+        .faa-shake.animated-hover.faa-slow:hover,
+        .faa-parent.animated-hover:hover>.faa-shake.faa-slow {
+            animation: wrench 3.7s ease infinite;
+        }
+        
+        /* WRENCHING */
+        @keyframes wrench {
+            0%{transform:rotate(-12deg)}
+            8%{transform:rotate(12deg)}
+            10%{transform:rotate(24deg)}
+            18%{transform:rotate(-24deg)}
+            20%{transform:rotate(-24deg)}
+            28%{transform:rotate(24deg)}
+            30%{transform:rotate(24deg)}
+            38%{transform:rotate(-24deg)}
+            40%{transform:rotate(-24deg)}
+            48%{transform:rotate(24deg)}
+            50%{transform:rotate(24deg)}
+            58%{transform:rotate(-24deg)}
+            60%{transform:rotate(-24deg)}
+            68%{transform:rotate(24deg)}
+            75%,100%{transform:rotate(0deg)}
+        }
+
+        .isButton{
+            background-color: var(--bs-secondary);
+            font-family: var(--bs-body-font-family);
+            color : white;
+            border-radius:5px;
+            border:1px solid transparent;
+            padding : 10px;
+            cursor : pointer;
+            font-size: 1em;
+        }
+
+        .active{
+            background-color: var(--bs-success);
+        }
+
+        .outline{
+            background-color: rgba(255,255,255,0);
+        }
+
+        .small{
+            font-size: 0.8em;
+        }
+
+        .customDialogContent{
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            border-radius: 15px;
+        }
+        
+        .customDialogContentTitle{
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            border-radius: 15px;
+            margin-bottom:10px;
+            align-items: flex-start;
+        }
+
+        .customDialog::backdrop{
+            background-color: rgba(0, 0, 0, 0.8);
+        
+        }
+
+        #folderSearchText{
+            min-height: 2em;
+            border-radius : 5px;
+        }
+
+    </style>
     <div id="tagsModule" style="display:flex;gap:10px;flex-direction:column;background: rgba(122, 160, 126, 0.2)!important;padding:10px;height:100%;">
         <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
         <link rel="stylesheet" type="text/css" href="css/custom.css" />
@@ -21,24 +111,24 @@ const tagsContent = `
             </div>
         </div>
 
-        <div id="tagsBody" style="height:90%;overflow-y:scroll;display:flex; flex-wrap:wrap;gap: 5px;"></div>
+        <div id="tagsBody" style="height:90%;overflow-y:scroll;display:flex; flex-wrap:wrap;gap:5px;"></div>
     </div>
+
     <dialog id="addTagsModal" class="customDialog" style="width:60%;">
         <div class="customDialogContentTitle">
             <span style="font-weight:bold;">Νέες Ετικέτες</span>
             <button class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
         <div class="customDialogContent">
-            <div class="flexVertical" style="align-items: self-end;">
+            <div class="flexVertical" >
                 <form style="width: 100%;">
                     <input type="text" class="form-control form-control-sm" id="insertTagsField">
                 </form>
-                <div class="flexHorizontal">
-                    <div id="searchResults"></div>
+                <div class="flexHorizontal" style="justify-content: space-between;">
+                    <div id="searchResults" style="display:flex; gap:5px; padding: 10px;"></div>
                     <button id="insertTagsBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
                 </div>
             </div>
-
         </div>
     </dialog>`;
 
@@ -63,7 +153,8 @@ class Tags extends HTMLElement {
         this.shadow.querySelector("#showAddTagModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addTagsModal").showModal());
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> {
             this.shadow.querySelector("#addTagsModal").close();
-            this.shadow.querySelector("#insertTagsField").value= "";    
+            this.shadow.querySelector("#insertTagsField").value= "";   
+            this.shadow.querySelector("#searchResults").innerHTML = ""; 
         });
         this.shadow.querySelector("#insertTagsField").addEventListener("keyup",()=>{this.searchTags()});
     }
@@ -107,7 +198,7 @@ class Tags extends HTMLElement {
             this.shadow.getElementById("tagsTableTitleBadge").textContent = resdec.length;
 
             for (let key1=0;key1<resdec.length;key1++) {
-                let temp="<span id='tag_"+resdec[key1]['aaField']+"' style='cursor: pointer; background-color:#189ecf; border-radius:5px; font-size: 10px;padding: 5px;color: white;'>"+resdec[key1]['tag']+"</span>";
+                let temp="<span id='tag_"+resdec[key1]['aaField']+"' style='cursor: pointer; background-color:green; border-radius:5px; font-size: 10px;padding: 5px;color: white;'>"+resdec[key1]['tag']+"</span>";
                 this.shadow.getElementById("tagsBody").innerHTML += temp;
             }
             for (let key1=0;key1<resdec.length;key1++) {
@@ -216,17 +307,48 @@ class Tags extends HTMLElement {
     }
 
     async searchTags(){
-        const searchValue = this.shadow.getElementById("insertTagsField").value.split(",").at(-1);
-        console.log(searchValue);
+        const selectedTags = [...this.shadow.querySelectorAll("#tagsBody>span")].map(elem=>elem.innerHTML);
+
+        const currentTextAsArray = this.shadow.getElementById("insertTagsField").value.split(",");
+        const searchValue = currentTextAsArray.at(-1);
+        //ΟΤΑΝ ΒΑΖΟΥΜΕ ΝΕΟ ΣΤΟΙΧΕΙ0 ΜΕ (ΚΟΜΜΑ) ΓΙΝΕΤΑΙ ΕΛΕΓΧΟΣ ΑΝ ΥΠΑΡΧΕΙ ΗΔΗ ΚΑΙ ΑΦΑΙΡΕΙΤΑΙ 
+        if (currentTextAsArray.at(-1)=="" && currentTextAsArray.at(-2) != null){
+            console.log("ειμαι εδω",currentTextAsArray.at(-2))
+            if (selectedTags.indexOf(currentTextAsArray.at(-2)) !== -1){
+                console.log(currentTextAsArray)
+               this.shadow.getElementById("insertTagsField").value = currentTextAsArray.slice(0,-2).join(", ");
+            }
+        }
         if (searchValue.trim().length <3){
             this.shadow.querySelector("#searchResults").innerHTML = "";
             return;
         }
         this.shadow.querySelector("#searchResults").innerHTML = "";
         const similarTags = await this.searchSimilar(searchValue);
-        similarTags.forEach( elem => {
-            this.shadow.querySelector("#searchResults").innerHTML += '<span>'+elem.tag+'</span>'
+        
+        //console.log(selectedTags);
+
+        //ΕΛΕΓΧΟΣ ΑΝ ΣΤΑ ΟΜΟΙΑ ΠΟΥ ΒΡΈΘΗΚΑΝ ΚΑΠΟΙΟ ΕΧΕΙ ΚΑΤΑΧΩΡΗΘΕΙ ΗΔΗ ΩΣΤΕ ΝΑ ΕΜΦΑΝΙΣΤΕΙ ΠΡΑΣΙΝΟ 
+        similarTags.forEach( (elem,index) => {
+            if (selectedTags.indexOf(elem.tag) === -1){
+                this.shadow.querySelector("#searchResults").innerHTML += "<span id='similar_"+index+"'  style='cursor: pointer; background-color: var(--bs-orange); border-radius:5px; font-size: 10px;padding: 5px;color: white;'>"+elem.tag+'</span>'
+            }
+            else{
+                this.shadow.querySelector("#searchResults").innerHTML += "<span id='similar_"+index+"' class='active' style='border-radius:5px; font-size: 10px;padding: 5px;color: white;'>"+elem.tag+'</span>'
+            }
         })
+        similarTags.forEach( (elem,index) => {
+            if (selectedTags.indexOf(elem.tag) === -1){
+                this.shadow.querySelector("#similar_"+index).addEventListener("click", (event)=>{
+                    if (currentTextAsArray.length == 1){
+                        this.shadow.getElementById("insertTagsField").value = event.currentTarget.innerHTML;
+                    }
+                    else{
+                        this.shadow.getElementById("insertTagsField").value = currentTextAsArray.slice(0,-1).join(", ")+", "+event.currentTarget.innerHTML;
+                    }
+                })
+            }
+        });
         return;
 
         this.shadow.querySelectorAll("#folderList > button").forEach((element,index)=> {
@@ -251,7 +373,6 @@ class Tags extends HTMLElement {
     }
 
     async searchSimilar(tag){
-        console.log("κλήση")
         const {jwt,role} = getFromLocalStorage();
         const myHeaders = new Headers();
         myHeaders.append('Authorization', jwt);
