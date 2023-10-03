@@ -1,3 +1,5 @@
+export let peddingReq = null;
+export let isRunning = false;
 
 export default async function refreshToken(){
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
@@ -15,12 +17,49 @@ export default async function refreshToken(){
 			return 1;
 		}
 		else{	
-			//alert("Ανανέωση εξουσιοδότησης χρήστη απέτυχε");
 			return 0;
 		}
 	}
 	else{
-		//alert("Σφάλμα στην ανανέωση εξουσιοδότησης");
 		return 0;
 	}
 }
+
+export async function refreshTokenTest(){
+	if (!isRunning){
+		peddingReq = new Promise((resolve,reject)=>{
+			isRunning = true;
+			const loginData = JSON.parse(localStorage.getItem("loginData"));
+			//console.log(loginData.user.aa_staff);
+			const params = new URLSearchParams({
+				aa_staff: loginData.user.aa_staff
+			});
+			fetch("/api/refreshToken.php?" + params).then((res)=>{
+				if (res.ok){
+					if (res.status >= 200 && res.status <= 299) {
+						res.json().then((val)=>{
+							loginData.jwt = val;
+							localStorage.setItem("loginData",JSON.stringify(loginData));
+							resolve(1);
+						})
+					}
+					else{	
+						 resolve(0);;
+					}
+				}
+				else{
+					res.json().then((val)=>{
+						console.log(val['message']);
+						resolve(0);;
+					})
+				}
+				isRunning = false;
+			}) 
+			//console.log("refresh token running");
+		})
+	}
+	return peddingReq;
+}
+
+
+

@@ -1,4 +1,4 @@
-import refreshToken from "../modules/RefreshToken.js";
+import refreshToken, {refreshTokenTest} from "../modules/RefreshToken.js";
 import getFromLocalStorage from "../modules/LocalStorage.js";
 
 const content = 
@@ -160,7 +160,7 @@ class Attachments extends HTMLElement {
         if (!res.ok){
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
             if (res.status == 401){
-                const resRef = await refreshToken();
+                const resRef = await refreshTokenTest();
                 if (resRef ===1){
                     this.uploadFile(uploadURL="/api/uploadProtocolAtt.php",protocolNo, year);
                 }
@@ -215,7 +215,7 @@ class Attachments extends HTMLElement {
         if (!res.ok){
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
             if (res.status == 401){
-                const resRef = await refreshToken();
+                const resRef = await refreshTokenTest();
                 if (resRef ===1){
                     this.loadAttachments(level);
                 }
@@ -349,7 +349,7 @@ class Attachments extends HTMLElement {
         const res = await fetch("/api/zipFiles.php",newInit); 
         if (!res.ok){
             if (res.status == 401){
-                const resRef = await refreshToken();
+                const resRef = await refreshTokenTest();
                 if (resRef ===1){
                     this.zipFiles();
                 }
@@ -404,7 +404,7 @@ class Attachments extends HTMLElement {
             if (!res.ok){
                 this.shadow.querySelector("#attachmentSpinner").style.display = "none";
                 if (res.status == 401){
-                    const resRef = await refreshToken();
+                    const resRef = await refreshTokenTest();
                     if (resRef ===1){
                         this.removeAttachment(aa,record,filename);
                     }
@@ -450,7 +450,7 @@ class Attachments extends HTMLElement {
         if (!res.ok){
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
             if (res.status == 401){
-                const resRef = await refreshToken();
+                const resRef = await refreshTokenTest();
                 if (resRef ===1){
                     this.renameAttachment(aa,record,filename);
                 }
@@ -490,7 +490,7 @@ class Attachments extends HTMLElement {
         const res = await fetch("/api/viewAttachmentTest.php?"+urlpar,init); 
         if (!res.ok){
             if (res.status>=400 && res.status <= 401){
-                const resRef = await refreshToken();
+                const resRef = await refreshTokenTest();
                 if (resRef ===1){
                     this.viewAttachment(attachmentNo, showProtocol=0);
                 }
@@ -576,7 +576,7 @@ class Attachments extends HTMLElement {
         const res = await fetch("/api/getUsers.php?"+urlpar,init); 
         if (!res.ok){
             if (res.status>=400 && res.status <= 401){
-                const resRef = await refreshToken();
+                const resRef = await refreshTokenTest();
                 if (resRef ===1){
                     this.getUsers(attachmentNo, showProtocol=0);
                 }

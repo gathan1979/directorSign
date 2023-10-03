@@ -1,13 +1,14 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
 import {createActionsTemplate,getSigRecords, getSignedRecords}  from "./Records_test.js";
 import getFromLocalStorage from "./LocalStorage.js";
-import createFilter,{updateBtnsFromFilter,getFilteredData, createSearch, pagingStart, pagingSize} from "./Filter.js";
-import refreshToken from "./RefreshToken.js";
+import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
+import {getFilteredData} from "./ProtocolData.js";
+import refreshToken,{refreshTokenTest} from "./RefreshToken.js";
 
 let loginData = null;
 let page = null;
 export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed'};
-Object.freeze(Pages);
+Object.freeze(Pages);       
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
 const pwdBtn = '<button class="btn btn-warning btn-sm" id="changePwdBtn" data-bs-toggle="modal" data-bs-target="#passwordModal" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtn"></i></button>';
 
@@ -835,19 +836,21 @@ async function getPeddingProtocolReqs(){
 		if (res.status == 401){
 			document.querySelector("#recordsSpinner").style.display = 'none';
 			document.querySelector("#myNavBar").classList.remove("disabledDiv");
-			const reqToken = await refreshToken();
-			if (reqToken ==1){
-				getPeddingProtocolReqs();
-				const error = new Error("token expired")
-				error.code = "400"
-				throw error;
-			}
-			else{
-				alert('σφάλμα εξουσιοδότησης');
-				const error = new Error("token invalid")
-				error.code = "400"
-				throw error;
-			}
+			//const reqToken = await refreshTokenTest();
+			refreshTokenTest().then( val=> {
+					if (val ==1){
+						getPeddingProtocolReqs();
+						//const error = new Error("token expired")
+						//error.code = "400"
+						//throw error;
+					}
+					else{
+						alert('σφάλμα εξουσιοδότησης');
+						const error = new Error("token invalid")
+						error.code = "400"
+						throw error;
+					}
+			})
 		}
 		else{
 			const error = new Error("unauthorized")
