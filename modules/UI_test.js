@@ -4,6 +4,7 @@ import getFromLocalStorage from "./LocalStorage.js";
 import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
 import {getFilteredData} from "./ProtocolData.js";
 import refreshToken,{refreshTokenTest} from "./RefreshToken.js";
+import runFetch from "./CustomFetch.js";
 
 let loginData = null;
 let page = null;
@@ -44,8 +45,8 @@ const passwordModalDiv =
 </div>`;
 
 const addProtocolModal = 
-	`<dialog id="addProtocolDialog" style="min-width:60%;max-width:80%;">
-		<record-add></record-add>
+	`<dialog id="addProtocolRequestDialog" style="min-width:60%;max-width:80%;">
+		<record-request></record-request>
 	</dialog>`;
 
 const fileOpenModal = 
@@ -480,7 +481,7 @@ async function createChargesUIstartUp(){
 	}
 	if (document.querySelector('#reqProtocolBtn')){
 		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
-			document.querySelector('#addProtocolDialog').showModal();
+			document.querySelector('#addProtocolRequestDialog').showModal();
 		});
 	}
 	
@@ -821,46 +822,14 @@ function logout(){
 	location.href = "/api/logout.php";
 }
 
-async function getPeddingProtocolReqs(){
-	const {jwt,role} = getFromLocalStorage();	
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'GET', headers : myHeaders};
-	//console.log(init);
-	const params = new URLSearchParams({
-		currentRole: role
-	});
-	
-	const res = await fetch("/api/getPeddingProtocolReqs.php?"+params,init); 
-	if (!res.ok){
-		if (res.status == 401){
-			document.querySelector("#recordsSpinner").style.display = 'none';
-			document.querySelector("#myNavBar").classList.remove("disabledDiv");
-			//const reqToken = await refreshTokenTest();
-			refreshTokenTest().then( val=> {
-					if (val ==1){
-						getPeddingProtocolReqs();
-						//const error = new Error("token expired")
-						//error.code = "400"
-						//throw error;
-					}
-					else{
-						alert('σφάλμα εξουσιοδότησης');
-						const error = new Error("token invalid")
-						error.code = "400"
-						throw error;
-					}
-			})
-		}
-		else{
-			const error = new Error("unauthorized")
-			error.code = "400"
-			throw error;	
-		}
+async function getPeddingProtocolReqs(){	
+	const res = await runFetch("/api/getPeddingProtocolReqs.php", "GET", null);
+	if (!res.success){
+		alert(res.msg);
 	}
 	else{
 		//return res;
-		const resdec =  await res.json();
+		const resdec =  res.result;
 		document.querySelector("#peddingRequestsNo").innerText = resdec.requests.length;
 		if(resdec.requests.length == 0){
 			document.querySelector("#peddingRequestsNo").parentElement.style.backgroundColor = "gray";
@@ -890,45 +859,19 @@ async function getPeddingProtocolReqs(){
 }
 
 async function rejectPeddingReq(aa){
-	const {jwt,role} = getFromLocalStorage();	
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
 	
-	const name = document.querySelector(('[data-name="subjectField"][data-req="'+aa+'"]')).innerText;
-	//console.log(init);
 	const formData = new FormData();
-	formData.append("currentRole", role);
 	formData.append("aa", aa);
 
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-
-	const res = await fetch("/api/rejectPeddingReq.php",init); 
-	if (!res.ok){
-		if (res.status == 401){
-			const reqToken = await refreshToken();
-			if (reqToken ==1){
-				rejectPeddingReq();
-				const error = new Error("token expired")
-				error.code = "400"
-				throw error;
-			}
-			else{
-				alert('σφάλμα εξουσιοδότησης');
-				const error = new Error("token invalid")
-				error.code = "400"
-				throw error;
-			}
-		}
-		else{
-			const error = new Error("unauthorized");
-			error.code = "400";
-			throw error;	
-		}
+	const res = await runFetch("/api/rejectPeddingReq.php", "POST", formData);
+	if (!res.success){
+		alert(res.msg);
 	}
 	else{
+		//return res;
+		const resdec =  res.result;
 		getPeddingProtocolReqs();
 		const reqItems = document.querySelectorAll('[data-req="'+aa+'"]');
-
 		reqItems.forEach((elem) => {
 			elem.remove();
 		})
@@ -940,42 +883,16 @@ async function acceptPeddingReq(aa){
 	if (!confirm("Εισαγωγή στο βιβλίο πρωτοκόλλο;")){
 		return;
 	}
-	const {jwt,role} = getFromLocalStorage();	
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
 
 	const name = document.querySelector(('[data-name="subjectField"][data-req="'+aa+'"]')).innerText;
-	//console.log(init);
 	const formData = new FormData();
-	formData.append("currentRole", role);
 	formData.append("aa", aa);
 	formData.append("name", name);
 	
-
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-
-	const res = await fetch("/api/acceptPeddingReq.php",init); 
-	if (!res.ok){
-		if (res.status == 401){
-			const reqToken = await refreshToken();
-			if (reqToken ==1){
-				acceptPeddingReq(aa);
-				const error = new Error("token expired")
-				error.code = "400"
-				throw error;
-			}
-			else{
-				alert('σφάλμα εξουσιοδότησης');
-				const error = new Error("token invalid")
-				error.code = "400"
-				throw error;
-			}
-		}
-		else{
-			const error = new Error("unauthorized")
-			error.code = "400"
-			throw error;	
-		}
+	//let init = {method: 'POST', headers : myHeaders, body : formData};
+	const res = await runFetch("/api/acceptPeddingReq.php", "POST", formData);
+	if (!res.success){
+		alert(res.msg);
 	}
 	else{
 		const chargesRes = await getChargesAndFill(); 

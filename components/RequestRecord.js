@@ -1,5 +1,4 @@
-import refreshToken from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch from "../modules/CustomFetch.js";
 
 const addContent = `
     <style>
@@ -244,49 +243,18 @@ class RequestRecord extends HTMLElement {
     }
 
     async requestRecord(){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-
         const formdata = new FormData();
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             element.value = this.changedProperties[element.id];
             formdata.append(element.id, element.value);
         });
 
-        formdata.append('currentRole',role);
-
-        let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/requestRecord.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  400){
-                alert(resdec['message']);
-            }
-            else if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.requestRecord();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        const res = await runFetch("/api/requestRecord.php", "POST", formdata);
+        if (!res.success){
+            alert(res.msg);
         }
-        else{
-            const resdec = await res.json();
+        else{    
+            const resdec =  res;
             console.log(resdec['message']);
             if (resdec['success']){
                 alert("επιτυχής αίτηση εγγραφής");
