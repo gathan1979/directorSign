@@ -1,6 +1,12 @@
 import { refreshTokenTest } from "./RefreshToken.js";
 import getFromLocalStorage from "./LocalStorage.js";
 
+export const FetchResponseType = {
+    json : "json",
+    blob : "blob",
+    text : "text"
+}
+
 function fetchAuthHeader(){
     const {jwt,role} = getFromLocalStorage();	
     const myHeaders = new Headers();
@@ -8,7 +14,7 @@ function fetchAuthHeader(){
     return {myHeaders, role};    
 }
 
-export default async function runFetch(url, method, params){   //params FormData || URLSearchParams || null
+export default async function runFetch(url, method, params, responseType = FetchResponseType.json){   //params FormData || URLSearchParams || null
     const {myHeaders, role} = fetchAuthHeader();
     let  res;
     let init ={method, headers : myHeaders};
@@ -33,7 +39,8 @@ export default async function runFetch(url, method, params){   //params FormData
         if (!res.ok){
             if (res.status == 401){
                 const resRef = await refreshTokenTest();
-                if (resRef ===1){
+                console.log("o "+url+" περιμένει...λέμε τώρα")
+                if (resRef === 1){
                     runFetch(url, method, params);
                 }
                 else{
@@ -49,8 +56,15 @@ export default async function runFetch(url, method, params){   //params FormData
     catch (e){
         return {success: false, msg: "Σφάλμα εκτέλεσης κλήσης. " +e, url, role};
     }
-    const result = await res.json();
-    return {success: true, msg : "Επιτυχημένη κλήση", url, role, result : result};
+    let result;
+    switch (responseType){
+        case FetchResponseType.json : result = await res.json();break;
+        case FetchResponseType.blob : result = await res.blob();break;
+        case FetchResponseType.text : result = await res.text();break;
+    }
+    const returnObj = {success: true, msg : "Επιτυχημένη κλήση", url, role, result : result, responseHeaders : res.headers};
+    //console.log(returnObj);
+    return returnObj;
 }
 
 async function printResponseErrorStatus(res){

@@ -11,7 +11,8 @@ let page = null;
 export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed'};
 Object.freeze(Pages);       
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
-const pwdBtn = '<button class="btn btn-warning btn-sm" id="changePwdBtn" data-bs-toggle="modal" data-bs-target="#passwordModal" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtn"></i></button>';
+const pwdBtn = '<button class="isButton" id="changePwdBtn" style="background-color: var(--bs-yellow);color:black;" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtnIcon"></i></button>';
+const logoutBtn = '<div><button class="isButton" style="background-color: var(--bs-yellow);color:black;" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
 
 let interPeddingReqs = null;
 let interCharges = null;
@@ -20,29 +21,37 @@ let interSigned = null;
 
 
 const passwordModalDiv =
-`<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document" >
-		<div class="modal-content">
-			<div class="modal-header">
-				<b>Αλλαγή κωδικού</b>
-			</div>
-			<div class="modal-body" id="passwordForm">
-				<div style="display : grid; grid-template-columns: 3fr 3fr 1fr;grid-template-rows: repeat(3, 33% [row-start]);justify-items: left;gap : 5px;align-items:center;justify-content:stretch;" >
-					<div style="grid-column: 1/2; grid-row: 1/2">Παλιός Κωδικός Πρόσβασης</div><div style="width:100%;grid-column: 2/3; grid-row: 1/2"><input class="form-control" type="password" name="oldPwd" id="oldPwd" /></div><div style="grid-column: 3/4; grid-row: 1/2"><i id="showOldPassBtn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i></div>			
-					<div style="grid-column: 1/2; grid-row: 2/3">Νέος Κωδικός Πρόσβασης</div><div style="width:100%;grid-column: 2/3; grid-row: 2/3"><input  class="form-control" type="password" name="newPwd" id="newPwd" /></div><div style="grid-column: 3/4; grid-row: 2/3"><i id="showNewPass1Btn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i></div>
-					<div style="grid-column: 1/2; grid-row: 3/4">Επανεισαγωγή Νέου Κωδικού Πρόσβασης</div><div style="width:100%;grid-column: 2/3; grid-row: 3/4"><input  class="form-control" type="password"  name="newPwd2" id="newPwd2" /></div><div style="grid-column: 3/4; grid-row: 3/4"><i id="showNewPass2Btn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i></div>
-				</div>			
-				<button style="margin-top:1em;" class="btn btn-success btn-sm" id="setPwd" >Αλλαγή</button>
-			</div>
-			<div class="modal-footer">
-				<div class="otherContentFooter">
-				</div>
-				<button id="closePasswordModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-			</div>
+`
+<dialog id="passwordModal" class="customDialog" style="width:70%;"> 
+	<div class="customDialogContentTitle">
+		<span style="font-weight:bold;">Αλλαγή κωδικού</span>
+		<div class="topButtons" style="display:flex;gap: 7px;">
+			<button id="setPwd" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
+			<button class="isButton " name="closePasswordModalBtn" id="closePasswordModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 		</div>
 	</div>
+	<div class="customDialogContent" style="margin-top:10px;">
+		<form id="passwordModalForm">
+			<div id="passwordForm">
+				<div class="formRow">    
+					<label class="formItem" for="oldPwd">Παλιός Κωδικός Πρόσβασης*</label>
+					<input class="formInput" required=""  type="text"  id="oldPwd" ></input>
+					<i id="showOldPassBtn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
+				</div>
+				<div class="formRow">    
+					<label class="formItem" for="newPwd" >Νέος Κωδικός Πρόσβασης*</label>
+					<input class="formInput" required=""  type="text"  id="newPwd">
+					<i id="showNewPass1Btn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
+				</div>
+				<div class="formRow">   
+					<label class="formItem" for="newPwd2">Επανεισαγωγή Νέου Κωδικού Πρόσβασης*</label>
+					<input class="formInput" required=""  type="text"  id="newPwd2">
+					<i id="showNewPass2Btn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
+				</div>
+			</div>
+		</form>
 	</div>
-</div>`;
+</dialog>`;
 
 const addProtocolModal = 
 	`<dialog id="addProtocolRequestDialog" style="min-width:60%;max-width:80%;">
@@ -121,7 +130,6 @@ const chargesTable = `<table id="chargesTable" class="table">
 
 const protocolRecordModal = 
 	`<dialog id="protocolRecordDialog">
-
 	</dialog>`;
 
 export function getPage(){
@@ -254,8 +262,15 @@ function pagesCommonCode(){
 	//document.querySelector("#userRoles").innerHTML = basicBtns;
 	document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
 	document.querySelector("#myNavBarLogoContent").innerHTML += pwdBtn;
-	document.querySelector("#myNavBarLogoContent").innerHTML += '<div><button class="btn btn-warning btn-sm" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
+	document.querySelector("#myNavBarLogoContent").innerHTML += logoutBtn;
 	document.querySelector("#logoutBtn").addEventListener("click",logout);	
+	document.querySelector("#changePwdBtn").addEventListener("click",()=>{
+		document.querySelector("#passwordModal").showModal();
+	});	
+	document.querySelector("#closePasswordModalBtn").addEventListener("click",()=>{
+		document.querySelector("#passwordModal").close();
+	});	
+	
 	
 	document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
 	document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
@@ -590,45 +605,16 @@ function showPass(field) {
 }
 
 async function getProtocolYears(){
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-
-	let init = {method: 'GET', headers : myHeaders};
-	const res = await fetch("/api/getProtocolYears.php",init);
-	if (!res.ok){
-		const resdec = res.json();
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ==1){
-				getProtocolYears();
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else if (res.status==500){
-			alert("Πρόβλημα στο σέρβερ, επικοινωνήστε με το διαχειριστή του συστήματος");
-		}
-		else{
-			alert("Σφάλμα!!!");
-		}
+	const res = await runFetch("/api/getProtocolYears.php", "GET", null);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
-		return res.json();
+	else{
+		return  res.result;
 	}
 }
 
 async function changePassword(){
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
 
 	let strongPassword = new RegExp('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.{8,})')
 	const oldPwdInput = document.getElementById('oldPwd');
@@ -653,36 +639,15 @@ async function changePassword(){
 	formData.append("newPwd", newPwdInput.value);
 	formData.append("newPwd2", newPwd2Input.value);
 
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/changePassword.php",init);
-	if (!res.ok){
-		const resdec = res.json();
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ==1){
-				changePassword();
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else{
-			alert("Σφάλμα!!!");
-		}
+	const res = await runFetch("/api/changePassword.php", "POST", formData);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
+	else{
 		oldPwdInput.value ="";
 		newPwdInput.value ="";
 		newPwd2Input.value ="";
-		const myModalEl = document.querySelector("#passwordModal");
-		const modal = bootstrap.Modal.getInstance(myModalEl);
-		modal.hide();
+		document.querySelector("#passwordModal").close();
 	}
 }
 
@@ -705,54 +670,27 @@ function updateRolesUI(){
 }
 
 async function fixRole(){
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-
-	//const comment = document.getElementById('signText').value;
-	let formData = new FormData();
-	// signDocument(aa, isLast=0, objection=0)
-	formData.append("role", role);
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/fixSessionRoles.php",init);
-	if (!res.ok){
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ==1){
-				fixRole();
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");
-			}
-		}
-		else if (res.status==403){
-			alert("Σφάλμα στην αλλαγή ρόλου");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else{
-			alert("Σφάλμα!!!");
-		}
+	const res = await runFetch("/api/fixSessionRoles.php", "POST", null);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
-		if (res.status ==  200){
+	else{
+		if (res.role ==  localStorage.getItem("currentRole")){
 			console.log("ο ρόλος δεν έχει αλλάξει");
 		}
-		else if (res.status ==  201){
+		else {
 			window.location.reload();
 			console.log("επιτυχής αλλαγή ιδιότητας στο SESSION. Θα καταργηθεί σύντομα!");	
 		}
+		return  res.result;
 	}
-
 }
 
 async function setRole(index){
+	localStorage.setItem("currentRole",index);	
 	//Προσοχή να αφαιρεθεί!!!!!!!!!!!!!!
 	await fixRole(); // Θα αφαιρεθεί όταν απαλλαγεί και το πρωτόκολλο από τα  SESSION. Αλλάζει το χρήστη στο SESSION
-	// -----------------------------------------------------------
-
-	localStorage.setItem("currentRole",index);									
+	// -----------------------------------------------------------								
 	updateRolesUI();
     switch (page){
         case Pages.SIGNATURE :
@@ -888,8 +826,7 @@ async function acceptPeddingReq(aa){
 	const formData = new FormData();
 	formData.append("aa", aa);
 	formData.append("name", name);
-	
-	//let init = {method: 'POST', headers : myHeaders, body : formData};
+
 	const res = await runFetch("/api/acceptPeddingReq.php", "POST", formData);
 	if (!res.success){
 		alert(res.msg);

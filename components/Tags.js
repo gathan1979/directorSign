@@ -1,5 +1,4 @@
-import refreshToken from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const tagsContent = `
     <style>
@@ -165,36 +164,13 @@ class Tags extends HTMLElement {
 
     async getTags(protocolNo, protocolYear){
         this.shadow.querySelector("#tagsBody").innerHTML = "";
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({protocolNo, currentYear : protocolYear});
-        
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getTags.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.getTags(protocolNo);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        let urlparams = new URLSearchParams({protocolNo, currentYear : this.protocolYear});
+        const res = await runFetch("/api/getTags.php", "GET", urlparams);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
+            const resdec = res.result;
             this.shadow.getElementById("tagsTableTitleBadge").textContent = resdec.length;
 
             for (let key1=0;key1<resdec.length;key1++) {
@@ -210,96 +186,36 @@ class Tags extends HTMLElement {
     }
 
     async removeTag(aaField){   
-        const res = confirm("Πρόκειται να διαγράψετε μια ετικέτα");
-        if (res == true) {  
-            const {jwt,role} = getFromLocalStorage();
-            const myHeaders = new Headers();
-            myHeaders.append('Authorization', jwt);
+        const dialogRes = confirm("Πρόκειται να διαγράψετε μια ετικέτα");
+        if (dialogRes == true) {  
             const formdata = new FormData();
             formdata.append('aaField', aaField);
             formdata.append('currentYear', this.protocolYear);
-            formdata.append('role', role);
-            
-            let init = {method: 'POST', headers : myHeaders, body : formdata};
-            const res = await fetch("/api/removeTag.php",init);
-            if (!res.ok){
-                const resdec = res.json();
-                if (res.status ==  400){
-                    alert(resdec['message']);
-                }
-                else if (res.status ==  401){
-                    const resRef = await refreshToken();
-                    if (resRef ==1){
-                        this.removeTag(aaField);
-                    }
-                    else{
-                        alert("σφάλμα εξουσιοδότησης");
-                    }
-                }
-                else if (res.status==403){
-                    alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-                }
-                else if (res.status==404){
-                    alert("το αρχείο δε βρέθηκε");
-                }
-                else if (res.status==500){
-                    alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-                }
-                else{
-                    alert("Σφάλμα!!!");
-                }
+
+            const res = await runFetch("/api/removeTag.php", "POST", formdata);
+            if (!res.success){
+                alert(res.msg);
             }
             else{
-                const resdec = res.json();
-                console.log(res['message']);
+                const resdec = res.result();
                 await this.getTags(this.protocolNo, this.protocolYear);
             }
         }
     }
    
     async saveTags(protocolNo, protocolYear){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
 
         const formdata = new FormData();
         formdata.append('protocolNo',protocolNo);
         formdata.append('currentYear',protocolYear);
         formdata.append('tagsString',this.shadow.querySelector("#insertTagsField").value);
-        formdata.append('role',role);
-        
-        let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/saveTags.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  400){
-                alert(resdec['message']);
-            }
-            else if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.saveTags();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+
+        const res = await runFetch("/api/saveTags.php", "POST", formdata);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = res.json();
-            console.log(res['message']);
+            const resdec = res.result;
             this.shadow.querySelector("#addTagsModal").close();
             this.shadow.querySelector("#insertTagsField").value= "";
             await this.getTags(this.protocolNo, this.protocolYear);
@@ -373,36 +289,12 @@ class Tags extends HTMLElement {
     }
 
     async searchSimilar(tag){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({tag,  currentYear : this.protocolYear});
-        
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/searchSimilarTags.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.searchSimilar(tag);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        const res = await runFetch("/api/searchSimilarTags.php", "GET", null);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
+            const resdec = res.result;
             return resdec;
         }    
     }

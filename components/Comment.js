@@ -1,5 +1,4 @@
-import refreshToken from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const commentContent = `    
 
@@ -71,35 +70,16 @@ class Comment extends HTMLElement {
         this.shadow.querySelector("#insertCommentField").value = "";
         this.shadow.querySelector("#commentsTable tbody").innerHTML = "";
         this.shadow.querySelector("#commentsSpinner").display = "inline-block"; 
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({protocolNo, role, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getComments.php?"+urlparams,init);
-        if (!res.ok){
+      
+        let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
+
+        const res = await runFetch("/api/getComments.php", "GET", urlparams);
+        if (!res.success){
+            alert(res.msg);
             this.shadow.querySelector("#commentsSpinner").display = "none"; 
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.loadComments(protocolNo, active);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
         }
         else{
-            const resdec = await res.json();
+            const resdec = res.result;
             this.shadow.querySelector("#commentsSpinner").display = "none"; 
             this.shadow.querySelector("#commentTableTitleBadge").textContent = resdec.length;
             let html = "";
@@ -124,39 +104,17 @@ class Comment extends HTMLElement {
     async removeComment (protocolNo, protocolYear, aa){
         var r = confirm("Πρόκειται να διαγράψετε ενα σχόλιο");
         if (r !== true) {
-            //console.log(protocolNo, " - ", aa);
             return;
         }
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
         let formData = new FormData();
         formData.append("aaField",aa);
         formData.append("protocolNo",protocolNo);
         formData.append("protocolYear",protocolYear);
-        formData.append("role",role);
-        let init = {method: 'POST', headers : myHeaders, body : formData};
-        const res = await fetch("/api/removeComment.php", init);
-        if (!res.ok){
+
+        const res = await runFetch("/api/removeComment.php", "POST", formData);
+        if (!res.success){
+            alert(res.msg);
             this.shadow.querySelector("#commentsSpinner").display = "none"; 
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.removeComment(protocolNo, aa);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
         }
         else{
             this.loadComments(this.protocolNo,1);
@@ -164,89 +122,20 @@ class Comment extends HTMLElement {
     }
 
     async saveComment(protocolNo, protocolYear, comment){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
         let formData = new FormData();
         formData.append("commentField",comment);
         formData.append("protocolNo",protocolNo);
         formData.append("protocolYear",protocolYear);
-        formData.append("role",role);
-        let init = {method: 'POST', headers : myHeaders, body : formData};
-        const res = await fetch("/api/removeComment.php", init);
-        if (!res.ok){
-           // this.shadow.querySelector("#commentsSpinner").display = "none"; 
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.saveComment(protocolNo, comment);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+
+        const res = await runFetch("/api/saveComment.php", "POST", formData);
+        if (!res.success){
+            alert(res.msg);
+            this.shadow.querySelector("#commentsSpinner").display = "none"; 
         }
         else{
-          //  this.shadow.querySelector("#commentsSpinner").display = "none"; 
             this.loadComments(this.protocolNo,1);
         }    
     }
-
-
-    // async saveComment(aaUser){
-    //     const comment = this.shadow.getElementById("insertCommentField").value;
-    //     $.ajax({
-    //            type: "post",
-    //            data: {"postData" : selectedIndex, "commentField": comment,"aaUser": aaUser },
-    //            url: "saveComment.php",
-    //            success: function(msg){
-    //                 //alert(msg);
-    //                if (msg="success"){
-    //                    $(".message").html("επιτυχής καταχώρηση");
-    //                     $("#alert").show();
-    //                }
-    //                else{
-    //                    $(".message").html("σφάλμα στην καταχώρηση");
-    //                     $("#alert1").show();
-    //                }
-    //                loadComments(1);
-    //            }
-    //     });	
-    // }
-
-    // async removeComment (aa){
-    //     var r = confirm("Πρόκειται να διαγράψετε ενα σχόλιο");
-    //     if (r == true) {
-    //             $.ajax({
-    //             type: "post",
-    //             data: {"aa" : aa},
-    //             url: "removeComment.php",
-    //             success: function(msg){
-    //                     console.log(msg);
-    //                 if (msg=="success"){
-    //                     $(".message").html("επιτυχής διαγραφή");
-    //                         $("#alert").show();
-    //                 }
-    //                 else{
-    //                     $(".message").html(msg);
-    //                         $("#alertError").show();
-    //                 }
-    //                 loadComments(1); 
-    //                 }
-    //             });	  		
-    //     } else {
-            
-    //     }
-    // } 
 }
 
 customElements.define("record-comment", Comment);

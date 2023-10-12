@@ -1,5 +1,4 @@
-import refreshToken from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const historyContent = `    
     <div id="historyModule" style="display:flex;gap:10px;flex-direction:column;background: rgba(122, 160, 180, 0.2)!important;padding:10px;height:100%;">	
@@ -25,6 +24,7 @@ const historyContent = `
 
 class History extends HTMLElement {
     protocolNo;
+    protocolYear;
     shadow;
 
     constructor() {
@@ -35,6 +35,7 @@ class History extends HTMLElement {
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = historyContent;
         this.protocolNo = this.attributes.protocolNo.value;
+        this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         this.loadHistory(this.protocolNo);
     }
 
@@ -45,35 +46,15 @@ class History extends HTMLElement {
     async loadHistory(protocolNo){
         this.shadow.querySelector("#historyTable tbody").innerHTML = "";
         this.shadow.querySelector("#historySpinner").display = "inline-block"; 
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({postData : protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getHistory.php?"+urlparams,init);
-        if (!res.ok){
+        const urlparams = new URLSearchParams({postData: this.protocolNo, currentYear : this.protocolYear})
+
+        const res = await runFetch("/api/getHistory.php", "GET", urlparams);
+        if (!res.success){
+            alert(res.msg);
             this.shadow.querySelector("#historySpinner").display = "none"; 
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.loadHistory(protocolNo);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
         }
         else{
-            const resdec = await res.json();
+            const resdec = await res.result;
             this.shadow.querySelector("#historySpinner").display = "none"; 
             this.shadow.querySelector("#historyTableTitleBadge").textContent = resdec.length;
             let html = "";

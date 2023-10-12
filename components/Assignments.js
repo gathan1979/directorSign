@@ -1,6 +1,8 @@
 import refreshToken from "../modules/RefreshToken.js";
 import getFromLocalStorage from "../modules/LocalStorage.js";
 
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
+
 const assignmentsContent = `
     <style>
 
@@ -343,124 +345,46 @@ class Assignments extends HTMLElement {
 
 
     async getEmployeesTree(){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getEmployeesTree.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.getEmployeesTree();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        const res = await runFetch("/api/getEmployeesTree.php", "GET", null);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
+            const resdec = res.result;
             localStorage.setItem("employeesTree",JSON.stringify(resdec));
             return resdec;
         }    
     }
 
     async getCharges(protocolNo){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getCharges.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.getCharges(protocolNo);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        let urlparams = new URLSearchParams({protocolNo, currentYear : this.protocolYear});
+        const res = await runFetch("/api/getCharges.php", "GET", urlparams);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
-            return resdec;
+            return res.result;
         }    
     }
 
 
     async saveAssignments(){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-
         const formdata = new FormData();
         formdata.append('protocolNo',this.protocolNo);
         formdata.append('protocolYear',this.protocolYear);
         formdata.append('charges',JSON.stringify(this.selectedCharges));
         formdata.append('oldCharges',JSON.stringify(this.protocolCharges));
-        formdata.append('currentRole',role);
         
-        let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/saveAssignments.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  400){
-                alert(resdec['message']);
-            }
-            else if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.saveAssignments();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        const res = await runFetch("/api/saveAssignments.php", "POST", formdata);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
-            console.log(resdec['message']);
+            const resdec = res.result;
             if (resdec['success']){
-                alert("επιτυχής ανανέωση φακέλων αρχειοθέτησης");
-                this.shadow.getElementById('saveFoldersButton').classList.remove('active');
-                this.shadow.querySelector("#saveFoldersButton  i").classList.remove('faa-shake');
-                this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');
+                this.shadow.getElementById('saveAssignmentButton').classList.remove('active');
+                this.shadow.querySelector("#saveAssignmentButton  i").classList.remove('faa-shake');
+                this.shadow.querySelector("#saveAssignmentButton  i").classList.remove('animated');
             }
         }
     } 

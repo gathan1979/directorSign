@@ -1,5 +1,4 @@
-import refreshToken from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const foldersContent = `
     <style>
@@ -150,9 +149,9 @@ class Folders extends HTMLElement {
             folderList = JSON.parse(localStorage.getItem("folders"));
         }
         else{
-            folderList = await this.getFoldersList();
+            folderList = await this.getFoldersList(this.protocolNo, this.protocolYear);
         }
-        const foldersArrFromDb = await this.getFolders(this.protocolNo);
+        const foldersArrFromDb = await this.getFolders(this.protocolNo, this.protocolYear);
         this.protocolFolders = foldersArrFromDb.map((item)=>{return item.folderField;})
         console.log(this.protocolFolders);
         this.selectedFolders = [...this.protocolFolders];
@@ -189,74 +188,28 @@ class Folders extends HTMLElement {
     }
 
 
-    async getFoldersList(){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getFoldersList.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.getFoldersList();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+    async getFoldersList(protocolNo, protocolYear){
+        let urlparams = new URLSearchParams({protocolNo, currentYear : protocolYear});
+        const res = await runFetch("/api/getFoldersList.php", "GET", urlparams);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
+            const resdec = res.result;
             localStorage.setItem("folders",JSON.stringify(resdec));
             return resdec;
         }    
     }
 
-    async getFolders(protocolNo){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getFolders.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.getFolders(protocolNo);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+    async getFolders(protocolNo, protocolYear){
+        let urlparams = new URLSearchParams({protocolNo, currentYear : protocolYear});
+
+        const res = await runFetch("/api/getFolders.php", "GET", urlparams);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
-            return resdec;
+           return res.result;
         }    
     }
 
@@ -292,48 +245,17 @@ class Folders extends HTMLElement {
     }
 
     async saveFolders(){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-
         const formdata = new FormData();
         formdata.append('protocolNo',this.protocolNo);
         formdata.append('protocolYear',this.protocolYear);
         formdata.append('folders',JSON.stringify(this.selectedFolders));
-        formdata.append('currentRole',role);
-        
-        let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/saveFolders.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  400){
-                alert(resdec['message']);
-            }
-            else if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.saveFolders();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+
+        const res = await runFetch("/api/saveFolders.php", "POST", formdata);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
-            console.log(resdec['message']);
+            const resdec = res.result;
             if (resdec['success']){
                 alert("επιτυχής ανανέωση φακέλων αρχειοθέτησης");
                 this.shadow.getElementById('saveFoldersButton').classList.remove('active');

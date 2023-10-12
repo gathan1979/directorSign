@@ -1,5 +1,4 @@
-import refreshToken from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const relativeContent = `
     <div id="relativeModule" style="display:flex;gap:10px;flex-direction:column;background: rgba(122, 160, 126, 0.2)!important;padding:10px;height:100%;">
@@ -71,115 +70,22 @@ class Relative extends HTMLElement {
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
     }
 
-    disconnectedCallback() {
-    
+    disconnectedCallback() {    
     }
-
-
-    // async loadRelative(protocolNo, active){
-    //     this.shadow.querySelector("#insertRelativeField").value = "";
-    //     this.shadow.querySelector("#insertRelativeYearField").value = new Date().getFullYear;
-    //     this.shadow.querySelector("#relativeTableBody").innerHTML = "";
-
-    //     const {jwt,role} = getFromLocalStorage();
-    //     const myHeaders = new Headers();
-    //     myHeaders.append('Authorization', jwt);
-    //     let urlparams = new URLSearchParams({currentRole :role, protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        
-    //     let init = {method: 'GET', headers : myHeaders};
-    //     const res = await fetch("/api/getRelative.php?"+urlparams,init);
-    //     if (!res.ok){
-    //         const resdec = res.json();
-    //         if (res.status ==  401){
-    //             const resRef = await refreshToken();
-    //             if (resRef ==1){
-    //                 this.loadRelative(protocolNo,active);
-    //             }
-    //             else{
-    //                 alert("σφάλμα εξουσιοδότησης");
-    //             }
-    //         }
-    //         else if (res.status==403){
-    //             alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-    //         }
-    //         else if (res.status==404){
-    //             alert("το αρχείο δε βρέθηκε");
-    //         }
-    //         else{
-    //             alert("Σφάλμα!!!");
-    //         }
-    //     }
-    //     else{
-    //         const resdec = await res.json();
-    //         this.shadow.getElementById("relativeTableTitleBadge").textContent = resdec.length;
-
-    //         for (let key1=0;key1<resdec.length;key1++) {
-    //             let temp="";
-    //             const removeRelative = '<button style="margin-left:0.5em;" id="removeRelative_'+resdec[key1]['aaField']+'" class="btn btn-sm btn-danger"><i class="far fa-minus-square"></i></button>';
-    //            // const spacesString ='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
-    //             const subject = '&nbsp&nbsp&nbsp'+resdec[key1]["subject"].substring(0, 70)+ "...";
-    //             //const subjectRel = '&nbsp&nbsp&nbsp'+resdec[key1][5].substring(0, 50)+ "...";
-    //             //console.log(selectedIndex+" --- "+resdec[key1]['recordField']);
-    //             if (active){
-    //                 if (protocolNo == resdec[key1]['recordField']){
-    //                     temp = "<tr><td id='sxet"+resdec[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+resdec[key1]['relative']+');">'+resdec[key1]['relative']+"/"+resdec[key1]['year']+'</button>'+removeRelative+subject+"</td></tr>";
-    //                 }
-    //                 else{
-    //                     temp = "<tr><td id='sxet"+resdec[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+resdec[key1]['recordField']+');">'+resdec[key1]['recordField']+"/"+resdec[key1]['year']+'</button>'+removeRelative+subject+"</td></tr>";
-    //                 }
-    //             }else{
-    //                 if (protocolNo == resdec[key1]['recordField']){
-    //                     temp = "<tr><td id='sxet"+resdec[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+resdec[key1]['relative']+');">'+resdec[key1]['relative']+"/"+resdec[key1]['year']+'</button></td></tr>';
-    //                 }
-    //                 else{
-    //                     temp = "<tr><td id='sxet"+resdec[key1]['aaField']+"'>"+'<button class="btn btn-info btn-sm" type="button" onclick="showRelative('+resdec[key1]['recordField']+');">'+resdec[key1]['recordField']+"/"+resdec[key1]['year']+'</button></td></tr>';
-    //                 }
-    //             }
-    //             this.shadow.getElementById("relativeTableBody").innerHTML += temp;
-    //         }
-    //         for (let key1=0;key1<resdec.length;key1++) {
-    //             this.shadow.querySelector("#removeRelative_"+resdec[key1]['aaField']).addEventListener("click", ()=>{
-    //                     this.removeRelative(resdec[key1]['aaField']);
-    //             });
-    //         }
-    //     }    
-    // }
 
     async loadRelativeFull(protocolNo, active, deepSearch){
         this.shadow.querySelector("#insertRelativeField").value = "";
         this.shadow.querySelector("#insertRelativeYearField").value = new Date().getFullYear;
         this.shadow.querySelector("#relativeTableBody").innerHTML = "";
 
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({currentRole :role, protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear()), deepSearch});
+        let urlparams = new URLSearchParams({ protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear()), deepSearch});
         
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getRelativeFull.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.loadRelativeFull(protocolNo,active,deepSearch);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        const res = await runFetch("/api/getRelativeFull.php", "GET",urlparams);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
+            const resdec = res.result;
             this.shadow.getElementById("relativeTableTitleBadge").textContent = resdec.length;
 
             if (Array.isArray(resdec)){    
@@ -212,46 +118,16 @@ class Relative extends HTMLElement {
     async removeRelative (aaField){   
         const res = confirm("Πρόκειται να διαγράψετε ενα σχετικό έγγραφο");
         if (res == true) {  
-            const {jwt,role} = getFromLocalStorage();
-            const myHeaders = new Headers();
-            myHeaders.append('Authorization', jwt);
             const formdata = new FormData();
             formdata.append('relativeAAField', aaField);
             formdata.append('currentYear', this.protocolYear);
-            formdata.append('role',role);
-            
-            let init = {method: 'POST', headers : myHeaders, body : formdata};
-            const res = await fetch("/api/removeRelative.php",init);
-            if (!res.ok){
-                const resdec = res.json();
-                if (res.status ==  400){
-                    alert(resdec['message']);
-                }
-                else if (res.status ==  401){
-                    const resRef = await refreshToken();
-                    if (resRef ==1){
-                        this.removeRelative();
-                    }
-                    else{
-                        alert("σφάλμα εξουσιοδότησης");
-                    }
-                }
-                else if (res.status==403){
-                    alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-                }
-                else if (res.status==404){
-                    alert("το αρχείο δε βρέθηκε");
-                }
-                else if (res.status==500){
-                    alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-                }
-                else{
-                    alert("Σφάλμα!!!");
-                }
+
+            const res = await runFetch("/api/removeRelative.php", "POST",urlparams);
+            if (!res.success){
+                alert(res.msg);
             }
             else{
-                const resdec = res.json();
-                console.log(res['message']);
+                const resdec = res.result;
             }
         }
     }
@@ -259,54 +135,22 @@ class Relative extends HTMLElement {
     async saveRelative(){
         const relativeNo = this.shadow.getElementById("insertRelativeField").value;
         const relativeYear = this.shadow.getElementById("insertRelativeYearField").value;
-        console.log(relativeNo);
         if (relativeNo == "" || relativeNo == undefined || relativeYear == "" || relativeYear == undefined){
             alert("Εισάγετε σωστό σχετικό");
             return;
         }
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
 
         const formdata = new FormData();
         formdata.append('protocolNo',this.protocolNo);
         formdata.append('protocolYear',this.protocolYear);
         formdata.append('relativeNo',relativeNo);
         formdata.append('relativeYear',relativeYear);
-        formdata.append('role',role);
-        
-        let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/saveRelative.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  400){
-                alert(resdec['message']);
-            }
-            else if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.saveRelative();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+
+        const res = await runFetch("/api/saveRelative.php", "POST", formdata);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = res.json();
-            console.log(res['message']);
         }
     }
 

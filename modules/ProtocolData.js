@@ -129,8 +129,6 @@ function openProtocolRecord(subject,record,recordDate, event){
 						</tbody>
 					</table>
 				</div>
-
-				<!-- <?php include 'html/tags.php'?> -->
 			</div>	
 
 			<record-folders style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>

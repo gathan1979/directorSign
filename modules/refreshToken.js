@@ -26,6 +26,7 @@ export default async function refreshToken(){
 }
 
 export async function refreshTokenTest(){
+	console.log(isRunning+".. τρέχει ")
 	if (!isRunning){
 		peddingReq = new Promise((resolve,reject)=>{
 			isRunning = true;

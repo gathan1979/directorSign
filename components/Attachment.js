@@ -1,5 +1,4 @@
-import refreshToken, {refreshTokenTest} from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const content = 
 `<div  id="attachmentsDiv"  style="display:flex;gap:10px;flex-direction:column;height:100%;background: rgba(122, 130, 136, 0.2)!important;border-radius:5px;padding:10px;">
@@ -136,8 +135,7 @@ class Attachments extends HTMLElement {
 
     async uploadFile(uploadURL="/api/uploadProtocolAtt.php",protocolNo, year){
         this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
-        const {jwt,role} = getFromLocalStorage();	
-        console.log(this.shadow.getElementById('selectedFile'))
+        //console.log(this.shadow.getElementById('selectedFile'))
         const files = this.shadow.getElementById('selectedFile').files;
     
         if (files.length==0){
@@ -148,41 +146,13 @@ class Attachments extends HTMLElement {
 
         let data = new FormData();
         data.append('selectedFile', this.shadow.getElementById('selectedFile').files[0]);
-        data.append('currentRole',role);
         data.append('protocolNo',protocolNo);
         data.append('year',year);
-            
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let init = {method: 'POST', headers : myHeaders, body : data};
-        
-        const res = await fetch(uploadURL,init); 
-        if (!res.ok){
+
+        const res = await runFetch(uploadURL, "POST", data);
+        if (!res.success){
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-            if (res.status == 401){
-                const resRef = await refreshTokenTest();
-                if (resRef ===1){
-                    this.uploadFile(uploadURL="/api/uploadProtocolAtt.php",protocolNo, year);
-                }
-                else{
-                    alert("Σφάλμα εξουσιοδότησης");	
-                }
-            }
-            else if (res.status==400){
-                alert("Σφάλμα αιτήματος.Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πρωτόκολλο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
-            }
-            else {
-                alert("Σφάλμα");
-            }
+            alert(res.msg);
         }
         else {
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
@@ -195,52 +165,26 @@ class Attachments extends HTMLElement {
     async loadAttachments(level){ // το level να ελεγχθεί, δουλεύει πλέον με το localStorage, Εννοεί διαχειριστή στο 1 και απενεργοποίηση πλήκτρων στο -1
         this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
         this.shadow.querySelector("#attachments>tbody").innerHTML = "";
-        const {jwt,role} = getFromLocalStorage();	
+
         let fileArray = [];
         let year;
         let exdisk=0;
         this.shadow.querySelectorAll("#attachments tbody").innerHTML = "";
         this.shadow.querySelectorAll("#attachmentsTitle").innerHTML = '<div id="attachmentsSpinner" class="spinner-border" style="margin-left:1em;width: 1rem; height: 1rem;" role="status"></div>';
+        
         const loginData = JSON.parse(localStorage.getItem("loginData"));
-        const urlpar = new URLSearchParams({currentYear : this.protocolYear, protocolNo : this.protocolNo, currentRole : role});
+        const urlpar = new URLSearchParams({currentYear : this.protocolYear, protocolNo : this.protocolNo});
        
         if (level!=-1){
             level = +loginData.user.roles[localStorage.getItem("currentRole")].protocolAccessLevel;
         }
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let init = {method: 'GET', headers : myHeaders};
-        
-        const res = await fetch("/api/getAttachments.php?"+urlpar,init); 
-        if (!res.ok){
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-            if (res.status == 401){
-                const resRef = await refreshTokenTest();
-                if (resRef ===1){
-                    this.loadAttachments(level);
-                }
-                else{
-                    alert("Σφάλμα εξουσιοδότησης");	
-                }
-            }
-            else if (res.status==400){
-                alert("Σφάλμα αιτήματος.Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πρωτόκολλο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
-            }
-            else {
-                alert("Σφάλμα");
-            }
+
+        const res = await runFetch("/api/getAttachments.php", "GET", urlpar);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const result = await res.json(); 
+            const result =  res.result;     
             //this.shadow.querySelector("#attachmentsSpinner").remove();
             //$("#attachmentsSpinner").remove();
             const openInBrowser = ['pdf','PDF','html','htm','jpg','png'];
@@ -330,51 +274,23 @@ class Attachments extends HTMLElement {
                 }
             }
             this.shadow.getElementById('zipFileButton').addEventListener("click",()=>this.zipFiles());
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-        }		
+            this.shadow.querySelector("#attachmentSpinner").style.display = "none";	
+        }
     }
 
     async zipFiles(){
         this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
-        const {jwt,role} = getFromLocalStorage();	
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-
+       
         let formData  = new FormData();
         formData.append('protocolNo',this.protocolNo);
         formData.append('currentYear', this.protocolYear);
-        formData.append('role', role);
 
-        let newInit = {method: 'POST', headers : myHeaders, body : formData};
-        const res = await fetch("/api/zipFiles.php",newInit); 
-        if (!res.ok){
-            if (res.status == 401){
-                const resRef = await refreshTokenTest();
-                if (resRef ===1){
-                    this.zipFiles();
-                }
-                else{
-                    alert("Σφάλμα εξουσιοδότησης");	
-                }
-            }
-            else if (res.status==400){
-                alert("Σφάλμα αιτήματος.Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πρωτόκολλο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
-            }
-            else {
-                alert("Σφάλμα");
-            }
+        const res = await runFetch("/api/zipFiles.php", "POST", formData, FetchResponseType.blob);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const blob = await res.blob();
+            const blob = res.result;
             const href = URL.createObjectURL(blob);
             const aElement = document.createElement('a');
 			aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
@@ -390,132 +306,59 @@ class Attachments extends HTMLElement {
         const procc = confirm("Πρόκειται να διαγράψετε ενα συνημμένο έγγραφο");
         if ( procc == true) {
             this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
-            const {jwt,role} = getFromLocalStorage();	
             let data = new FormData();
             data.append('attAA',aa);
-            data.append('currentRole',role);
             data.append('protocolNo',protocolNo);
             data.append('year',year);
-                
-            const myHeaders = new Headers();
-            myHeaders.append('Authorization', jwt);
-            let init = {method: 'POST', headers : myHeaders, body : data};
-            const res = await fetch("/api/removeProtocolAtt.php",init); 
-            if (!res.ok){
-                this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-                if (res.status == 401){
-                    const resRef = await refreshTokenTest();
-                    if (resRef ===1){
-                        this.removeAttachment(aa,record,filename);
-                    }
-                    else{
-                        alert("Σφάλμα εξουσιοδότησης");	
-                    }
-                }
-                else if (res.status==403){
-                    window.open('unAuthorized.html', '_blank');
-                }
-                else if (res.status==404){
-                    alert("το αρχείο δε βρέθηκε");
-                }
-                else if (res.status==500){
-                    alert("Σφάλμα! Επικοινωνήστε με το διαχειριστή του συστήματος");
-                }
-                else{
-                    alert("Σφάλμα!!!");
-                }
+            const res = await runFetch("/api/removeProtocolAtt.php", "POST", data);
+            if (!res.success){
+                alert(res.msg);
             }
-            else {
+            else{
                 this.loadAttachments(1);
                 this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-               //loadHistory();
             }
         } 
     }
 
     async renameAttachment(aa,protocolNo, year){
         this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
-        const {jwt,role} = getFromLocalStorage();	
         let data = new FormData();
         data.append('attAA',aa);
-        data.append('currentRole',role);
         data.append('protocolNo',protocolNo);
         data.append('year',year);
         data.append('newAttName', this.shadow.querySelector('#newAttName').value);
-            
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let init = {method: 'POST', headers : myHeaders, body : data};
-        const res = await fetch("/api/renameProtocolAtt.php",init); 
-        if (!res.ok){
+
+        const res = await runFetch("/api/renameProtocolAtt.php", "POST", data);
+        if (!res.success){
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-            if (res.status == 401){
-                const resRef = await refreshTokenTest();
-                if (resRef ===1){
-                    this.renameAttachment(aa,record,filename);
-                }
-                else{
-                    alert("Σφάλμα εξουσιοδότησης");	
-                }
-            }
-            else if (res.status==403){
-                window.open('unAuthorized.html', '_blank');
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Σφάλμα! Επικοινωνήστε με το διαχειριστή του συστήματος");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+            alert(res.msg);
         }
-        else {
+        else{
             this.loadAttachments(1);
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
         }
     }
 
     async viewAttachment(attachmentNo, showProtocol=0){   // 15-12-2022 Θα αντικαταστήσει το παραπάνω ΚΑΙ ΤΟ VIEWATTACHMENTWITHPROTOCOL
-        console.log("show ...",showProtocol)
-        const loginData = JSON.parse(localStorage.getItem("loginData"));
         const currentYear = this.protocolYear;
         const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol});
-        const jwt = loginData.jwt;
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let init = {method: 'GET', headers : myHeaders};
-        
-        const res = await fetch("/api/viewAttachmentTest.php?"+urlpar,init); 
-        if (!res.ok){
-            if (res.status>=400 && res.status <= 401){
-                const resRef = await refreshTokenTest();
-                if (resRef ===1){
-                    this.viewAttachment(attachmentNo, showProtocol=0);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");	
-                }
-            }
-            else if (res.status==403){
-                window.open('unAuthorized.html', '_blank');
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
+
+        const res = await runFetch("/api/viewAttachmentTest.php", "GET", urlpar, FetchResponseType.blob);
+        if (!res.success){
+            alert(res.msg);
         }
-        else {
-            const dispHeader = res.headers.get('Content-Disposition');
+        else{
+            const dispHeader = res.responseHeaders.get('Content-Disposition');
             let filename = "tempfile.tmp";
             if (dispHeader !== null){
                 const parts = dispHeader.split(';');
-                console.log(parts);
+                //console.log(parts);
                 filename = parts[1].split('=')[1];
                 filename = filename.replaceAll('"',"");
             }
             const fileExtension = filename.split('.').pop();
-            const blob = await res.blob();
+            const blob = res.result;
             const href = URL.createObjectURL(blob);
             const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
             
@@ -566,33 +409,13 @@ class Attachments extends HTMLElement {
     }
 
     async getUsers(type){  // 1: active protocol users
-        const loginData = JSON.parse(localStorage.getItem("loginData"));
         const urlpar = new URLSearchParams({type});
-        const jwt = loginData.jwt;
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let init = {method: 'GET', headers : myHeaders};
-        
-        const res = await fetch("/api/getUsers.php?"+urlpar,init); 
-        if (!res.ok){
-            if (res.status>=400 && res.status <= 401){
-                const resRef = await refreshTokenTest();
-                if (resRef ===1){
-                    this.getUsers(attachmentNo, showProtocol=0);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");	
-                }
-            }
-            else if (res.status==403){
-                window.open('unAuthorized.html', '_blank');
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
+        const res = await runFetch("/api/getUsers.php", "GET", urlpar);
+        if (!res.success){
+            alert(res.msg);
         }
-        else {
-            this.users = await res.json();
+        else{
+            this.users = res.result; 
             //console.log(this.users);
         }
     }
