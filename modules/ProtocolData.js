@@ -1,56 +1,43 @@
-import refreshToken from "./RefreshToken.js";
-import getFromLocalStorage from "./LocalStorage.js";
 import {updateFilterStorage,createSearch} from "./Filter.js"
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 export let pagingStart = 0; 
 export let pagingSize = 100; 
 
 export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
+	console.log("εκτέλεση λήψης χρεώσεων")
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	document.querySelector("#myNavBar").classList.add("disabledDiv");
 	updateFilterStorage();
-	const {jwt,role} = getFromLocalStorage();
-	//const loginData = JSON.parse(localStorage.getItem("loginData"));
+	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentFilter = JSON.parse(localStorage.getItem("filter"));
 	const currentFilterAsArray = Object.entries(currentFilter);
 	const filtered = currentFilterAsArray.filter(([key, value]) => !(value==0 || value=="" || value==null));
+	console.log("a");
 	console.log(filtered);
 	const filteredObject = Object.fromEntries(filtered);
+	console.log("b");
+	console.log(filteredObject);
 
-	const  completeOblect= Object.assign({
-		role,
+	const customObject ={
 		customPagingStart,
 		customPagingSize,
-		//role : loginData.user.roles[localStorage.getItem("currentRole")].aa_role,
+		role : loginData.user.roles[localStorage.getItem("currentRole")].aa_role,
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
-	},filteredObject);
+	}
+	const  completeOblect= Object.assign(filteredObject ,customObject);
+	console.log("c");
+	console.log(completeOblect);
 	const urlpar = new URLSearchParams(completeOblect);
-	//const jwt = loginData.jwt;
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'GET', headers : myHeaders};
-	
-	const res = await fetch("/api/showTableData_test.php?"+urlpar,init); 
-	if (!res.ok){
+	console.log(urlpar)
+	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar);
+	if (!res.success){
+		alert(res.msg);
 		document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.remove("disabledDiv");
-		if (res.status == 401){
-			const refRes = await refreshToken();
-			if (refRes !==1){
-				alert("Σφάλμα ανανέωσης εξουσιοδότησης");
-			}
-			else{
-				getFilteredData(customPagingStart, customPagingSize);
-			}
-		}
-		else{
-			const error = new Error("unauthorized")
-			error.code = "400"
-			throw error;	
-		}
 	}
 	else{
-		const response = await res.json();
+		const response = res.result;
+		console.log("εκτέλεση λήψης χρεώσεων 1")
 		fillChargesTable(response);
 		document.querySelector("#recordsSpinner").style.display = 'none';
 		document.querySelector("#myNavBar").classList.remove("disabledDiv");
@@ -166,4 +153,44 @@ function openProtocolRecord(subject,record,recordDate, event){
 	document.querySelector("#editRecordBtn").addEventListener("click", ()=> document.querySelector("#editRecordModal").showModal());
 	document.querySelector("#publishToSiteBtn").addEventListener("click", () => publishToSite());
 	document.querySelector("#copyProtocolBtn").addEventListener("click", () => copyProtocol());
+}
+
+async function publishToSite(){
+	const formdata = new FormData();
+	formdata.append('protocolNo',protocolNo);
+	formdata.append('protocolYear',protocolYear);
+
+	const res = await runFetch("/api/publishToSite.php", "POST", formdata);
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		alert(res.msg);
+	}
+}
+
+async function copyProtocol(){
+	const formdata = new FormData();
+	formdata.append('protocolNo',protocolNo);
+	formdata.append('protocolYear',protocolYear);
+
+	const res = await runFetch("/api/copyProtocol.php", "POST", formdata);
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		const formdata2 = new FormData();
+        formdata2.append('protocolNo',res.baseProtocol);
+        formdata2.append('protocolYear', res.year);
+        formdata2.append('relativeNo', res.newProtocol);
+        formdata2.append('relativeYear', res.year);
+
+        const res2 = await runFetch("/api/saveRelative.php", "POST", formdata2);
+        if (!res2.success){
+            alert(res.msg+", "+res2.msg);
+        }
+        else{
+			alert(res.msg+", "+res2.msg);
+        }
+	}
 }

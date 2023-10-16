@@ -289,7 +289,8 @@ class Tags extends HTMLElement {
     }
 
     async searchSimilar(tag){
-        const res = await runFetch("/api/searchSimilarTags.php", "GET", null);
+        let urlparams = new URLSearchParams({tag, currentYear : this.protocolYear});
+        const res = await runFetch("/api/searchSimilarTags.php", "GET", urlparams);
         if (!res.success){
             alert(res.msg);
         }

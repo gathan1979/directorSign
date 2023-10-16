@@ -401,6 +401,12 @@ async function createChargesUIstartUp(){
 					</div>
 				</div>`:``
 			}
+		</div>
+		<div id="topMenuAdminYearsDiv" class="flexHorizontal" style="align-items: center;align-self: stretch; padding: 5px; ">
+			<span id="upYearsBtn" style="cursor:pointer;"><i class="fas fa-chevron-up"></i></span>
+			<div id="protocolYears" ></div>	
+			<div id="selectedYear" style="position:absolute;transform-origin: top right; rotate:30deg;translate: 35px -15px;background-color: coral; padding:3px; font-size: 0.85em; border-radius:5px;">2023</div>	
+			<span id="downYearsBtn" style="cursor:pointer;"><i class="fas fa-chevron-down"></i></span>
 		</div>`;
 
 	const addRecordDialog =
@@ -423,16 +429,7 @@ async function createChargesUIstartUp(){
 				</button>
 				
 			</div>
-			<div id="yearDiv" class="yearDiv">
-				<div class="dropdown col-7">
-					<button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="yearDropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						
-					</button>
-					<div class="dropdown-menu" id="yearDropdownMenu" aria-labelledby="yearDropdownMenuButton">
-					
-					</div>
-				</div>
-			</div>
+			
 			<div id="removeNotificationsBtnDiv" >
 				<button class="btn btn-primary btn-sm" name="removeNotifications" id="removeNotifications" onclick="removeNotifications()" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
 				<i class="fab fa-stack-overflow"></i>
@@ -489,11 +486,38 @@ async function createChargesUIstartUp(){
 	updateBtnsFromFilter();
 	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);	
 	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
-	const protocolYears = getProtocolYears();
+	const protocolYearsRes = await getProtocolYears();
+	if (Array.isArray(protocolYearsRes.result.sort())){
+			const btn1 = `<button class="isButton extraSmall" data-year="${protocolYearsRes.result.at(-1)}">${protocolYearsRes.result.at(-1)}</button>`;
+			document.querySelector("#protocolYears").innerHTML += btn1;
+	}
+
 	let currentYear = null;
 	if (currentYear = localStorage.getItem(currentYear)){
-		yearDropdownMenuButton.innerHTML = "Έτος "+currentYear;
+		//
 	}
+	
+	if (document.querySelector('#downYearsBtn')){
+		document.querySelector('#downYearsBtn').addEventListener("click", ()=>{
+				const elem = document.querySelector('#protocolYears>button');
+				const index = protocolYearsRes.result.indexOf(elem.dataset.year);
+				const btn1 = `<button class="isButton extraSmall" data-year="${protocolYearsRes.result.at(index-1)}">${protocolYearsRes.result.at(index-1)}</button>`;
+				document.querySelector("#protocolYears").innerHTML += btn1;
+				document.querySelector("#protocolYears>button[data-year='"+elem.dataset.year+"']").remove();
+			
+		});
+	}
+
+	if (document.querySelector('#upYearsBtn')){
+		document.querySelector('#upYearsBtn').addEventListener("click", ()=>{
+			const elem = document.querySelector('#protocolYears>button');
+				const index = protocolYearsRes.result.indexOf(elem.dataset.year);
+				const btn1 = `<button class="isButton extraSmall" data-year="${protocolYearsRes.result.at(index-1)}">${protocolYearsRes.result.at(index-1)}</button>`;
+				document.querySelector("#protocolYears").innerHTML += btn1;
+				document.querySelector("#protocolYears>button[data-year='"+elem.dataset.year+"']").remove();
+		});
+	}
+
 	if (document.querySelector('#reqProtocolBtn')){
 		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
 			document.querySelector('#addProtocolRequestDialog').showModal();
@@ -748,7 +772,8 @@ export async function getSignedRecordsAndFill(){
 }
 
 export async function getChargesAndFill(){
-	const records = getFilteredData(pagingStart,pagingSize).then( res => {
+	console.log("κλήση χρεώσεων")
+	const records = await getFilteredData(pagingStart,pagingSize).then( res => {
 		//createSearch();
 	}, rej => {});			
 }
@@ -763,7 +788,7 @@ function logout(){
 async function getPeddingProtocolReqs(){	
 	const res = await runFetch("/api/getPeddingProtocolReqs.php", "GET", null);
 	if (!res.success){
-		alert(res.msg);
+		console.log(res.msg);
 	}
 	else{
 		//return res;

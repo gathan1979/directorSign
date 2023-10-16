@@ -64,7 +64,7 @@ class Relative extends HTMLElement {
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         //this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>this.loadRelativeFull(this.protocolNo,1,1));
-        this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>this.saveRelative());
+        this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>this.saveRelative(this.protocolNo,this.protocolYear));
         this.loadRelativeFull(this.protocolNo,1, true);
         this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
@@ -132,17 +132,21 @@ class Relative extends HTMLElement {
         }
     }
    
-    async saveRelative(){
-        const relativeNo = this.shadow.getElementById("insertRelativeField").value;
-        const relativeYear = this.shadow.getElementById("insertRelativeYearField").value;
+    async saveRelative(protocolNo, protocolYear, relativeNo=null, relativeYear=null){
+        if  (relativeNo == null){
+            relativeNo = this.shadow.getElementById("insertRelativeField").value;
+        } 
+        if (relativeYear == null){
+            relativeYear =  this.shadow.getElementById("insertRelativeYearField").value;
+        }
         if (relativeNo == "" || relativeNo == undefined || relativeYear == "" || relativeYear == undefined){
             alert("Εισάγετε σωστό σχετικό");
             return;
         }
 
         const formdata = new FormData();
-        formdata.append('protocolNo',this.protocolNo);
-        formdata.append('protocolYear',this.protocolYear);
+        formdata.append('protocolNo',protocolNo);
+        formdata.append('protocolYear',protocolYear);
         formdata.append('relativeNo',relativeNo);
         formdata.append('relativeYear',relativeYear);
 

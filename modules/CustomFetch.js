@@ -62,7 +62,7 @@ export default async function runFetch(url, method, params, responseType = Fetch
         case FetchResponseType.blob : result = await res.blob();break;
         case FetchResponseType.text : result = await res.text();break;
     }
-    const returnObj = {success: true, msg : "Επιτυχημένη κλήση", url, role, result : result, responseHeaders : res.headers};
+    const returnObj = {success: true, msg : "Επιτυχία αιτήματος", url, role, result : result, responseHeaders : res.headers};
     //console.log(returnObj);
     return returnObj;
 }
