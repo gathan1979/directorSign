@@ -9,7 +9,7 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	document.querySelector("#myNavBar").classList.add("disabledDiv");
 	updateFilterStorage();
-	const loginData = JSON.parse(localStorage.getItem("loginData"));
+
 	const currentFilter = JSON.parse(localStorage.getItem("filter"));
 	const currentFilterAsArray = Object.entries(currentFilter);
 	const filtered = currentFilterAsArray.filter(([key, value]) => !(value==0 || value=="" || value==null));
@@ -22,7 +22,6 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	const customObject ={
 		customPagingStart,
 		customPagingSize,
-		role : loginData.user.roles[localStorage.getItem("currentRole")].aa_role,
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
 	}
 	const  completeOblect= Object.assign(filteredObject ,customObject);
@@ -32,19 +31,46 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	console.log(urlpar)
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar);
 	if (!res.success){
-		alert(res.msg);
+		console.log(res.msg);
 		document.querySelector("#recordsSpinner").style.display = 'none';
 	}
 	else{
 		const response = res.result;
-		console.log("εκτέλεση λήψης χρεώσεων 1")
-		fillChargesTable(response);
+		console.log("εκτέλεση λήψης χρεώσεων 1");
 		document.querySelector("#recordsSpinner").style.display = 'none';
 		document.querySelector("#myNavBar").classList.remove("disabledDiv");
+		fillChargesTable(response);
 	}
 }
 
-export function fillChargesTable(response){
+export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
+	document.querySelector("#recordsSpinner").style.display = 'inline-block';
+	document.querySelector("#myNavBar").classList.add("disabledDiv");
+	updateFilterStorage();
+	
+	const completeOblect ={
+		customPagingStart,
+		customPagingSize,
+		allRecords: true,
+		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
+	}
+	const urlpar = new URLSearchParams(completeOblect);
+	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar);
+	if (!res.success){
+		console.log(res.msg);
+		document.querySelector("#recordsSpinner").style.display = 'none';
+	}
+	else{
+		const response = res.result;
+		console.log("εκτέλεση λήψης χρεώσεων 1");
+		document.querySelector("#recordsSpinner").style.display = 'none';
+		document.querySelector("#myNavBar").classList.remove("disabledDiv");
+		fillChargesTable(response, true);
+		
+	}
+}
+
+export function fillChargesTable(response, protocol = false){
 	const table = document.querySelector('#chargesTable>tbody');
 	table.innerHTML="";
 	const result = response.data;
@@ -77,8 +103,15 @@ export function fillChargesTable(response){
 		tableContent +="</tr>"
 	}
 	document.querySelector("#chargesTable>tbody").innerHTML = tableContent;
-	for (const record of result){
-		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], event));
+	if(!protocol){
+		for (const record of result){
+			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], event));
+		}
+	}
+	else{
+		for (const record of result){
+			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => document.querySelector('#requestProtocolAccessDialog').showModal());
+		}
 	}
 	createSearch();
 }

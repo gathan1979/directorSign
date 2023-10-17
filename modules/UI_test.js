@@ -2,13 +2,13 @@ import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js
 import {createActionsTemplate,getSigRecords, getSignedRecords}  from "./Records_test.js";
 import getFromLocalStorage from "./LocalStorage.js";
 import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
-import {getFilteredData} from "./ProtocolData.js";
+import {getFilteredData, getProtocolData} from "./ProtocolData.js";
 import refreshToken,{refreshTokenTest} from "./RefreshToken.js";
 import runFetch from "./CustomFetch.js";
 
 let loginData = null;
 let page = null;
-export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed'};
+export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed', PROTOCOL : "protocol"};
 Object.freeze(Pages);       
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
 const pwdBtn = '<button class="isButton" id="changePwdBtn" style="background-color: var(--bs-yellow);color:black;" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtnIcon"></i></button>';
@@ -80,7 +80,7 @@ const navBarDiv = `<div id="myNavBar">
 	<div  id="ipogegrammena" ><a>Διεκπεραιωμένα</a></div>
 		
 	<div id="xreoseis"><a><span id="protocolAppText"></span></a></div>	
-	<div id="protocolBookBtn"><a target="_blank" href="../nocc-1.9.8/protocol/protocolBook.php?tn=book">Πρωτόκολλο</a></div>
+	<div id="protocolBookBtn"><a>Πρωτόκολλο</a></div>
 	<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>-->
 	<!--<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>-->
 	<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
@@ -219,6 +219,7 @@ function pagesCommonCode(){
 			document.body.insertAdjacentHTML("beforeend",signTable);
 			document.querySelector("#ipogegrammena>a").classList.remove("active");
 			document.querySelector("#xreoseis>a").classList.remove("active");
+			document.querySelector("#protocolBookBtn>a").classList.remove("active");
 			document.querySelector("#prosIpografi>a").classList.add("active");
 			break;
 		case Pages.SIGNED :
@@ -226,14 +227,25 @@ function pagesCommonCode(){
 			document.querySelector("#ipogegrammena>a").classList.add("active");
 			document.querySelector("#xreoseis>a").classList.remove("active");
 			document.querySelector("#prosIpografi>a").classList.remove("active");
+			document.querySelector("#protocolBookBtn>a").classList.remove("active");
 			break;
 		case Pages.CHARGES :
 			document.body.insertAdjacentHTML("beforeend",chargesTable);
 			document.body.insertAdjacentHTML("beforeend",protocolRecordModal);
 			document.querySelector("#ipogegrammena>a").classList.remove("active");
-			document.querySelector("#xreoseis>a").classList.add("active");
 			document.querySelector("#prosIpografi>a").classList.remove("active");
+			document.querySelector("#protocolBookBtn>a").classList.remove("active");
+			document.querySelector("#xreoseis>a").classList.add("active");
 			break;
+		case Pages.PROTOCOL :
+			document.body.insertAdjacentHTML("beforeend",chargesTable);
+			document.body.insertAdjacentHTML("beforeend",protocolRecordModal);
+			document.querySelector("#ipogegrammena>a").classList.remove("active");
+			document.querySelector("#prosIpografi>a").classList.remove("active");
+			document.querySelector("#xreoseis>a").classList.remove("active");
+			document.querySelector("#protocolBookBtn>a").classList.add("active");
+			
+		break;
 		default :
 			alert("Σελίδα μη διαθέσιμη");
 			return;
@@ -274,7 +286,8 @@ function pagesCommonCode(){
 	
 	document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
 	document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
-	document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);			
+	document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);	
+	document.querySelector("#protocolBookBtn>a").addEventListener("click",createProtocolUIstartUp);				
 
 
 	//create Roles UI	
@@ -402,12 +415,10 @@ async function createChargesUIstartUp(){
 				</div>`:``
 			}
 		</div>
-		<div id="topMenuAdminYearsDiv" class="flexHorizontal" style="align-items: center;align-self: stretch; padding: 5px; ">
-			<span id="upYearsBtn" style="cursor:pointer;"><i class="fas fa-chevron-up"></i></span>
-			<div id="protocolYears" ></div>	
-			<div id="selectedYear" style="position:absolute;transform-origin: top right; rotate:30deg;translate: 35px -15px;background-color: coral; padding:3px; font-size: 0.85em; border-radius:5px;">2023</div>	
-			<span id="downYearsBtn" style="cursor:pointer;"><i class="fas fa-chevron-down"></i></span>
-		</div>`;
+		<year-selector id="yearSelectorDiv"></year-selector>
+		`;
+
+
 
 	const addRecordDialog =
 		`<dialog id="addRecordModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
@@ -486,37 +497,6 @@ async function createChargesUIstartUp(){
 	updateBtnsFromFilter();
 	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);	
 	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
-	const protocolYearsRes = await getProtocolYears();
-	if (Array.isArray(protocolYearsRes.result.sort())){
-			const btn1 = `<button class="isButton extraSmall" data-year="${protocolYearsRes.result.at(-1)}">${protocolYearsRes.result.at(-1)}</button>`;
-			document.querySelector("#protocolYears").innerHTML += btn1;
-	}
-
-	let currentYear = null;
-	if (currentYear = localStorage.getItem(currentYear)){
-		//
-	}
-	
-	if (document.querySelector('#downYearsBtn')){
-		document.querySelector('#downYearsBtn').addEventListener("click", ()=>{
-				const elem = document.querySelector('#protocolYears>button');
-				const index = protocolYearsRes.result.indexOf(elem.dataset.year);
-				const btn1 = `<button class="isButton extraSmall" data-year="${protocolYearsRes.result.at(index-1)}">${protocolYearsRes.result.at(index-1)}</button>`;
-				document.querySelector("#protocolYears").innerHTML += btn1;
-				document.querySelector("#protocolYears>button[data-year='"+elem.dataset.year+"']").remove();
-			
-		});
-	}
-
-	if (document.querySelector('#upYearsBtn')){
-		document.querySelector('#upYearsBtn').addEventListener("click", ()=>{
-			const elem = document.querySelector('#protocolYears>button');
-				const index = protocolYearsRes.result.indexOf(elem.dataset.year);
-				const btn1 = `<button class="isButton extraSmall" data-year="${protocolYearsRes.result.at(index-1)}">${protocolYearsRes.result.at(index-1)}</button>`;
-				document.querySelector("#protocolYears").innerHTML += btn1;
-				document.querySelector("#protocolYears>button[data-year='"+elem.dataset.year+"']").remove();
-		});
-	}
 
 	if (document.querySelector('#reqProtocolBtn')){
 		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
@@ -544,6 +524,10 @@ async function createChargesUIstartUp(){
 		});
 	}
 
+	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
+		const chargesRes = await getChargesAndFill(); 
+	})
+
 	if (+loginData.user.roles[cRole].protocolAccessLevel === 1){
 		const peddingReqs = await getPeddingProtocolReqs();
 		interPeddingReqs = setInterval(async ()=>{
@@ -555,6 +539,96 @@ async function createChargesUIstartUp(){
 		const chargesRes = await getChargesAndFill(); 
 	},60000)
 }
+
+
+
+async function createProtocolUIstartUp(){
+	removeIntervals();
+	console.log("protocol");
+	page = Pages.PROTOCOL;
+	pagesCommonCode();
+	document.querySelector('#showEmployeesBtn').style.display = "none"; 
+	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
+	let cRole = localStorage.getItem("currentRole");
+
+	const protocolExtraBtns = 
+		`<year-selector id="yearSelectorDiv"></year-selector>`;
+
+	
+	const chargesFilterMenuDiv = 
+	`<div id="chargesFilterMenu" class="flexVertical ">
+		<div id="topSettingsDiv" class="flexHorizontal" >	
+			<div id="recordChangesBtnDiv" >
+				<button class="btn btn-primary btn-sm" type="button" id="openChangesBtn" data-toggle="tooltip" data-original-title="Αλλαγές σε πρωτόκολλα">
+					<i class="fas fa-info"></i>
+				</button>
+				
+			</div>
+			<div id="filterBtnDiv" >
+				<button class="btn btn-primary btn-sm" type="button" id="openFilterBtn" data-toggle="tooltip" data-original-title="Φίλτρο">
+					<i class="fas fa-filter"></i>
+				</button>
+				
+			</div>
+			
+			<div id="removeNotificationsBtnDiv" >
+				<button class="btn btn-primary btn-sm" name="removeNotifications" id="removeNotifications" onclick="removeNotifications()" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
+				<i class="fab fa-stack-overflow"></i>
+				</button>
+			</div>
+
+		</div>
+		<div id="recentProtocolsDiv" class="col-lg-5 col-sm-12" >	
+		</div>
+	</div>`;
+
+	const changesFilterDiv= `<dialog id="changesDiv" class="customModal">
+						<div id="changesTitle" class="customTitle">
+							<div>Τελευταίες αλλαγές</div>
+							<div id="changesDatesDiv"> 
+								<button type="button" data-days="1" class="btn btn-warning btn-sm">1ημ.</button>
+								<button type="button" data-days="7" class="btn btn-warning btn-sm">7ημ.</button>
+								<button type="button" data-days="30" class="btn btn-warning btn-sm">30ημ.</button>
+							</div>
+							<div id="changesCloseButtonDiv">
+								<button id="changesCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+							</div>
+						</div>
+						<div id="changesContent"></div>
+						<div id="changesDetailsContent"></div>
+					</dialog>
+
+					<dialog id="filterDiv" class="customModal">
+						<div id="filterTitle" class="customTitle">
+							<div>Φίλτρο αναζήτησης</div>
+							<div id="filterCloseButtonDiv">
+								<button id="filterCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+							</div>
+						</div>
+						<div id="filterContent"></div>
+						<div id="filterApplyDiv"></div>
+					</dialog>`;
+
+	
+	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
+
+	createFilter(document.querySelector("#filterContent"));
+	updateBtnsFromFilter();
+	
+	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
+	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
+
+
+	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
+		const chargesRes = await getProtocolAndFill(); 
+	})
+
+	const chargesRes = await getProtocolAndFill(); 
+	interCharges = setInterval(async ()=>{
+		const chargesRes = await getProtocolAndFill(); 
+	},60000)
+}
+
 
 export async function createUIstartUp(){
 	removeIntervals();
@@ -628,15 +702,6 @@ function showPass(field) {
 	}
 }
 
-async function getProtocolYears(){
-	const res = await runFetch("/api/getProtocolYears.php", "GET", null);
-	if (!res.success){
-		alert(res.msg);
-	}
-	else{
-		return  res.result;
-	}
-}
 
 async function changePassword(){
 
@@ -774,6 +839,13 @@ export async function getSignedRecordsAndFill(){
 export async function getChargesAndFill(){
 	console.log("κλήση χρεώσεων")
 	const records = await getFilteredData(pagingStart,pagingSize).then( res => {
+		//createSearch();
+	}, rej => {});			
+}
+
+export async function getProtocolAndFill(){
+	console.log("κλήση χρεώσεων")
+	const records = await getProtocolData(pagingStart,pagingSize).then( res => {
 		//createSearch();
 	}, rej => {});			
 }
