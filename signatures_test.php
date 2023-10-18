@@ -22,6 +22,7 @@
 		<script type="module" src="components/EditRecord.js"></script>
 		<script type="module" src="components/AddRecord.js"></script>
 		<script type="module" src="components/RequestRecord.js"></script>
+		<script type="module" src="components/RequestRecordAccess.js"></script>
 		<script type="module" src="components/Tags.js"></script>
 		<script type="module" src="components/YearSelector.js"></script>
 		
@@ -35,24 +36,9 @@
 		<!--fontawesome-->
 				
 		<script type="module" >
-			import {createUIstartUp, getPage, getToSignRecordsAndFill, getSignedRecordsAndFill, getChargesAndFill} from "./modules/UI_test.js";
+			import {createUIstartUp, getPage, getToSignRecordsAndFill, getSignedRecordsAndFill, getChargesAndFill, getProtocolAndFill, Pages} from "./modules/UI_test.js";
 			createUIstartUp();
-			document.querySelector("#syncRecords").addEventListener("click", ()=>  { switch (getPage()){
-					case "signature" :
-						getToSignRecordsAndFill();
-						break;
-					case "signed" :
-						getSignedRecordsAndFill();
-						break;
-					case "charges" :
-						getChargesAndFill();
-						break;
-					default :
-						alert("Σελίδα μη διαθέσιμη");
-						return;
-					}
-				}	
-			)
+			
 		</script>
 	
 

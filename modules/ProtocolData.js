@@ -114,6 +114,7 @@ export function fillChargesTable(response, protocol = false){
 		}
 	}
 	createSearch();
+	//
 }
 
 function openProtocolRecord(subject,record,recordDate, event){

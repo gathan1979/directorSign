@@ -58,6 +58,11 @@ const addProtocolModal =
 		<record-request></record-request>
 	</dialog>`;
 
+const requestProtocolAccessModal = 
+	`<dialog id="requestProtocolAccessDialog" style="min-width:60%;max-width:80%;">
+		<record-request-access></record-request-access>
+	</dialog>`;
+
 const fileOpenModal = 
 	`<dialog id="fileOpenDialog">
 
@@ -190,7 +195,8 @@ function pagesCommonCode(){
 	document.body.insertAdjacentHTML("beforeend", fileOpenModal);
 	document.body.insertAdjacentHTML("beforeend", fileMoveModal);
 	document.body.insertAdjacentHTML("beforeend", addProtocolModal);
-
+	document.body.insertAdjacentHTML("beforeend", requestProtocolAccessModal);
+	
 	if (document.querySelector("#loadingDialog")){
 		document.querySelector("#loadingDialog").remove();
 	}
@@ -331,26 +337,25 @@ function pagesCommonCode(){
 	}
 	
 
-	document.querySelector("#syncRecords").addEventListener("click", ()=>  { 
-		switch (page){
-			case Pages.SIGNATURE:
-				getToSignRecordsAndFill();
-				break;
-			case Pages.SIGNED :
-				getSignedRecordsAndFill();
-				break;
-			case Pages.CHARGES :
-				getFilteredData();
-				break;
-			default :
-				alert("Σελίδα μη διαθέσιμη");
-				return;
+	document.querySelector("#syncRecords").addEventListener("click", ()=>  { switch (getPage()){
+		case Pages.SIGNATURE :
+			getToSignRecordsAndFill();
+			break;
+		case Pages.SIGNED :
+			getSignedRecordsAndFill();
+			break;
+		case Pages.CHARGES :
+			getChargesAndFill();
+			break;
+		case Pages.PROTOCOL :
+			getProtocolAndFill();
+			break;
+		default :
+			alert("Σελίδα μη διαθέσιμη");
+			break;
 		}
-	});
+	})
 
-	`<button id="fileOpenFromDialogBtn">Άνοιγμα</button>
-	<button id="fileSaveFromDialogBtn">Αποθήκευση</button>
-	<button id="fileCloseDialog">Κλείσιμο</button>`
 }
 
 function removeIntervals(){
@@ -552,8 +557,23 @@ async function createProtocolUIstartUp(){
 	let cRole = localStorage.getItem("currentRole");
 
 	const protocolExtraBtns = 
-		`<year-selector id="yearSelectorDiv"></year-selector>`;
-
+		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;">	
+		${
+			+loginData.user.roles[cRole].protocolAccessLevel?
+			``:
+			`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αίτημα Πρόσβασης</div>
+			<div class="flexHorizontal" style="padding:0px 5px;">
+				<button id="reqProtocolAccessBtn" name="reqProtocolAccessBtn" class="isButton" title="Aίτηση πρόσβασης" style="background-color:lightseagreen"><i class="fas fa-eye"></i></button>
+				<div>
+					<button class="isButton" style="background-color: var(--bs-orange);"> 
+						<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
+					</button>
+				</div>
+				
+			</div>`
+		}
+		</div>	
+		<year-selector id="yearSelectorDiv"></year-selector>`;
 	
 	const chargesFilterMenuDiv = 
 	`<div id="chargesFilterMenu" class="flexVertical ">
@@ -609,8 +629,22 @@ async function createProtocolUIstartUp(){
 						<div id="filterApplyDiv"></div>
 					</dialog>`;
 
-	
+	const peddingAccessequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal">
+		<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
+			<span style="font-weight:bold;">Αιτήματα πρόσβασης</span>
+			<div class="topButtons" style="display:flex;gap: 7px;">
+				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+			</div>
+		</div>
+		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);"></div>
+	</dialog>`;
+			
+			
+
+
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
+	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
+
 
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
@@ -618,10 +652,26 @@ async function createProtocolUIstartUp(){
 	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
 	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
 
+	document.querySelector("#reqProtocolAccessBtn").addEventListener("click", ()=>{
+		document.querySelector("#requestProtocolAccessDialog").showModal();
+	})
+
+	if (document.querySelector('#peddingAccessRequestsNo')){
+		document.querySelector('#peddingAccessRequestsNo').parentElement.addEventListener("click", ()=>{
+			document.querySelector('#peddingAccessRequestsModal').showModal();
+		});
+		document.querySelector('#peddingAccessReqsCloseBtn').addEventListener("click", ()=>{
+			document.querySelector('#peddingAccessRequestsModal').close();
+		});
+	}
 
 	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
 		const chargesRes = await getProtocolAndFill(); 
 	})
+
+	if (+loginData.user.roles[cRole].protocolAccessLevel !== 1){
+		const peddingAccessReqs = await getPeddingAccessProtocolReqs();
+	}
 
 	const chargesRes = await getProtocolAndFill(); 
 	interCharges = setInterval(async ()=>{
@@ -791,6 +841,9 @@ async function setRole(index){
 		case Pages.CHARGES :
 			getChargesAndFill();
 			break;
+		case Pages.PROTOCOL :
+			getProtocolAndFill();
+			break;
         default :
             alert("Σελίδα μη διαθέσιμη");
             return;
@@ -878,6 +931,42 @@ async function getPeddingProtocolReqs(){
 					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
 					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-plus-square"></i></button>';
 					document.querySelector("#peddingReqsRecords").innerHTML+= 
+						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
+						<div data-req="${elem.aa}" data-name="subjectField" >${elem.subjectField}</div>
+						<div data-req="${elem.aa}" data-name="toField" >${elem.toField}</div>
+						<div data-req="${elem.aa}" data-name="outSubjectField">${elem.outSubjectField}</div>
+						<div data-req="${elem.aa}" data-name="actionsField">${acceptReqBtn+rejectReqBtn}</div>`;
+				}
+			);
+			resdec.requests.forEach(elem => {
+				document.querySelector('[data-action="dismissReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => rejectPeddingReq(event.currentTarget.dataset.req));	
+				document.querySelector('[data-action="acceptReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => acceptPeddingReq(event.currentTarget.dataset.req));	
+			})
+		}
+	}
+}
+
+async function getPeddingAccessProtocolReqs(){	
+	const res = await runFetch("/api/getPeddingAccessProtocolReqs.php", "GET", null);
+	if (!res.success){
+		console.log(res.msg);
+	}
+	else{
+		//return res;
+		const resdec =  res.result;
+		document.querySelector("#peddingAccessRequestsNo").innerText = resdec.requests.length;
+		if(resdec.requests.length == 0){
+			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "gray";
+			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "gray";
+		}
+		else{
+			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "orange";
+			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "orange";
+			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</b></div><div><b>Θέμα</b></div><div><b>Προς</b></div><div><b>Θέμα Εξερχομένου</b></div><div><b>Ενέργειες</b></div>`;
+			resdec.requests.forEach(elem => {
+					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
+					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-plus-square"></i></button>';
+					document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
 						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
 						<div data-req="${elem.aa}" data-name="subjectField" >${elem.subjectField}</div>
 						<div data-req="${elem.aa}" data-name="toField" >${elem.toField}</div>
