@@ -1,5 +1,6 @@
 import runFetch from "../modules/CustomFetch.js";
 
+
 const addContent = `
     <style>
 
@@ -140,7 +141,7 @@ const addContent = `
     <link href="css/all.css" rel="stylesheet">
 
     <div class="customDialogContentTitle">
-        <span style="font-weight:bold;">Αίτημα πρόσβασης</span>
+        <span style="font-weight:bold;">Νέο αίτημα πρόσβασης</span>
         <div class="topButtons" style="display:flex;gap: 7px;">
             <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
             <button id="undoBtn" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
@@ -170,8 +171,10 @@ class RequestRecordAccess extends HTMLElement {
     shadow;
     changedProperties;
     emptyProperties = {
+        protocolField : "",
         causeField : ""
     };
+    timer = null;
 
     constructor() {
         super();
@@ -200,10 +203,44 @@ class RequestRecordAccess extends HTMLElement {
         //this.shadow.querySelector("#restoreButtonModal").addEventListener("click",()=>this.saveAssignments());
         this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>{ this.requestRecordAccess(); });
         this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.undoChanges());
+        this.shadow.querySelector("#protocolField").addEventListener("keyup", ()=>{
+           
+            console.log("hre 1")
+            let debounceFunc = this.debounce( async () =>  {
+                if(this.shadow.querySelector("#protocolField").value == "" ){
+                    this.shadow.querySelector("#searchProtocolRes").innerHTML = "";
+                    console.log("hre")
+                    return;
+                }
+                const res = await this.searchProtocol( this.shadow.querySelector("#protocolField").value);
+                this.shadow.querySelector("#searchProtocolRes").innerHTML = res.subject+" Eξερχ.:"+res.outSubject;
+            });
+            debounceFunc();
+        })
+    }
+
+    debounce(func, timeout = 500){
+        return (...args) => {
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => { func.apply(this, args); }, timeout);
+        };
     }
 
     disconnectedCallback() {
     
+    }
+
+    async searchProtocol(protocolNo, protocolYear = localStorage.getItem("currentYear")){
+       
+        const urlpar = new URLSearchParams({protocolNo, protocolYear});
+        const res = await runFetch("/api/getProtocolSubject.php", "GET", urlpar);
+        if (!res.success){
+            console.log(res.msg);
+        }
+        else{
+            console.log(res.result);
+            return  res.result.subjectFields;
+        }
     }
 
     updateChangedProperties(event){
@@ -238,6 +275,7 @@ class RequestRecordAccess extends HTMLElement {
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             element.value = "";
         });
+        this.shadow.querySelector("#searchProtocolRes").innerHTML = "";
         this.updateChangedProperties();
     }
 
@@ -261,6 +299,7 @@ class RequestRecordAccess extends HTMLElement {
                 this.shadow.getElementById('saveRecordBtn').classList.remove('active');
                 this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
                 this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
+                undoChanges();
                 this.parentElement.close();
             }
         }
