@@ -159,7 +159,6 @@ function pagesCommonCode(){
 		<div class="flexVertical" id="uploadBtnDiv">
 		</div>
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
-		<div id="userRoles" class="verticalFlexWithPadding"></div>
 		<div id="outerFilterDiv" class="flexHorizontal smallPadding">
 			<div id="generalFilterDiv" class="flexHorizontal ">
 				<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
@@ -281,6 +280,14 @@ function pagesCommonCode(){
 	document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
 	document.querySelector("#myNavBarLogoContent").innerHTML += pwdBtn;
 	document.querySelector("#myNavBarLogoContent").innerHTML += logoutBtn;
+
+	document.querySelector("#uploadBtnDiv").insertAdjacentHTML("afterend",`<role-selector id="roleSelectorDiv"></role-selector>`);
+
+	document.querySelector("#roleSelectorDiv").addEventListener("roleChangeEvent", async ()=>{
+		const res = await roleChanged();  // το await αφορά μόνο το SESSION
+	})
+
+
 	document.querySelector("#logoutBtn").addEventListener("click",logout);	
 	document.querySelector("#changePwdBtn").addEventListener("click",()=>{
 		document.querySelector("#passwordModal").showModal();
@@ -297,23 +304,21 @@ function pagesCommonCode(){
 
 
 	//create Roles UI	
-	document.querySelector("#userRoles").innerHTML = "";
-	//const cRole = localStorage.getItem("currentRole");
-	loginData.user.roles.forEach((role,index)=>{
-		let newRole;
-		if(index == cRole){
-			//newRole = `<div><button id="role_${index}_btn"  type="button" class="btn btn-success btn-sm">${role.roleName}</button></div>`;
-			newRole = `<div><button id="role_${index}_btn"  type="button" class="isButton active extraSmall">${role.roleName}</button></div>`;
-		}
-		else{
-			//newRole = `<div><button id="role_${index}_btn"  type="button" class="btn btn-secondary btn-sm">${role.roleName}</button></div>`;
-			newRole = `<div><button id="role_${index}_btn"  type="button" class="isButton extraSmall">${role.roleName}</button></div>`;
-		}
-		document.querySelector('#userRoles').innerHTML += newRole;
-	});  
-	loginData.user.roles.forEach((role,index)=>{
-			document.querySelector('#role_'+index+'_btn').addEventListener("click",()=>{setRole(index);}); 
-	})
+
+	// document.querySelector("#userRoles").innerHTML = "";
+	// loginData.user.roles.forEach((role,index)=>{
+	// 	let newRole;
+	// 	if(index == cRole){
+	// 		newRole = `<div><button id="role_${index}_btn"  type="button" class="isButton active extraSmall">${role.roleName}</button></div>`;
+	// 	}
+	// 	else{
+	// 		newRole = `<div><button id="role_${index}_btn"  type="button" class="isButton extraSmall">${role.roleName}</button></div>`;
+	// 	}
+	// 	document.querySelector('#userRoles').innerHTML += newRole;
+	// });  
+	// loginData.user.roles.forEach((role,index)=>{
+	// 		document.querySelector('#role_'+index+'_btn').addEventListener("click",()=>{setRole(index);}); 
+	// })
 
 	document.querySelector("#showOldPassBtn").addEventListener("click", ()=>showPass('oldPwd'));
 	document.querySelector("#showNewPass1Btn").addEventListener("click", ()=>showPass('newPwd'));
@@ -328,7 +333,7 @@ function pagesCommonCode(){
 	document.querySelector("#setPwd").addEventListener("click",changePassword);	
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
-	console.log("keyup listener added");
+	//console.log("keyup listener added");
 	if (document.querySelector('#showEmployeesBtn')){
 		document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
 	}
@@ -507,7 +512,7 @@ async function createChargesUIstartUp(){
 					<button class="isButton " name="peddingReqsCloseBtn" id="peddingReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 				</div>
 			</div>
-			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);"></div>
+			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 		</dialog>`;
 
 	const peddingAccessequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal">
@@ -517,7 +522,7 @@ async function createChargesUIstartUp(){
 				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 			</div>
 		</div>
-		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(2, 1fr);"></div>
+		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(2, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 	</dialog>`;
 			
 			
@@ -873,12 +878,12 @@ async function fixRole(){
 	}
 }
 
-async function setRole(index){
-	localStorage.setItem("currentRole",index);	
+async function roleChanged(){
+	//localStorage.setItem("currentRole",index);	24-10-23
 	//Προσοχή να αφαιρεθεί!!!!!!!!!!!!!!
 	await fixRole(); // Θα αφαιρεθεί όταν απαλλαγεί και το πρωτόκολλο από τα  SESSION. Αλλάζει το χρήστη στο SESSION
 	// -----------------------------------------------------------								
-	updateRolesUI();
+	//updateRolesUI();								24-10-23
     switch (page){
         case Pages.SIGNATURE :
             getToSignRecordsAndFill();
@@ -896,12 +901,11 @@ async function setRole(index){
             alert("Σελίδα μη διαθέσιμη");
             return;
     }
-	//getRecordsAndFill();
-	if (loginData === null){
-		window.location.href = "index.php";
-		alert("Δεν υπάρχουν στοιχεία χρήστη");
-	}
-	else{
+	// if (loginData === null){
+	// 	window.location.href = "index.php";
+	// 	alert("Δεν υπάρχουν στοιχεία χρήστη");
+	// }
+	//else{
 		//Πρόσβαση στο Πρωτόκολλο λεκτικό
 		let cRole = localStorage.getItem("currentRole");
 		if (cRole !== null){
@@ -920,7 +924,7 @@ async function setRole(index){
 				}
 			}
 		}
-	}	
+	//}	
 	//createUIstartUp();
 }
 

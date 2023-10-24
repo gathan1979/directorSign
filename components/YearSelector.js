@@ -115,7 +115,6 @@ const yearSelectorDiv = `
         <div id="topMenuAdminYearsDiv" class="flexHorizontal" style="align-items: center;align-self: stretch; padding: 5px; ">
 			<span id="upYearsBtn" style="cursor:pointer;"><i class="fas fa-chevron-up"></i></span>
 			<div id="protocolYears" ></div>	
-			<div id="selectedYear" style="position:absolute;transform-origin: top right; rotate:30deg;translate: 35px -15px;background-color: coral; padding:5px; font-size: 0.85em; border-radius:5px;border-width:4px;border-color:lightyellow;border-right-style:solid;">2023</div>	
 			<span id="downYearsBtn" style="cursor:pointer;"><i class="fas fa-chevron-down"></i></span>
 		</div>
     `;
@@ -139,20 +138,11 @@ class YearSelector extends HTMLElement {
                     currentYear = protocolYearsRes.result.at(-1);
                 }
                 localStorage.setItem("currentYear", currentYear);
-                this.shadow.querySelector("#selectedYear").innerHTML = currentYear;
-                const btn1 = `<button class="isButton extraSmall" data-year="${protocolYearsRes.result.at(-1)}">${protocolYearsRes.result.at(-1)}</button>`;
+                const btn1 = `<button class="isButton extraSmall" style="background-color: var(--bs-success);" data-year="${protocolYearsRes.result.at(-1)}">${protocolYearsRes.result.at(-1)}</button>`;
                 this.shadow.querySelector("#protocolYears").innerHTML += btn1;
         }
         this.shadow.querySelector("#protocolYears>button").addEventListener("click", (elem)=>{
-            this.shadow.querySelector("#selectedYear").classList.remove('faa-shake');
-            this.shadow.querySelector("#selectedYear").classList.remove('animated');
-            void  this.shadow.querySelector("#selectedYear").offsetWidth;
-            localStorage.setItem("currentYear", elem.currentTarget.dataset.year);
-            this.shadow.querySelector("#selectedYear").classList.add('faa-shake');
-            this.shadow.querySelector("#selectedYear").classList.add('animated');
-            this.shadow.querySelector("#selectedYear").innerHTML = localStorage.getItem("currentYear");
-            const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
-            this.dispatchEvent(yearChangeEvent);
+           
         })
 
         if (this.shadow.querySelector('#downYearsBtn')){
@@ -162,6 +152,9 @@ class YearSelector extends HTMLElement {
                     if (index !== 0){
                         this.shadow.querySelector("#protocolYears>button").dataset.year = protocolYearsRes.result.at(index-1);
                         this.shadow.querySelector("#protocolYears>button").textContent = protocolYearsRes.result.at(index-1);
+                        localStorage.setItem("currentYear", protocolYearsRes.result[index-1]);
+                        const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
+                        this.dispatchEvent(yearChangeEvent);
                     }
             });
         }
@@ -173,6 +166,9 @@ class YearSelector extends HTMLElement {
                     if (index !== (protocolYearsRes.result.length-1)){
                         this.shadow.querySelector("#protocolYears>button").dataset.year = protocolYearsRes.result.at(index+1);
                         this.shadow.querySelector("#protocolYears>button").textContent = protocolYearsRes.result.at(index+1);
+                        localStorage.setItem("currentYear", protocolYearsRes.result[index+1]);
+                        const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
+                        this.dispatchEvent(yearChangeEvent);
                     }
             });
         }

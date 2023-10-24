@@ -25,6 +25,7 @@
 		<script type="module" src="components/RequestRecordAccess.js"></script>
 		<script type="module" src="components/Tags.js"></script>
 		<script type="module" src="components/YearSelector.js"></script>
+		<script type="module" src="components/RoleSelector.js"></script>
 		
 		<link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
 		<script src="bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>
