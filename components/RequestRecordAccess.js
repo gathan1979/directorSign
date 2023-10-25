@@ -299,7 +299,7 @@ class RequestRecordAccess extends HTMLElement {
                 this.shadow.getElementById('saveRecordBtn').classList.remove('active');
                 this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
                 this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
-                undoChanges();
+                this.undoChanges();
                 this.parentElement.close();
             }
         }

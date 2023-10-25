@@ -18,6 +18,7 @@ let interPeddingReqs = null;
 let interCharges = null;
 let interToSign = null;
 let interSigned = null;
+let timer = null;
 
 
 const passwordModalDiv =
@@ -284,9 +285,11 @@ function pagesCommonCode(){
 	document.querySelector("#uploadBtnDiv").insertAdjacentHTML("afterend",`<role-selector id="roleSelectorDiv"></role-selector>`);
 
 	document.querySelector("#roleSelectorDiv").addEventListener("roleChangeEvent", async ()=>{
-		const res = await roleChanged();  // το await αφορά μόνο το SESSION
+		let debounceFunc = debounce( async () =>  {
+			const res = await roleChanged();  // το await αφορά μόνο το SESSION
+		});
+		debounceFunc();
 	})
-
 
 	document.querySelector("#logoutBtn").addEventListener("click",logout);	
 	document.querySelector("#changePwdBtn").addEventListener("click",()=>{
@@ -522,7 +525,7 @@ async function createChargesUIstartUp(){
 				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 			</div>
 		</div>
-		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(2, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
+		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(3, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 	</dialog>`;
 			
 			
@@ -570,7 +573,10 @@ async function createChargesUIstartUp(){
 	}
 
 	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
-		const chargesRes = await getChargesAndFill(); 
+		let debounceFunc = debounce( async () =>  {
+			const chargesRes = await getProtocolAndFill(); 
+		});
+		debounceFunc();
 	})
 
 	const peddingReqs = await getPeddingProtocolReqs();
@@ -689,7 +695,7 @@ async function createProtocolUIstartUp(){
 				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 			</div>
 		</div>
-		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(2, 1fr);"></div>
+		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(3, 1fr);align-items:center; justify-items:center;"></div>
 	</dialog>`;
 			
 			
@@ -705,9 +711,11 @@ async function createProtocolUIstartUp(){
 	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
 	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
 
-	document.querySelector("#reqProtocolAccessBtn").addEventListener("click", ()=>{
-		document.querySelector("#requestProtocolAccessDialog").showModal();
-	})
+	if(document.querySelector("#reqProtocolAccessBtn")){
+		document.querySelector("#reqProtocolAccessBtn").addEventListener("click", ()=>{
+			document.querySelector("#requestProtocolAccessDialog").showModal();
+		})
+	}
 
 	if (document.querySelector('#peddingAccessRequestsNo')){
 		document.querySelector('#peddingAccessRequestsNo').parentElement.addEventListener("click", ()=>{
@@ -719,7 +727,10 @@ async function createProtocolUIstartUp(){
 	}
 
 	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
-		const chargesRes = await getProtocolAndFill(); 
+		let debounceFunc = debounce( async () =>  {
+			const chargesRes = await getProtocolAndFill(); 
+		});
+		debounceFunc();
 	})
 
 	if (+loginData.user.roles[cRole].protocolAccessLevel !== 1){
@@ -881,51 +892,50 @@ async function fixRole(){
 async function roleChanged(){
 	//localStorage.setItem("currentRole",index);	24-10-23
 	//Προσοχή να αφαιρεθεί!!!!!!!!!!!!!!
-	await fixRole(); // Θα αφαιρεθεί όταν απαλλαγεί και το πρωτόκολλο από τα  SESSION. Αλλάζει το χρήστη στο SESSION
+	//await fixRole(); // Θα αφαιρεθεί όταν απαλλαγεί και το πρωτόκολλο από τα  SESSION. Αλλάζει το χρήστη στο SESSION
 	// -----------------------------------------------------------								
 	//updateRolesUI();								24-10-23
+
+	document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
+	document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
+	document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);	
+	document.querySelector("#protocolBookBtn>a").addEventListener("click",createProtocolUIstartUp);		
+
     switch (page){
         case Pages.SIGNATURE :
-            getToSignRecordsAndFill();
+            createUIstartUp();
             break;
         case Pages.SIGNED :
-            getSignedRecordsAndFill();
+            createSignedUIstartUp();
             break;
 		case Pages.CHARGES :
-			getChargesAndFill();
+			createChargesUIstartUp();
 			break;
 		case Pages.PROTOCOL :
-			getProtocolAndFill();
+			createProtocolUIstartUp();
 			break;
         default :
             alert("Σελίδα μη διαθέσιμη");
             return;
     }
-	// if (loginData === null){
-	// 	window.location.href = "index.php";
-	// 	alert("Δεν υπάρχουν στοιχεία χρήστη");
-	// }
-	//else{
-		//Πρόσβαση στο Πρωτόκολλο λεκτικό
-		let cRole = localStorage.getItem("currentRole");
-		if (cRole !== null){
-			if (+loginData.user.roles[cRole].protocolAccessLevel){
-				document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
-			}
-			else{
-				document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
-			}
-			if (+loginData.user.roles[cRole].privilege){
-				document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
-			}
-			else{
-				if(document.querySelector("#leaveBtn") !==null){
-					document.querySelector("#leaveBtn").remove();
-				}
+
+	let cRole = localStorage.getItem("currentRole");
+	if (cRole !== null){
+		if (+loginData.user.roles[cRole].protocolAccessLevel){
+			document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
+		}
+		else{
+			document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
+		}
+		if (+loginData.user.roles[cRole].privilege){
+			document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
+		}
+		else{
+			if(document.querySelector("#leaveBtn") !==null){
+				document.querySelector("#leaveBtn").remove();
 			}
 		}
-	//}	
-	//createUIstartUp();
+	}
 }
 
 export async function getToSignRecordsAndFill(){
@@ -963,8 +973,6 @@ function logout(){
 }
 
 async function getPeddingProtocolReqs(){	
-
-
 
 	let cRole = localStorage.getItem("currentRole");
 			
@@ -1026,10 +1034,11 @@ async function getPeddingAccessProtocolReqs(){
 		else{
 			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "orange";
 			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "orange";
-			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</b></div><div><b>Θέμα</b></div>`;
+			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Θέμα</b></div>`;
 			resdec.requests.forEach(elem => {
 					document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
 						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
+						<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.protocolField}</div>
 						<div data-req="${elem.aa}" data-name="causeField" >${elem.causeField}</div>`;
 				}
 			);
@@ -1075,4 +1084,11 @@ async function acceptPeddingReq(aa){
 	else{
 		const chargesRes = await getChargesAndFill(); 
 	}
+}
+
+function debounce(func, timeout = 1000){
+	return (...args) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => { func.apply(this, args); }, timeout);
+	};
 }
