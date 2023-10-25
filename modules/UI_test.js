@@ -94,7 +94,7 @@ const navBarDiv = `<div id="myNavBar">
 
 
 
-const signTable = `<table id="dataToSignTable" class="table">
+const signTable = `<table id="dataToSignTable" class="table" style="font-size:0.9em;">
 	<thead>
 	<tr>
 		<th id="filename" class="text-right">Έγγραφο <button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i></button><div style="margin-left:1em;display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
@@ -111,7 +111,7 @@ const signTable = `<table id="dataToSignTable" class="table">
 	</tbody>
 	</table>`;
 
-const chargesTable = `<table id="chargesTable" class="table">
+const chargesTable = `<table id="chargesTable" class="table" style="font-size:0.9em;">
 	<thead>
 	<tr>
 		<th id="chargesTableAA" class="text-right" style="width:10%">AA <button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i></button><div style="margin-left:1em;display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
@@ -515,7 +515,7 @@ async function createChargesUIstartUp(){
 					<button class="isButton " name="peddingReqsCloseBtn" id="peddingReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 				</div>
 			</div>
-			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
+			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(6, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 		</dialog>`;
 
 	const peddingAccessequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal">
@@ -525,7 +525,7 @@ async function createChargesUIstartUp(){
 				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 			</div>
 		</div>
-		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(3, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
+		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 	</dialog>`;
 			
 			
@@ -695,7 +695,7 @@ async function createProtocolUIstartUp(){
 				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 			</div>
 		</div>
-		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(3, 1fr);align-items:center; justify-items:center;"></div>
+		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items:center;font-size: 0.85em;"></div>
 	</dialog>`;
 			
 			
@@ -983,15 +983,15 @@ async function getPeddingProtocolReqs(){
 	else{
 		//return res;
 		const resdec =  res.result;
-		document.querySelector("#peddingRequestsNo").innerText = resdec.requests.length;
 		if(resdec.requests.length == 0){
 			document.querySelector("#peddingRequestsNo").parentElement.style.backgroundColor = "gray";
 			document.querySelector("#peddingRequestsNo").style.backgroundColor = "gray";
 		}
 		else{
+			let countActive = 0;
 			document.querySelector("#peddingRequestsNo").parentElement.style.backgroundColor = "red";
 			document.querySelector("#peddingRequestsNo").style.backgroundColor = "red";
-			document.querySelector("#peddingReqsRecords").innerHTML = `<div><b>Αίτημα από</b></div><div><b>Θέμα</b></div><div><b>Προς</b></div><div><b>Θέμα Εξερχομένου</b></div><div><b>Ενέργειες</b></div>`;
+			document.querySelector("#peddingReqsRecords").innerHTML = `<div><b>Αίτημα από</b></div><div><b>Θέμα</b></div><div><b>Προς</b></div><div><b>Θέμα Εξερχομένου</b></div><div>Ημερ.</div><div><b>Ενέργειες</b></div>`;
 			resdec.requests.forEach(elem => {
 					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
 					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-plus-square"></i></button>';
@@ -999,12 +999,33 @@ async function getPeddingProtocolReqs(){
 						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
 						<div data-req="${elem.aa}" data-name="subjectField" >${elem.subjectField}</div>
 						<div data-req="${elem.aa}" data-name="toField" >${elem.toField}</div>
-						<div data-req="${elem.aa}" data-name="outSubjectField">${elem.outSubjectField}</div>`;
+						<div data-req="${elem.aa}" data-name="outSubjectField">${elem.outSubjectField}</div>
+						<div data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;
+						let statusText = "";
 						if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
 							document.querySelector("#peddingReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${acceptReqBtn+rejectReqBtn}</div>`;
 						}
 						else{
-							document.querySelector("#peddingReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField"></div>`;
+							switch(+elem.active){
+								case -1 : statusText= "Απορρίφθηκε";break;
+								case 0 : statusText= "Εγκρίθηκε";break;
+								case 1 : statusText= "Εκκρεμότητα";break;
+							}
+							document.querySelector("#peddingReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${statusText}</div>`;
+						}
+						const protDiv=document.querySelector(`[data-name="subjectField"][data-req="${elem.aa}"]`);
+						protDiv.style.padding = "5px";
+						protDiv.style.color = "black";	
+						if(elem.active==0){
+							protDiv.style.backgroundColor = "green";
+							protDiv.style.color = "white";	
+						}
+						else if(elem.active==1){
+							protDiv.style.backgroundColor = "orange";	
+							countActive++;	
+						}
+						else if(elem.active==-1){
+							protDiv.style.backgroundColor = "red";		
 						}
 				}
 			);
@@ -1014,11 +1035,14 @@ async function getPeddingProtocolReqs(){
 					document.querySelector('[data-action="acceptReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => acceptPeddingReq(event.currentTarget.dataset.req));	
 				})
 			}
+			document.querySelector("#peddingRequestsNo").innerText = countActive;
 		}
 	}
 }
 
 async function getPeddingAccessProtocolReqs(){	
+	let cRole = localStorage.getItem("currentRole");
+
 	const res = await runFetch("/api/getPeddingAccessProtocolReqs.php", "GET", null);
 	if (!res.success){
 		console.log(res.msg);
@@ -1026,22 +1050,58 @@ async function getPeddingAccessProtocolReqs(){
 	else{
 		//return res;
 		const resdec =  res.result;
-		document.querySelector("#peddingAccessRequestsNo").innerText = resdec.requests.length;
 		if(resdec.requests.length == 0){
 			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "gray";
 			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "gray";
 		}
 		else{
+			let countActive = 0;
 			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "orange";
 			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "orange";
-			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Θέμα</b></div>`;
+			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Θέμα</b></div><div>Ημερ.</div><div>Ενέργειες</div>`;
 			resdec.requests.forEach(elem => {
+					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
+					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-plus-square"></i></button>';
 					document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
 						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
-						<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.protocolField}</div>
-						<div data-req="${elem.aa}" data-name="causeField" >${elem.causeField}</div>`;
+						<div data-req="${elem.aa}" data-name="protocolField">${elem.protocolField}</div>
+						<div data-req="${elem.aa}" data-name="causeField" >${elem.causeField}</div>
+						<div data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;
+					let statusText = "";
+					if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
+						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${acceptReqBtn+rejectReqBtn}</div>`;
+					}
+					else{
+						switch(+elem.active){
+							case -1 : statusText= "Απορρίφθηκε";break;
+							case 0 : statusText= "Εγκρίθηκε";break;
+							case 1 : statusText= "Εκκρεμότητα";break;
+						}
+						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${statusText}</div>`;
+					}
+					const protDiv=document.querySelector(`[data-name="protocolField"][data-req="${elem.aa}"]`);
+					protDiv.style.padding = "5px";
+					protDiv.style.color = "black";	
+					if(elem.active==0){
+						protDiv.style.backgroundColor = "green";
+						protDiv.style.color = "white";	
+					}
+					else if(elem.active==1){
+						protDiv.style.backgroundColor = "orange";		
+						countActive++;	
+					}
+					else if(elem.active==-1){
+						protDiv.style.backgroundColor = "red";		
+					}
 				}
 			);
+			if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
+				resdec.requests.forEach(elem => {
+					document.querySelector(`[data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => rejectPeddingAccessReq(event.currentTarget.dataset.req));	
+					document.querySelector(`[data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => acceptPeddingAccessReq(event.currentTarget.dataset.req));	
+				})
+			}
+			document.querySelector("#peddingAccessRequestsNo").innerText = countActive;
 		}
 	}
 }
@@ -1078,6 +1138,46 @@ async function acceptPeddingReq(aa){
 	formData.append("name", name);
 
 	const res = await runFetch("/api/acceptPeddingReq.php", "POST", formData);
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		const chargesRes = await getChargesAndFill(); 
+	}
+}
+
+async function rejectPeddingAccessReq(aa){
+	
+	const formData = new FormData();
+	formData.append("aa", aa);
+
+	const res = await runFetch("/api/rejectPeddingAccessReq.php", "POST", formData);
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		//return res;
+		const resdec =  res.result;
+		getPeddingProtocolReqs();
+		const reqItems = document.querySelectorAll('[data-req="'+aa+'"]');
+		reqItems.forEach((elem) => {
+			elem.remove();
+		})
+		alert("Το αίτημα πρόσβασης έχει απορριφθεί");
+	}
+}
+
+async function acceptPeddingAccessReq(aa){
+	if (!confirm("Πρόκειται να δοθεί πρόσβαση στο πρωτόκολλο;")){
+		return;
+	}
+
+	const name = document.querySelector(('[data-name="subjectField"][data-req="'+aa+'"]')).innerText;
+	const formData = new FormData();
+	formData.append("aa", aa);
+	formData.append("name", name);
+
+	const res = await runFetch("/api/acceptPeddingAccessReq.php", "POST", formData);
 	if (!res.success){
 		alert(res.msg);
 	}
