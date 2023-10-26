@@ -355,7 +355,7 @@ td .fa-crosshairs{
 }
 
 .isGreen {
-	color : #198754;
+	background-color : #198754;
 }
 
 #fileOpenDialog::backdrop{
@@ -495,6 +495,10 @@ td .fa-crosshairs{
 	font-size: 1em;
 }
 
+.isButton,isGreen{
+	background-color : #198754;
+}
+
 .outline{
 	background-color: rgba(255,255,255,0.6);
 	color: black;
@@ -519,4 +523,25 @@ td .fa-crosshairs{
 
 .customModal{
 	font-family : 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.customDialogContent{
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	border-radius: 15px;
+}
+
+.customDialogContentTitle{
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	border-radius: 15px;
+	margin-bottom:10px;
+	align-items: flex-start;
+}
+
+.customDialog::backdrop{
+	background-color: rgba(0, 0, 0, 0.8);
 }

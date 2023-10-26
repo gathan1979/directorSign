@@ -182,8 +182,8 @@ function pagesCommonCode(){
 	if (document.querySelector("#uploadBtn")!==null){
 		document.querySelector("#uploadBtn").remove();
 	}
-	if (document.querySelector("#uploadDiv")!==null){
-		document.querySelector("#uploadDiv").remove();
+	if (document.querySelector("#uploadModal")!==null){
+		document.querySelector("#uploadModal").remove();
 	}
 	if (document.querySelector("#passwordModal") !== null){
 		document.querySelector("#passwordModal").remove();
@@ -202,8 +202,8 @@ function pagesCommonCode(){
 	}
 	document.body.insertAdjacentHTML("beforeend",loadingModal);
 
-	const uploadDiv = `<div id="uploadDiv" class="collapse"></div>`;
-	document.body.insertAdjacentHTML("afterbegin",uploadDiv);
+	const uploadModal = `<dialog id="uploadModal" class="customDialog"></dialog>`;
+	document.body.insertAdjacentHTML("afterbegin",uploadModal);
 	//console.log("upload added");
 
 	document.body.insertAdjacentHTML("afterbegin",extraMenuDiv);
@@ -753,13 +753,14 @@ export async function createUIstartUp(){
 	document.querySelector('#showEmployeesBtn').style.display = "inline-block"; 
 	document.querySelector('#showToSignOnlyBtn').style.display = "inline-block"; 
 
-	const uploadBtn=`<button class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadDiv"><i class="far fa-plus-square"></i></button>`;
+	const uploadBtn=`<button class="isButton isGreen "><i class="far fa-plus-square"></i></button>`;
 	document.querySelector("#uploadBtnDiv").innerHTML =uploadBtn;
+	document.querySelector("#uploadBtnDiv").addEventListener("click",()=> document.querySelector("#uploadModal").showModal());
 	//create Upload UI
-	document.querySelector("#uploadDiv").innerHTML = uploadComponents;
+	document.querySelector("#uploadModal").innerHTML = `<file-upload></file-upload>`;
 
-	document.querySelector("#selectedFile").addEventListener("change",() => enableFileLoadButton());
-	document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
+	//document.querySelector("#selectedFile").addEventListener("change",() => enableFileLoadButton());
+	//document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
 
 	// Να δω τι γίνεται εδώ
 	if (+JSON.parse(localStorage.getItem("loginData")).user.roles[0].accessLevel){
