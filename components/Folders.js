@@ -192,7 +192,7 @@ class Folders extends HTMLElement {
         let urlparams = new URLSearchParams({protocolNo, currentYear : protocolYear});
         const res = await runFetch("/api/getFoldersList.php", "GET", urlparams);
         if (!res.success){
-            alert(res.msg);
+            console.log(res.msg);
         }
         else{
             const resdec = res.result;

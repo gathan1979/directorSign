@@ -117,7 +117,7 @@ export function fillChargesTable(response, protocol = false){
 	//
 }
 
-function openProtocolRecord(subject,record,recordDate, event){
+export function openProtocolRecord(subject,record,recordDate, event){
 	console.log("record no ..."+record)
 	const protocolWindowContent = 
 	`<div id="bottomSection">
@@ -185,8 +185,10 @@ function openProtocolRecord(subject,record,recordDate, event){
 	
 	document.querySelector("#closeModalBtn").addEventListener("click", ()=> document.querySelector("#protocolRecordDialog").close());
 	document.querySelector("#editRecordBtn").addEventListener("click", ()=> document.querySelector("#editRecordModal").showModal());
-	document.querySelector("#publishToSiteBtn").addEventListener("click", () => publishToSite());
-	document.querySelector("#copyProtocolBtn").addEventListener("click", () => copyProtocol());
+	if (document.querySelector("#publishToSiteBtn")){
+		document.querySelector("#publishToSiteBtn").addEventListener("click", () => publishToSite());
+		document.querySelector("#copyProtocolBtn").addEventListener("click", () => copyProtocol());
+	}
 }
 
 async function publishToSite(){

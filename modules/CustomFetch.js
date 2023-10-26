@@ -67,7 +67,7 @@ export default async function runFetch(url, method, params, responseType = Fetch
     return returnObj;
 }
 
-async function printResponseErrorStatus(res){
+function printResponseErrorStatus(res){
     let msg="";
     if (res.status==400){
         msg = ("Σφάλμα αιτήματος.Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");

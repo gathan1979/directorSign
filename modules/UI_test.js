@@ -2,7 +2,7 @@ import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js
 import {createActionsTemplate,getSigRecords, getSignedRecords}  from "./Records_test.js";
 import getFromLocalStorage from "./LocalStorage.js";
 import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
-import {getFilteredData, getProtocolData} from "./ProtocolData.js";
+import {getFilteredData, getProtocolData,openProtocolRecord} from "./ProtocolData.js";
 import refreshToken,{refreshTokenTest} from "./RefreshToken.js";
 import runFetch from "./CustomFetch.js";
 
@@ -695,7 +695,7 @@ async function createProtocolUIstartUp(){
 				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 			</div>
 		</div>
-		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items:center;font-size: 0.85em;"></div>
+		<div id="peddingAccessReqsRecords" style="max-height: 80vh;overflow-y: scroll;display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items:center;font-size: 0.85em;"></div>
 	</dialog>`;
 			
 			
@@ -1074,9 +1074,9 @@ async function getPeddingAccessProtocolReqs(){
 					}
 					else{
 						switch(+elem.active){
-							case -1 : statusText= "Απορρίφθηκε";break;
-							case 0 : statusText= "Εγκρίθηκε";break;
-							case 1 : statusText= "Εκκρεμότητα";break;
+							case -1 : statusText= `<button class="isButton dismiss" disabled="disabled" data-req="${elem.aa}" data-access="-1"><i class="fas fa-lock"></i></button>`;break;;
+							case 0 : statusText= `<button class="isButton active" data-req="${elem.aa}" data-access="0" data-protocol="${elem.protocolField}"><i class="fas fa-lock-open"></i></button>`;break;
+							case 1 : statusText= `<button class="isButton warning" disabled="disabled" data-req="${elem.aa}" data-access="1"><i class="fas fa-key"></i></button>`;break;
 						}
 						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${statusText}</div>`;
 					}
@@ -1096,6 +1096,12 @@ async function getPeddingAccessProtocolReqs(){
 					}
 				}
 			);
+			document.querySelectorAll(`#peddingAccessRequestsModal [data-access="0"]`).forEach( elem=>{
+				elem.addEventListener("click", ()=>{
+					openProtocolRecord("test",elem.dataset.protocol, localStorage.getItem("currentYear"));
+				})
+			})
+
 			if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
 				resdec.requests.forEach(elem => {
 					document.querySelector(`[data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => rejectPeddingAccessReq(event.currentTarget.dataset.req));	
@@ -1183,7 +1189,7 @@ async function acceptPeddingAccessReq(aa){
 		alert(res.msg);
 	}
 	else{
-		const chargesRes = await getChargesAndFill(); 
+		//const chargesRes = await getChargesAndFill(); 
 	}
 }
 

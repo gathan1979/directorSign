@@ -182,6 +182,7 @@ class Attachments extends HTMLElement {
         const res = await runFetch("/api/getAttachments.php", "GET", urlpar);
         if (!res.success){
             alert(res.msg);
+            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
         }
         else{
             const result =  res.result;     
