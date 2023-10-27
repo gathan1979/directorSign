@@ -90,6 +90,10 @@ const foldersContent = `
             border-radius : 5px;
         }
 
+        .undo{
+            background-color : cadetblue;
+        }
+
     </style>
     <div id="foldersDiv" class="secondBottomSectionColumn" style="background: rgba(86, 86, 136, 0.2)!important;">	
         <link href="css/all.css" rel="stylesheet">
@@ -97,7 +101,7 @@ const foldersContent = `
             <button id="saveFoldersButton" type="button" class="isButton"  title="Αποθήκευση Αλλαγών στους Φακέλους"><i class="far fa-save"></i></button>
             <button id="showFoldersButton" type="button"  class="isButton"  style="background-color:chocolate;" title="Εμφάνιση λίστας φακέλων με επεξηγήσεις"><i class="fas fa-list-ol"></i></button>
             <button id="seachFolderModalButton" class="isButton" style="background-color:chocolate;" title="Αναζήτηση φακέλων" ><i class="fas fa-search"></i></button>
-            <button id="undoButton" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
+            <button id="undoButton" title="Αναίρεση αλλαγών" type="button" class="isButton undo"><i class="fas fa-undo"></i></button>
         </div>
         <div id="folderList" name="folderList" style="padding: 15px; display:flex; flex-wrap: wrap;gap:5px;">
            

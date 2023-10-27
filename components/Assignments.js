@@ -107,6 +107,10 @@ const assignmentsContent = `
             opacity: 0.5;
             pointer-events: none;
         }
+        
+        .undo{
+            background-color : cadetblue;
+        }
 
 
     </style>
@@ -114,9 +118,9 @@ const assignmentsContent = `
     <div class="thirdBottomSectionColumn" id="assignmentsDiv">
         <div style="padding:10px;display:flex;gap:5px;background: rgba(155, 130, 136, 0.2)!important;">	
             <button id="saveAssignmentButton" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
-            <button id="addNotificationButton" title="Κοινοποίηση σε όλους" type="button" class="isButton"><i class="far fa-bell"></i></button>
-            <button id="deselectUsersButton" title="Αποεπιλογή όλων" type="button" class="isButton"><i class="fas fa-user-slash"></i></button>
-            <button id="undoUsersButton" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
+            <button id="addNotificationButton" style="background-color:chocolate;" title="Κοινοποίηση σε όλους" type="button" class="isButton"><i class="far fa-bell"></i></button>
+            <button id="deselectUsersButton"  style="background-color:chocolate;" title="Αποεπιλογή όλων" type="button" class="isButton"><i class="fas fa-user-slash"></i></button>
+            <button id="undoUsersButton" title="Αναίρεση αλλαγών" type="button" class="isButton undo"><i class="fas fa-undo"></i></button>
             <div style="background-color: var(--bs-blue);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Χρέωση</div>
             <div style="background-color: var(--bs-success);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Κοιν.</div>
         </div>

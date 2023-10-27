@@ -135,6 +135,9 @@ const addContent = `
             flex-direction : column;
             gap: 10px;
         }
+        .undo{
+            background-color : cadetblue;
+        }
 
     </style>
     <link href="css/all.css" rel="stylesheet">
@@ -143,7 +146,7 @@ const addContent = `
         <span style="font-weight:bold;">Νέο Πρωτόκολλο</span>
         <div class="topButtons" style="display:flex;gap: 7px;">
             <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
-            <button id="undoBtn" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
+            <button id="undoBtn" title="Αναίρεση αλλαγών" type="button" class="isButton undo"><i class="fas fa-undo"></i></button>
             <button class="isButton " name="closeEditModalBtn" id="closeEditModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
     </div>
