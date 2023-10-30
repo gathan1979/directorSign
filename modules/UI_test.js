@@ -574,7 +574,7 @@ async function createChargesUIstartUp(){
 
 	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
 		let debounceFunc = debounce( async () =>  {
-			const chargesRes = await getProtocolAndFill(); 
+			const chargesRes = await getChargesAndFill(); 
 		});
 		debounceFunc();
 	})
@@ -698,8 +698,6 @@ async function createProtocolUIstartUp(){
 		<div id="peddingAccessReqsRecords" style="max-height: 80vh;overflow-y: scroll;display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items:center;font-size: 0.85em;"></div>
 	</dialog>`;
 			
-			
-
 
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
@@ -1061,8 +1059,8 @@ async function getPeddingAccessProtocolReqs(){
 			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "orange";
 			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Θέμα</b></div><div>Ημερ.</div><div>Ενέργειες</div>`;
 			resdec.requests.forEach(elem => {
-					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
-					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-plus-square"></i></button>';
+					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" data-protocol="'+elem.protocolField+'" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
+					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-check-square"></i></button>';
 					document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
 						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
 						<div data-req="${elem.aa}" data-name="protocolField">${elem.protocolField}</div>
@@ -1074,7 +1072,7 @@ async function getPeddingAccessProtocolReqs(){
 					}
 					else{
 						switch(+elem.active){
-							case -1 : statusText= `<button class="isButton dismiss" disabled="disabled" data-req="${elem.aa}" data-access="-1"><i class="fas fa-lock"></i></button>`;break;;
+							case -1 : statusText= `<button class="isButton dismiss" disabled="disabled" data-req="${elem.aa}" data-access="-1" data-protocol="${elem.protocolField}"><i class="fas fa-lock"></i></button>`;break;;
 							case 0 : statusText= `<button class="isButton active" data-req="${elem.aa}" data-access="0" data-protocol="${elem.protocolField}"><i class="fas fa-lock-open"></i></button>`;break;
 							case 1 : statusText= `<button class="isButton warning" disabled="disabled" data-req="${elem.aa}" data-access="1"><i class="fas fa-key"></i></button>`;break;
 						}
@@ -1104,8 +1102,8 @@ async function getPeddingAccessProtocolReqs(){
 
 			if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
 				resdec.requests.forEach(elem => {
-					document.querySelector(`[data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => rejectPeddingAccessReq(event.currentTarget.dataset.req));	
-					document.querySelector(`[data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => acceptPeddingAccessReq(event.currentTarget.dataset.req));	
+					document.querySelector(`[data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => rejectPeddingAccessReq(event.currentTarget.dataset.req, event.currentTarget.dataset.protocol));	
+					document.querySelector(`[data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => acceptPeddingAccessReq(event.currentTarget.dataset.req, event.currentTarget.dataset.protocol));	
 				})
 			}
 			document.querySelector("#peddingAccessRequestsNo").innerText = countActive;
@@ -1153,8 +1151,11 @@ async function acceptPeddingReq(aa){
 	}
 }
 
-async function rejectPeddingAccessReq(aa){
-	
+async function rejectPeddingAccessReq(aa, protocol){
+	if (!confirm(`Πρόκειται να απορριφθεί πρόσβαση στο πρωτόκολλο ${protocol};`)){
+		return;
+	}
+
 	const formData = new FormData();
 	formData.append("aa", aa);
 
@@ -1165,24 +1166,22 @@ async function rejectPeddingAccessReq(aa){
 	else{
 		//return res;
 		const resdec =  res.result;
-		getPeddingProtocolReqs();
-		const reqItems = document.querySelectorAll('[data-req="'+aa+'"]');
-		reqItems.forEach((elem) => {
-			elem.remove();
-		})
+		getPeddingAccessProtocolReqs();
+		// const reqItems = document.querySelectorAll('[data-req="'+aa+'"]');
+		// reqItems.forEach((elem) => {
+		// 	elem.remove();
+		// })
 		alert("Το αίτημα πρόσβασης έχει απορριφθεί");
 	}
 }
 
-async function acceptPeddingAccessReq(aa){
-	if (!confirm("Πρόκειται να δοθεί πρόσβαση στο πρωτόκολλο;")){
+async function acceptPeddingAccessReq(aa, protocol){
+	if (!confirm(`Πρόκειται να δοθεί πρόσβαση στο πρωτόκολλο ${protocol};`)){
 		return;
 	}
 
-	const name = document.querySelector(('[data-name="subjectField"][data-req="'+aa+'"]')).innerText;
 	const formData = new FormData();
 	formData.append("aa", aa);
-	formData.append("name", name);
 
 	const res = await runFetch("/api/acceptPeddingAccessReq.php", "POST", formData);
 	if (!res.success){
@@ -1190,6 +1189,7 @@ async function acceptPeddingAccessReq(aa){
 	}
 	else{
 		//const chargesRes = await getChargesAndFill(); 
+		getPeddingAccessProtocolReqs();
 	}
 }
 

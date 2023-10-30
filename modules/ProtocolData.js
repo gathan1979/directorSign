@@ -1,8 +1,5 @@
-import {updateFilterStorage,createSearch} from "./Filter.js"
+import {updateFilterStorage,createSearch, pagingSize, pagingStart} from "./Filter.js"
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
-
-export let pagingStart = 0; 
-export let pagingSize = 100; 
 
 export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
 	console.log("εκτέλεση λήψης χρεώσεων")
@@ -71,6 +68,14 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 }
 
 export function fillChargesTable(response, protocol = false){
+	if(!document.querySelector("#pageSelectorDiv")){
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="padding: 1em 0em 1em 0em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${response.totalRecords}"></page-selector>`);
+	}
+	else{
+		document.querySelector("#pageSelectorDiv").remove();
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${response.totalRecords}"></page-selector>`);
+
+	}	
 	const table = document.querySelector('#chargesTable>tbody');
 	table.innerHTML="";
 	const result = response.data;
@@ -110,7 +115,8 @@ export function fillChargesTable(response, protocol = false){
 	}
 	else{
 		for (const record of result){
-			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => document.querySelector('#requestProtocolAccessDialog').showModal());
+			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], event));
+			//document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => document.querySelector('#requestProtocolAccessDialog').showModal());
 		}
 	}
 	createSearch();

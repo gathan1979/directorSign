@@ -26,6 +26,7 @@ const content =
             </tbody>
         </table>
     </div>
+    <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
 </div>
 
 <dialog id="attachmentModal" class="customDialog" style="width:500px;"> 
@@ -109,6 +110,7 @@ class Attachments extends HTMLElement {
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         //console.log(this.protocolNo);
         const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):2023;
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
         //this.uploadFile(undefined,this.protocolNo,this.currentYear)
         this.shadow.querySelector("#showAttachmentModalBtn").addEventListener("click",()=> {
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
@@ -152,7 +154,7 @@ class Attachments extends HTMLElement {
         const res = await runFetch(uploadURL, "POST", data);
         if (!res.success){
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else {
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
@@ -165,6 +167,7 @@ class Attachments extends HTMLElement {
     async loadAttachments(level){ // το level να ελεγχθεί, δουλεύει πλέον με το localStorage, Εννοεί διαχειριστή στο 1 και απενεργοποίηση πλήκτρων στο -1
         this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
         this.shadow.querySelector("#attachments>tbody").innerHTML = "";
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
 
         let fileArray = [];
         let year;
@@ -181,7 +184,7 @@ class Attachments extends HTMLElement {
 
         const res = await runFetch("/api/getAttachments.php", "GET", urlpar);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
         }
         else{
@@ -281,14 +284,14 @@ class Attachments extends HTMLElement {
 
     async zipFiles(){
         this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
-       
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
         let formData  = new FormData();
         formData.append('protocolNo',this.protocolNo);
         formData.append('currentYear', this.protocolYear);
 
         const res = await runFetch("/api/zipFiles.php", "POST", formData, FetchResponseType.blob);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else{
             const blob = res.result;
@@ -307,13 +310,14 @@ class Attachments extends HTMLElement {
         const procc = confirm("Πρόκειται να διαγράψετε ενα συνημμένο έγγραφο");
         if ( procc == true) {
             this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
+            this.shadow.querySelector("#actionStatus").innerHTML = "";
             let data = new FormData();
             data.append('attAA',aa);
             data.append('protocolNo',protocolNo);
             data.append('year',year);
             const res = await runFetch("/api/removeProtocolAtt.php", "POST", data);
             if (!res.success){
-                alert(res.msg);
+                this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
             }
             else{
                 this.loadAttachments(1);
@@ -324,6 +328,7 @@ class Attachments extends HTMLElement {
 
     async renameAttachment(aa,protocolNo, year){
         this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
         let data = new FormData();
         data.append('attAA',aa);
         data.append('protocolNo',protocolNo);
@@ -333,7 +338,7 @@ class Attachments extends HTMLElement {
         const res = await runFetch("/api/renameProtocolAtt.php", "POST", data);
         if (!res.success){
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else{
             this.loadAttachments(1);
@@ -344,10 +349,11 @@ class Attachments extends HTMLElement {
     async viewAttachment(attachmentNo, showProtocol=0){   // 15-12-2022 Θα αντικαταστήσει το παραπάνω ΚΑΙ ΤΟ VIEWATTACHMENTWITHPROTOCOL
         const currentYear = this.protocolYear;
         const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol});
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
 
         const res = await runFetch("/api/viewAttachmentTest.php", "GET", urlpar, FetchResponseType.blob);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else{
             const dispHeader = res.responseHeaders.get('Content-Disposition');
@@ -413,7 +419,7 @@ class Attachments extends HTMLElement {
         const urlpar = new URLSearchParams({type});
         const res = await runFetch("/api/getUsers.php", "GET", urlpar);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else{
             this.users = res.result; 

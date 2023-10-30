@@ -24,6 +24,7 @@ const commentContent = `
                 </tbody>
             </table>
         </div>
+        <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
     </div>
 
     <dialog id="addCommentModal" class="customDialog">
@@ -72,12 +73,13 @@ class Comment extends HTMLElement {
         this.shadow.querySelector("#insertCommentField").value = "";
         this.shadow.querySelector("#commentsTable tbody").innerHTML = "";
         this.shadow.querySelector("#commentsSpinner").display = "inline-block"; 
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
       
         let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
 
         const res = await runFetch("/api/getComments.php", "GET", urlparams);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
             this.shadow.querySelector("#commentsSpinner").display = "none"; 
         }
         else{
@@ -112,10 +114,11 @@ class Comment extends HTMLElement {
         formData.append("aaField",aa);
         formData.append("protocolNo",protocolNo);
         formData.append("protocolYear",protocolYear);
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
 
         const res = await runFetch("/api/removeComment.php", "POST", formData);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
             this.shadow.querySelector("#commentsSpinner").display = "none"; 
         }
         else{
@@ -126,12 +129,17 @@ class Comment extends HTMLElement {
     async saveComment(protocolNo, protocolYear, comment){
         let formData = new FormData();
         formData.append("commentField",comment);
+        if (comment == ""){
+            this.shadow.querySelector("#actionStatus").innerHTML = "Δεν υπάρχει κείμενο σχολίου";
+            return;
+        }
         formData.append("protocolNo",protocolNo);
         formData.append("protocolYear",protocolYear);
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
 
         const res = await runFetch("/api/saveComment.php", "POST", formData);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
             this.shadow.querySelector("#commentsSpinner").display = "none"; 
         }
         else{

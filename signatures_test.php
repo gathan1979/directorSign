@@ -25,6 +25,7 @@
 		<script type="module" src="components/RequestRecordAccess.js"></script>
 		<script type="module" src="components/Tags.js"></script>
 		<script type="module" src="components/YearSelector.js"></script>
+		<script type="module" src="components/PagingSelector.js"></script>
 		<script type="module" src="components/RoleSelector.js"></script>
 		<script type="module" src="components/Upload.js"></script>
 		

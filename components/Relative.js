@@ -19,7 +19,6 @@ const relativeContent = `
                 <button id="showRelativeModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
             </div>
         </div>
-
         <div style="height:90%;overflow-y:scroll;">
             <table class="table" id="relativeTable">
                 
@@ -28,6 +27,7 @@ const relativeContent = `
                 </tbody>
             </table>
         </div>
+        <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
     </div>
     <dialog id="addRelativeModal" class="customDialog" >
         <div class="customDialogContentTitle">
@@ -77,12 +77,13 @@ class Relative extends HTMLElement {
         this.shadow.querySelector("#insertRelativeField").value = "";
         this.shadow.querySelector("#insertRelativeYearField").value = new Date().getFullYear;
         this.shadow.querySelector("#relativeTableBody").innerHTML = "";
+        this.shadow.querySelector("#actionStatus").innerHTML = "";
 
         let urlparams = new URLSearchParams({ protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear()), deepSearch});
         
         const res = await runFetch("/api/getRelativeFull.php", "GET",urlparams);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else{
             const resdec = res.result;
@@ -119,12 +120,13 @@ class Relative extends HTMLElement {
         const res = confirm("Πρόκειται να διαγράψετε ενα σχετικό έγγραφο");
         if (res == true) {  
             const formdata = new FormData();
+            this.shadow.querySelector("#actionStatus").innerHTML = "";
             formdata.append('relativeAAField', aaField);
             formdata.append('currentYear', this.protocolYear);
 
             const res = await runFetch("/api/removeRelative.php", "POST",urlparams);
             if (!res.success){
-                alert(res.msg);
+                this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
             }
             else{
                 const resdec = res.result;
@@ -152,7 +154,7 @@ class Relative extends HTMLElement {
 
         const res = await runFetch("/api/saveRelative.php", "POST", formdata);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else{
         }
