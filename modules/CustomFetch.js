@@ -20,11 +20,15 @@ export default async function runFetch(url, method, params, responseType = Fetch
     let init ={method, headers : myHeaders};
     let msg = "";
 
+    const currentYear = (localStorage.getItem("currentYear")==null?new Date().getFullYear: localStorage.getItem("currentYear"));
     if (method=="POST" || method=="post"){
         if (params == null){
             params = new FormData();
         }
         params.append("currentRole", role);
+        if (!params.has("currentYear")){
+            params.append("currentYear", currentYear);
+        }
         init.body = params;
     }
     else if (method="GET" || method=="get"){
@@ -32,6 +36,9 @@ export default async function runFetch(url, method, params, responseType = Fetch
             params = new URLSearchParams();
         }
         params.append("currentRole", role);
+        if (!params.has("currentYear")){
+            params.append("currentYear", currentYear);
+        }
         url +="?"+ params;
     }
     try{

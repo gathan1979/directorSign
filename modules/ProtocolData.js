@@ -3,7 +3,7 @@ import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
 	console.log("εκτέλεση λήψης χρεώσεων")
-	document.querySelector("#recordsSpinner").style.display = 'inline-block';
+	//document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	document.querySelector("#myNavBar").classList.add("disabledDiv");
 	updateFilterStorage();
 
@@ -29,19 +29,19 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar);
 	if (!res.success){
 		console.log(res.msg);
-		document.querySelector("#recordsSpinner").style.display = 'none';
+		//document.querySelector("#recordsSpinner").style.display = 'none';
 	}
 	else{
 		const response = res.result;
-		console.log("εκτέλεση λήψης χρεώσεων 1");
-		document.querySelector("#recordsSpinner").style.display = 'none';
+		//document.querySelector("#recordsSpinner").style.display = 'none';
 		document.querySelector("#myNavBar").classList.remove("disabledDiv");
 		fillChargesTable(response);
+		return response.totalRecords;
 	}
 }
 
 export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
-	document.querySelector("#recordsSpinner").style.display = 'inline-block';
+	//document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	document.querySelector("#myNavBar").classList.add("disabledDiv");
 	updateFilterStorage();
 	
@@ -55,60 +55,72 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar);
 	if (!res.success){
 		console.log(res.msg);
-		document.querySelector("#recordsSpinner").style.display = 'none';
+		//document.querySelector("#recordsSpinner").style.display = 'none';
 	}
 	else{
 		const response = res.result;
 		console.log("εκτέλεση λήψης χρεώσεων 1");
-		document.querySelector("#recordsSpinner").style.display = 'none';
+		//document.querySelector("#recordsSpinner").style.display = 'none';
 		document.querySelector("#myNavBar").classList.remove("disabledDiv");
 		fillChargesTable(response, true);
-		
+		return response.totalRecords;
 	}
 }
 
-export function fillChargesTable(response, protocol = false){
-	if(!document.querySelector("#pageSelectorDiv")){
-		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="padding: 1em 0em 1em 0em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${response.totalRecords}"></page-selector>`);
-	}
-	else{
-		document.querySelector("#pageSelectorDiv").remove();
-		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${response.totalRecords}"></page-selector>`);
-
-	}	
-	const table = document.querySelector('#chargesTable>tbody');
-	table.innerHTML="";
+export function fillChargesTable(response, protocol = false){   //Να αφαιρεθεί το protocol. Άλλαξε η λογική ανοίγματος εγγραφών πρωτοκόλλου
+	
+	//const table = document.querySelector("#chargesTableHeader");
+	//table.innerHTML=
 	const result = response.data;
 	let tableContent = "";
 	for (const record of result){
-		tableContent +='<tr data-record="'+record.aaField+'">';
-		for (const [key, value] of Object.entries(record)){
-			if((key == "linkField") || (key=="insertDateField")){
+		tableContent +='<div class="flexHorizontal" style="cursor:pointer;background: linear-gradient(90deg, white, lightgray); justify-content:center;" data-record="'+record.aaField+'">';
+		for (let [key, value] of Object.entries(record)){
+			let customWidth = 0;
+			switch (key){
+				case "aaField" : customWidth= "5%";break;
+				case "fromField" : customWidth= "20%";break;
+				case "subjectField" :customWidth= "20%";break;
+				case "docDate" : customWidth= "10%";break;
+				case "docNumber" :customWidth= "10%";break;
+				case "toField" :customWidth= "10%";break;
+				case "outSubjectField" : customWidth= "10%";break;
+				case "outDocDate" : customWidth= "10%";break;
+				case "statusField" : customWidth= "5%";break;
+			}		
+			if((key == "linkField") || (key=="insertDateField") || (key== "isRead")){
 				continue;
 			}
-			tableContent +="<td "
+			if(key == "statusField"){
+				switch (+value){
+					case 0 : value= "Εκρ.";break;
+					case 1 : value= "Προς Αρχ.";break;
+					case 2 : value= "Αρχ.";break;
+				}
+			}
+			tableContent +=`<span style="width:${customWidth};`;
 			if(record["isRead"]==1){
-				tableContent += 'style="font-weight :normal" ';
+				tableContent += 'font-weight : normal;';
 			}
 			else{
-				tableContent += 'style="font-weight :bold" ';
+				tableContent += 'font-weight :500;';
 			}
-			if(record["status"]==1){ //Προς αρχείο
-				tableContent += 'style="background-color : DarkOrange" ';
+			if(record["statusField"]==1){ //Προς αρχείο
+				tableContent += 'background-color : DarkOrange;';
 			}
-			else if(record["status"]==2){ // Αρχείο
-				tableContent += 'style="background-color : Gray" ';
+			else if(record["statusField"]==2){ // Αρχείο
+				tableContent += 'background-color : Gray;';
 			}
-			else if(record["status"]==0){ //Εκκρεμ.
-				tableContent += 'style="font-weight :bold" ';
+			else if(record["statusField"]==0){ //Εκκρεμ.
+				//tableContent += 'font-weight :bold;"';
 			}
 			
-			tableContent +=">"+value+"</td>"	
+			tableContent +=`" data-colname="`+key+'">'+value+"</span>"	
 		}
-		tableContent +="</tr>"
+		tableContent +="</div>"
 	}
-	document.querySelector("#chargesTable>tbody").innerHTML = tableContent;
-	if(!protocol){
+	document.querySelector("#chargesTableContent").innerHTML = tableContent;
+	if(!protocol){	
 		for (const record of result){
 			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], event));
 		}
@@ -236,3 +248,70 @@ async function copyProtocol(){
         }
 	}
 }
+
+//---------------------------------------------------Αλλαγές σε πρωτόκολλα για εμφάνιση -------------------------------------------------------------------------
+
+async function getChangedRecords(days=1){
+	//console.log(node);
+	const urlpar = new URLSearchParams({ days});
+	const res = await runFetch("/api/getChangedRecords.php", "GET", urlpar);
+	if (!res.success){
+		console.log(res.msg);
+	}
+	else{
+		return  res.result;
+	}
+}
+
+export async function printChangedRecords(days=1){
+	let changedRecords = await getChangedRecords(days);
+	const changesContent  = document.querySelector("#changesContent");
+	const changesDetailsContent  = document.querySelector("#changesDetailsContent");
+	let changedRecordsMod = changedRecords.changes.map(item => {
+		let elem = document.createElement('button');
+		elem.setAttribute("type", "button");
+		elem.setAttribute("data-protocol", item);
+		elem.setAttribute("class", "isButton small");
+		elem.setAttribute("style", "margin:3px;");
+		elem.innerText = item;
+		elem.addEventListener("click", async (e) => {
+			const changesContentBtn = document.querySelectorAll("#changesContent button");
+			changesContentBtn.forEach(btn => {
+				btn.classList.remove("active");		
+			});
+			e.target.classList.add("active");
+			let res = await showChangesDetails(e);
+			//console.log(res.join());
+			changesDetailsContent.innerHTML = res.changesAnalytics.join('<br>');
+		});
+		return elem;
+		//return  '<button type="button" data-protocol="'+item+'" class="btn btn-warning btn-sm" style="margin:3px;">'+item+'</button>';	
+	});
+	//console.log(changedRecordsMod);
+	changesContent.textContent = "";
+	changedRecordsMod.forEach( item => {
+		changesContent.appendChild(item);
+	});
+	const changesContentBtn = document.querySelectorAll("#changesContent button");
+	changesContentBtn.forEach(btn => {
+		btn.classList.remove("btn-primary");	
+		btn.classList.add("btn-warning");	
+	});
+	
+	//changesContent.innerHTML = changedRecordsMod.join('');
+}
+
+async function showChangesDetails(e){
+	//console.log(e);
+	const protocol = e.target.dataset.protocol;
+	const urlpar = new URLSearchParams({postData : protocol});
+	const res = await runFetch("/api/getChangedRecordsAnalytics.php", "GET", urlpar);
+	if (!res.success){
+		console.log(res.msg);
+	}
+	else{
+		return  res.result;
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

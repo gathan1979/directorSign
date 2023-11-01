@@ -112,11 +112,11 @@ const paggingSelectorDiv = `
             }
         </style>
         <link href="css/all.css" rel="stylesheet">    
-        <div id="paggingDiv" class="flexHorizontal" style="gap:2em;padding: 0.2em 1em 0.2em 1em; ">
+        <div id="paggingDiv" class="flexHorizontal" style="gap:2em; margin: 1em;padding: 0.2em 1em 0.2em 1em; justify-content : center;">
 			<span id="previousPaggingBtn" style="cursor:pointer;"><i class="fas fa-chevron-left"></i></span>
-			<div id="currentPageDiv" ><input type="number" style="width:5ch;" id="currentPageSelector" value="1"></input></div>	
+			<div id="currentPageDiv" ><input type="number" style="width:5ch;" id="currentPageSelector"></input></div>	
 			<span id="nextPaggingBtn" style="cursor:pointer;"><i class="fas fa-chevron-right"></i></span>
-            <span>από</span><span id="totalRecordsDiv"></span>
+            <span>από</span><span id="totalPagesDiv"></span><span>(<span id="totalRecordsDiv"></span> εγγραφές)</span>
 		</div>
     `;
 
@@ -138,25 +138,72 @@ class PagingSelector extends HTMLElement {
         this.totalRecords = this.attributes.totalRecords.value;
         this.paggingStart = this.attributes.paggingStart.value;
         this.paggingSize = this.attributes.paggingSize.value;
+        this.shadow.querySelector('#currentPageSelector').value = +this.paggingStart +1;
+        const maxPages = this.checkDisabledArrows();
+        this.shadow.querySelector('#totalPagesDiv').innerText = maxPages;
         this.shadow.querySelector('#totalRecordsDiv').innerText = this.totalRecords;
-
         if (this.shadow.querySelector('#previousPaggingBtn')){
             this.shadow.querySelector('#previousPaggingBtn').addEventListener("click", ()=>{
-                    
+                if (this.shadow.querySelector('#currentPageSelector').value != 1){
+                    this.shadow.querySelector('#currentPageSelector').value -=1;
+                    const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
+                    pageChangeEvent.currentPage = +this.shadow.querySelector('#currentPageSelector').value;
+                    this.dispatchEvent(pageChangeEvent);
+                    this.checkDisabledArrows()
+                }
             });
         }
     
         if (this.shadow.querySelector('#nextPaggingBtn')){
             this.shadow.querySelector('#nextPaggingBtn').addEventListener("click", ()=>{
-                
+                console.log("++"+this.shadow.querySelector('#currentPageSelector').value+" "+maxPages)
+                if (this.shadow.querySelector('#currentPageSelector').value != maxPages){
+                    this.shadow.querySelector('#currentPageSelector').value= + this.shadow.querySelector('#currentPageSelector').value + 1;
+                    const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
+                    pageChangeEvent.currentPage = +this.shadow.querySelector('#currentPageSelector').value;
+                    this.dispatchEvent(pageChangeEvent);
+                    this.checkDisabledArrows()
+                }
             });
         }
-        console.log("pagging ok")
+
+        if(this.shadow.querySelector('#currentPageSelector')){
+            this.shadow.querySelector('#currentPageSelector').addEventListener("change",()=>{
+                if(this.shadow.querySelector('#currentPageSelector').value < 1 ){
+                    this.shadow.querySelector('#currentPageSelector').value = 1;    
+                }
+                if(this.shadow.querySelector('#currentPageSelector').value > maxPages ){
+                    this.shadow.querySelector('#currentPageSelector').value = maxPages;    
+                }
+                const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
+                pageChangeEvent.currentPage = +this.shadow.querySelector('#currentPageSelector').value;
+                this.dispatchEvent(pageChangeEvent);
+                this.checkDisabledArrows();
+            })
+        }
     }
 
     disconnectedCallback() {    
     }
 
+    checkDisabledArrows(){
+        const maxPages =  Math.floor(this.totalRecords/ this.paggingSize) + ((this.totalRecords%this.paggingSize) ==0? 0: 1);
+
+        if (this.shadow.querySelector('#currentPageSelector').value == 1){
+            this.shadow.querySelector('#previousPaggingBtn').setAttribute("disabled","disabled");
+        }
+        else{
+            this.shadow.querySelector('#previousPaggingBtn').removeAttribute("disabled");
+        }
+        if (this.shadow.querySelector('#currentPageSelector').value == maxPages){
+            this.shadow.querySelector('#nextPaggingBtn').setAttribute("disabled","disabled");    
+        }
+        else{
+            this.shadow.querySelector('#nextPaggingBtn').removeAttribute("disabled");
+        }
+        return maxPages;
+    }
+
 }
 
-customElements.define("page-selector", PagingSelector);
+customElements.define("page-selector", PagingSelector);  

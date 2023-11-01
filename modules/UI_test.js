@@ -2,7 +2,7 @@ import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js
 import {createActionsTemplate,getSigRecords, getSignedRecords}  from "./Records_test.js";
 import getFromLocalStorage from "./LocalStorage.js";
 import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
-import {getFilteredData, getProtocolData,openProtocolRecord} from "./ProtocolData.js";
+import {getFilteredData, getProtocolData,openProtocolRecord, printChangedRecords} from "./ProtocolData.js";
 import refreshToken,{refreshTokenTest} from "./RefreshToken.js";
 import runFetch from "./CustomFetch.js";
 
@@ -97,9 +97,7 @@ const navBarDiv = `<div id="myNavBar">
 const signTable = `<table id="dataToSignTable" class="table" style="font-size:0.9em;">
 	<thead>
 	<tr>
-		<th id="filename" class="text-right">Έγγραφο <button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i></button><div style="margin-left:1em;display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
-				<span class="visually-hidden">Loading...</span>
-			</div></th>
+		<th id="filename" class="text-right">Έγγραφο</th>
 		<th id="date" class="text-right">Εισαγωγή</th>
 		<th id="author" class="text-right">Συντάκτης</th>
 		<th id="status" class="text-right">Κατάσταση</th>
@@ -111,28 +109,23 @@ const signTable = `<table id="dataToSignTable" class="table" style="font-size:0.
 	</tbody>
 	</table>`;
 
-const chargesTable = `<table id="chargesTable" class="table" style="font-size:0.9em;">
-	<thead>
-	<tr>
-		<th id="chargesTableAA" class="text-right" style="width:10%">AA <button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="btn btn-dark btn-sm"><i class="fas fa-sync"></i></button><div style="margin-left:1em;display:none;" id="recordsSpinner" class="spinner-border spinner-border-sm" role="status">
-				<span class="visually-hidden">Loading...</span>
-			</div></th>
-		<th id="chargesTableApostoleas" class="text-right">Αποστολέας</th>
-		<th id="chargesTableThema" class="text-right">Θέμα</th>
-		<th id="chargesTableImParal" class="text-right">Ημ.Παραλ.</th>
-		<th id="chargesTableArEiserx" class="text-right">Αρ.Εισερχ.</th>
-		<th id="chargesTablePros" class="text-right">Προς</th>
-		<th id="chargesTableThemaEkserx" class="text-right">Θέμα Εξερχ.</th>
-		<th id="chargesTableImEkserx" class="text-right">Ημ.Εξερχ.</th>
-		<th id="chargesTableKatast" class="text-right">Κατάστ.</th>
-		<th id="chargesTableStoixeiaEmail" style="display:none" class="text-right">Στοιχεία Email</th>
-		<th id="chargesTableImEisagogis" style="display:none" class="text-right">Ημ.Εισαγωγής</th>
-	</tr>
-	</thead>
-	<tbody>
-
-	</tbody>
-	</table>`;
+const chargesTable = `<div id="chargesTable" style="font-size:0.9em;">
+						<div id="chargesTableHeader">
+							<div class="flexHorizontal" style="background: linear-gradient(90deg, white, lightgray);font-weight: bold;">
+								<span id="chargesTableAA"  style="width:5%;text-align:center;">AA</span>
+								<span style="width:20%; text-align:center;" id="chargesTableApostoleas" >Αποστολέας</span>
+								<span style="width:20%;text-align:center;" id="chargesTableThema">Θέμα</span>
+								<span style="width:10%text-align:center;" id="chargesTableImParal" >Ημ.Παραλ.</span>
+								<span style="width:10%;text-align:center;" id="chargesTableArEiserx" ">Αρ.Εισερχ.</span>
+								<span style="width:10%;text-align:center;" id="chargesTablePros" >Προς</span>
+								<span style="width:10%;text-align:center;" id="chargesTableThemaEkserx" >Θέμα Εξερχ.</span>
+								<span style="width:10%;text-align:center;" id="chargesTableImEkserx" >Ημ.Εξερχ.</span>
+								<span style="width:5%;text-align:center;" id="chargesTableKatast" >Κατάστ.</span>
+							</div>
+						</div>
+						<div id="chargesTableContent" class="flexVertical" style="background-color:white;margin-top:2em;overflow-y:scroll; max-height: 60vh;">
+						</div>
+					</div>`;
 
 const protocolRecordModal = 
 	`<dialog id="protocolRecordDialog">
@@ -157,6 +150,7 @@ function pagesCommonCode(){
 	}
 	
 	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
+		<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton active"><i class="fas fa-sync"></i></button>
 		<div class="flexVertical" id="uploadBtnDiv">
 		</div>
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
@@ -345,22 +339,29 @@ function pagesCommonCode(){
 	}
 	
 
-	document.querySelector("#syncRecords").addEventListener("click", ()=>  { switch (getPage()){
-		case Pages.SIGNATURE :
-			getToSignRecordsAndFill();
-			break;
-		case Pages.SIGNED :
-			getSignedRecordsAndFill();
-			break;
-		case Pages.CHARGES :
-			getChargesAndFill();
-			break;
-		case Pages.PROTOCOL :
-			getProtocolAndFill();
-			break;
-		default :
-			alert("Σελίδα μη διαθέσιμη");
-			break;
+	document.querySelector("#syncRecords").addEventListener("click", async ()=>  { 
+		document.querySelector("#syncRecords>i").classList.add('faa-circle');
+		switch (getPage()){
+			case Pages.SIGNATURE :
+				await getToSignRecordsAndFill();
+				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+				break;
+			case Pages.SIGNED :
+				await getSignedRecordsAndFill();
+				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+				break;
+			case Pages.CHARGES :
+				await getChargesAndFill();
+				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+				break;
+			case Pages.PROTOCOL :
+				await getProtocolAndFill();
+				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+				break;
+			default :
+				alert("Σελίδα μη διαθέσιμη");
+				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+				break;
 		}
 	})
 
@@ -481,32 +482,36 @@ async function createChargesUIstartUp(){
 		</div>
 	</div>`;
 
-	const changesFilterDiv= `<dialog id="changesDiv" class="customModal">
-						<div id="changesTitle" class="customTitle">
-							<div>Τελευταίες αλλαγές</div>
-							<div id="changesDatesDiv"> 
-								<button type="button" data-days="1" class="btn btn-warning btn-sm">1ημ.</button>
-								<button type="button" data-days="7" class="btn btn-warning btn-sm">7ημ.</button>
-								<button type="button" data-days="30" class="btn btn-warning btn-sm">30ημ.</button>
-							</div>
-							<div id="changesCloseButtonDiv">
-								<button id="changesCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
-							</div>
-						</div>
-						<div id="changesContent"></div>
-						<div id="changesDetailsContent"></div>
-					</dialog>
+	const changesFilterDiv= `<dialog id="changesDiv" class="customModal" style="width: 80%;">
+								<div id="changesTitle" class="customDialogContentTitle">
+									<div>Τελευταίες αλλαγές</div>
+									<div class="topButtons" style="display:flex;gap: 7px;">
+										<div id="changesDatesDiv"> 
+											<button type="button" data-days="1" class="isButton  small">1ημ.</button>
+											<button type="button" data-days="7" class="isButton  small">7ημ.</button>
+											<button type="button" data-days="30" class="isButton  small">30ημ.</button>
+										</div>
+										<div id="changesCloseButtonDiv">
+											<button id="changesCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+										</div>
+									</div>
+								</div>
+								<div id="changesContent"></div>
+								<div id="changesDetailsContent" style="margin-top:1em;"></div>
+							</dialog>
 
-					<dialog id="filterDiv" class="customModal">
-						<div id="filterTitle" class="customTitle">
-							<div>Φίλτρο αναζήτησης</div>
-							<div id="filterCloseButtonDiv">
-								<button id="filterCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
-							</div>
-						</div>
-						<div id="filterContent"></div>
-						<div id="filterApplyDiv"></div>
-					</dialog>`;
+							<dialog id="filterDiv" class="customModal">
+								<div id="filterTitle" class="customDialogContentTitle">
+									<div>Φίλτρο αναζήτησης</div>
+									<div class="topButtons" style="display:flex;gap: 7px;">
+										<div id="filterCloseButtonDiv">
+											<button id="filterCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+										</div>
+									</div>
+								</div>
+								<div id="filterContent"></div>
+								<div id="filterApplyDiv"></div>
+							</dialog>`;
 
 	const peddingRequestsDiv= `<dialog id="peddingRequestsModal" class="customModal">
 			<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
@@ -527,8 +532,8 @@ async function createChargesUIstartUp(){
 		</div>
 		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 	</dialog>`;
-			
-			
+
+
 	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
@@ -571,6 +576,42 @@ async function createChargesUIstartUp(){
 			});
 		}
 	}
+	//---------------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
+	const changesButton  = document.querySelector("#openChangesBtn");
+	const filterButton  = document.querySelector("#openFilterBtn");
+	const changesCloseButton  = document.querySelector("#changesCloseButton");
+	const filterCloseButton  = document.querySelector("#filterCloseButton");
+	const changesDatesBtns = document.querySelectorAll("#changesDatesDiv button");
+
+	changesButton.addEventListener("click", () => {
+		const changesDiv  = document.querySelector("#changesDiv").showModal();
+	});
+
+	filterButton.addEventListener("click", () => {
+		const filterDiv  = document.querySelector("#filterDiv").showModal();
+	});
+
+	changesCloseButton.addEventListener("click", () => {
+		const changesDiv  = document.querySelector("#changesDiv").close();
+	});
+
+	filterCloseButton.addEventListener("click", () => {
+		const filterDiv  = document.querySelector("#filterDiv").close();
+	});
+
+	changesDatesBtns.forEach(item => { 
+		item.addEventListener("click", () => {
+			changesDatesBtns.forEach(btn => {
+				btn.classList.remove("active");	
+			});
+			item.classList.add("active");
+			console.log(item.dataset.dates);
+			//console.log("Type :", typeof item.dataset.dates);
+			printChangedRecords(+ item.dataset.days); 
+		})
+	});
+
+	//---------------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
 
 	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
 		let debounceFunc = debounce( async () =>  {
@@ -661,7 +702,7 @@ async function createProtocolUIstartUp(){
 		</div>
 	</div>`;
 
-	const changesFilterDiv= `<dialog id="changesDiv" class="customModal">
+	const changesFilterDiv= `<dialog id="changesDiv" class="customModal" style="width: 80%;">
 						<div id="changesTitle" class="customTitle">
 							<div>Τελευταίες αλλαγές</div>
 							<div id="changesDatesDiv"> 
@@ -674,7 +715,7 @@ async function createProtocolUIstartUp(){
 							</div>
 						</div>
 						<div id="changesContent"></div>
-						<div id="changesDetailsContent"></div>
+						<div id="changesDetailsContent" style="margin-top:1em;"></div>
 					</dialog>
 
 					<dialog id="filterDiv" class="customModal">
@@ -770,9 +811,9 @@ export async function createUIstartUp(){
 		tempUserElement.classList.add('btn-success');
 		tempUserElement.dataset.active=1;
 	}
-
+	createActionsTemplate();
 	//Γέμισμα πίνακα με εγγραφές χρήστη
-    createActionsTemplate();
+   
 	const toSignRes = await getToSignRecordsAndFill(); 
 	interToSign = setInterval(async ()=>{
 		const toSignRes = await getToSignRecordsAndFill(); 
@@ -939,29 +980,53 @@ async function roleChanged(){
 
 export async function getToSignRecordsAndFill(){
 	const records = getSigRecords().then( res => {
-		createSearch();
+		//createSearch();
 	}, rej => {});		
 }
 
 
 export async function getSignedRecordsAndFill(){
 	const records = getSignedRecords().then( res => {
-		createSearch();
+		//createSearch();
 	}, rej => {});			
 }
 
 export async function getChargesAndFill(){
-	console.log("κλήση χρεώσεων")
-	const records = await getFilteredData(pagingStart,pagingSize).then( res => {
-		//createSearch();
-	}, rej => {});			
+	const recordsNo = await getFilteredData(pagingStart,pagingSize)
+		//.then( res => {
+			//createSearch();
+		//}, rej => {});	
+	if(!document.querySelector("#pageSelectorDiv")){
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
+	}
+	else{
+		document.querySelector("#pageSelectorDiv").remove();
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
+
+	}	
+	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
+		console.log(event.currentPage);
+		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize);
+	})		
 }
 
 export async function getProtocolAndFill(){
-	console.log("κλήση χρεώσεων")
-	const records = await getProtocolData(pagingStart,pagingSize).then( res => {
-		//createSearch();
-	}, rej => {});			
+	const recordsNo = await getProtocolData(pagingStart,pagingSize);
+		//.then( res => {
+			//createSearch();
+		//}, rej => {});
+	if(!document.querySelector("#pageSelectorDiv")){
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
+	}
+	else{
+		document.querySelector("#pageSelectorDiv").remove();
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
+
+	}	
+	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
+		console.log(event.currentPage);
+		const recordsNo = await getProtocolData(event.currentPage -1,pagingSize);
+	})							
 }
 
 
