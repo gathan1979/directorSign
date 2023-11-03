@@ -14,7 +14,7 @@ function fetchAuthHeader(){
     return {myHeaders, role};    
 }
 
-export default async function runFetch(url, method, params, responseType = FetchResponseType.json){   //params FormData || URLSearchParams || null
+export default async function runFetch(url, method, params, responseType = FetchResponseType.json, signal = null){   //params FormData || URLSearchParams || null
     const {myHeaders, role} = fetchAuthHeader();
     let  res;
     let init ={method, headers : myHeaders};
@@ -41,6 +41,9 @@ export default async function runFetch(url, method, params, responseType = Fetch
         }
         url +="?"+ params;
     }
+    if (signal !== null){
+        init.signal = signal;
+    }
     try{
         res = await fetch(url, init); 
         if (!res.ok){
@@ -51,7 +54,8 @@ export default async function runFetch(url, method, params, responseType = Fetch
                     runFetch(url, method, params);
                 }
                 else{
-                    msg = ("Σφάλμα εξουσιοδότησης");	
+                    msg = ("Σφάλμα εξουσιοδότησης");
+                    window.location = "10.142.49.10/directorSign/"	
                 }
             }
             else{

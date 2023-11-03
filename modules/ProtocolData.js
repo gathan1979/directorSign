@@ -2,9 +2,8 @@ import {updateFilterStorage,createSearch, pagingSize, pagingStart} from "./Filte
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
-	console.log("εκτέλεση λήψης χρεώσεων")
-	//document.querySelector("#recordsSpinner").style.display = 'inline-block';
-	document.querySelector("#myNavBar").classList.add("disabledDiv");
+	document.querySelector("#syncRecords>i").classList.add('faa-circle');
+
 	updateFilterStorage();
 
 	const currentFilter = JSON.parse(localStorage.getItem("filter"));
@@ -33,16 +32,16 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	}
 	else{
 		const response = res.result;
-		//document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.remove("disabledDiv");
+
 		fillChargesTable(response);
+		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
 		return response.totalRecords;
 	}
 }
 
 export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
-	//document.querySelector("#recordsSpinner").style.display = 'inline-block';
-	document.querySelector("#myNavBar").classList.add("disabledDiv");
+	document.querySelector("#syncRecords>i").classList.add('faa-circle');
+
 	updateFilterStorage();
 	
 	const completeOblect ={
@@ -60,8 +59,8 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 	else{
 		const response = res.result;
 		console.log("εκτέλεση λήψης χρεώσεων 1");
-		//document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.remove("disabledDiv");
+		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+
 		fillChargesTable(response, true);
 		return response.totalRecords;
 	}
@@ -74,7 +73,17 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	const result = response.data;
 	let tableContent = "";
 	for (const record of result){
-		tableContent +='<div class="flexHorizontal" style="cursor:pointer;background: linear-gradient(90deg, white, lightgray); justify-content:center;" data-record="'+record.aaField+'">';
+		if(record["statusField"]=="1"){ //Προς αρχείο
+			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, DarkOrange); justify-content:center;" data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+		}
+		else if(record["statusField"]=="2"){ // Αρχείο
+			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, Gray); justify-content:center;" data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+		}
+		else if(record["statusField"]=="0"){ //Εκκρεμ.
+			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, lightGray); justify-content:center;" data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+		}	
+		
+
 		for (let [key, value] of Object.entries(record)){
 			let customWidth = 0;
 			switch (key){
@@ -105,21 +114,14 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 			else{
 				tableContent += 'font-weight :500;';
 			}
-			if(record["statusField"]==1){ //Προς αρχείο
-				tableContent += 'background-color : DarkOrange;';
-			}
-			else if(record["statusField"]==2){ // Αρχείο
-				tableContent += 'background-color : Gray;';
-			}
-			else if(record["statusField"]==0){ //Εκκρεμ.
-				//tableContent += 'font-weight :bold;"';
-			}
 			
 			tableContent +=`" data-colname="`+key+'">'+value+"</span>"	
 		}
 		tableContent +="</div>"
 	}
 	document.querySelector("#chargesTableContent").innerHTML = tableContent;
+	
+
 	if(!protocol){	
 		for (const record of result){
 			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], event));
@@ -132,7 +134,6 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 		}
 	}
 	createSearch();
-	//
 }
 
 export function openProtocolRecord(subject,record,recordDate, event){

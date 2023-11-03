@@ -103,6 +103,7 @@ const foldersContent = `
             <button id="seachFolderModalButton" class="isButton" style="background-color:chocolate;" title="Αναζήτηση φακέλων" ><i class="fas fa-search"></i></button>
             <button id="undoButton" title="Αναίρεση αλλαγών" type="button" class="isButton undo"><i class="fas fa-undo"></i></button>
         </div>
+        <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
         <div id="folderList" name="folderList" style="padding: 15px; display:flex; flex-wrap: wrap;gap:5px;">
            
         </div>
@@ -156,6 +157,9 @@ class Folders extends HTMLElement {
             folderList = await this.getFoldersList(this.protocolNo, this.protocolYear);
         }
         const foldersArrFromDb = await this.getFolders(this.protocolNo, this.protocolYear);
+        if (foldersArrFromDb === null){
+            return;
+        }
         this.protocolFolders = foldersArrFromDb.map((item)=>{return item.folderField;})
         console.log(this.protocolFolders);
         this.selectedFolders = [...this.protocolFolders];
@@ -210,7 +214,8 @@ class Folders extends HTMLElement {
 
         const res = await runFetch("/api/getFolders.php", "GET", urlparams);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
+            return null;
         }
         else{
            return res.result;

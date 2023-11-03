@@ -19,6 +19,8 @@ let interCharges = null;
 let interToSign = null;
 let interSigned = null;
 let timer = null;
+let abortControllers = {};
+let signals = {};
 
 
 const passwordModalDiv =
@@ -85,7 +87,7 @@ const navBarDiv = `<div id="myNavBar">
 	<div  id="prosIpografi" ><a>Προς Υπογραφή</a></div>
 	<div  id="ipogegrammena" ><a>Διεκπεραιωμένα</a></div>
 		
-	<div id="xreoseis"><a><span id="protocolAppText"></span></a></div>	
+	<div id="xreoseis"><a><span id="protocolAppText">Χρεώσεις</span></a></div>	
 	<div id="protocolBookBtn"><a>Πρωτόκολλο</a></div>
 	<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>-->
 	<!--<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>-->
@@ -135,35 +137,8 @@ export function getPage(){
 	return page;
 }
 
-function pagesCommonCode(){
-	loginData = localStorage.getItem("loginData");
-	let cRole = null;
-	if (loginData === null){
-		window.location.href = "index.php";
-		alert("Δεν υπάρχουν στοιχεία χρήστη");
-		return;
-	}
-	else{
-		loginData = JSON.parse(loginData);
-		//Πρόσβαση στο Πρωτόκολλο λεκτικό
-		cRole = localStorage.getItem("currentRole");
-	}
+export function startUp(){
 	
-	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
-		<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton active"><i class="fas fa-sync"></i></button>
-		<div class="flexVertical" id="uploadBtnDiv">
-		</div>
-		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
-		<div id="outerFilterDiv" class="flexHorizontal smallPadding">
-			<div id="generalFilterDiv" class="flexHorizontal ">
-				<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
-				<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
-				<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
-			</div>
-		</div>
-		
-		<div id="recentProtocolsDiv"></div>
-	</div>`;
 
 	
 	console.log("common page code executing...");
@@ -200,9 +175,54 @@ function pagesCommonCode(){
 	document.body.insertAdjacentHTML("afterbegin",uploadModal);
 	//console.log("upload added");
 
-	document.body.insertAdjacentHTML("afterbegin",extraMenuDiv);
 	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
 	document.body.insertAdjacentHTML("beforeend",passwordModalDiv);
+
+	document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
+	document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
+	document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);	
+	document.querySelector("#protocolBookBtn>a").addEventListener("click",createProtocolUIstartUp);		
+
+	createUIstartUp();
+}
+
+function pagesCommonCode(){
+	loginData = localStorage.getItem("loginData");
+	let cRole = null;
+	if (loginData === null){
+		window.location.href = "index.php";
+		alert("Δεν υπάρχουν στοιχεία χρήστη");
+		return;
+	}
+	else{
+		loginData = JSON.parse(loginData);
+		//Πρόσβαση στο Πρωτόκολλο λεκτικό
+		cRole = localStorage.getItem("currentRole");
+	}
+	
+	//--------- Μεταφέρθηκαν στο starUp()
+
+	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
+		<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton active"><i class="fas fa-sync"></i></button>
+		<div class="flexVertical" id="uploadBtnDiv">
+		</div>
+		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
+		<div id="outerFilterDiv" class="flexHorizontal smallPadding">
+			<div id="generalFilterDiv" class="flexHorizontal ">
+				<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
+				<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
+				<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
+			</div>
+		</div>
+		
+		<div id="recentProtocolsDiv"></div>
+	</div>`;
+
+	if (document.body.querySelector("#headmasterExtraMenuDiv")){
+		document.body.querySelector("#headmasterExtraMenuDiv").remove();
+	}
+	document.querySelector("#myNavBar").insertAdjacentHTML("afterend",extraMenuDiv);
+
 
 	if (document.querySelector("#chargesTable")!==null){
 		document.querySelector("#chargesTable").remove();
@@ -276,7 +296,9 @@ function pagesCommonCode(){
 	document.querySelector("#myNavBarLogoContent").innerHTML += pwdBtn;
 	document.querySelector("#myNavBarLogoContent").innerHTML += logoutBtn;
 
-	document.querySelector("#uploadBtnDiv").insertAdjacentHTML("afterend",`<role-selector id="roleSelectorDiv"></role-selector>`);
+	if (document.querySelector("#roleSelectorDiv") == null ){
+		document.querySelector("#uploadBtnDiv").insertAdjacentHTML("afterend",`<role-selector id="roleSelectorDiv"></role-selector>`);
+	}
 
 	document.querySelector("#roleSelectorDiv").addEventListener("roleChangeEvent", async ()=>{
 		let debounceFunc = debounce( async () =>  {
@@ -292,12 +314,8 @@ function pagesCommonCode(){
 	document.querySelector("#closePasswordModalBtn").addEventListener("click",()=>{
 		document.querySelector("#passwordModal").close();
 	});	
-	
-	
-	document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
-	document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
-	document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);	
-	document.querySelector("#protocolBookBtn>a").addEventListener("click",createProtocolUIstartUp);				
+		
+		
 
 
 	//create Roles UI	
@@ -340,23 +358,23 @@ function pagesCommonCode(){
 	
 
 	document.querySelector("#syncRecords").addEventListener("click", async ()=>  { 
-		document.querySelector("#syncRecords>i").classList.add('faa-circle');
+		
 		switch (getPage()){
 			case Pages.SIGNATURE :
-				await getToSignRecordsAndFill();
-				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+				const res = await getToSignRecordsAndFill();
 				break;
 			case Pages.SIGNED :
-				await getSignedRecordsAndFill();
-				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+				res = await getSignedRecordsAndFill();
 				break;
 			case Pages.CHARGES :
 				await getChargesAndFill();
 				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
 				break;
 			case Pages.PROTOCOL :
-				await getProtocolAndFill();
+				res = await getProtocolAndFill();
+				console.log(res)
 				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+				console.log("removedddddddddd")
 				break;
 			default :
 				alert("Σελίδα μη διαθέσιμη");
@@ -541,8 +559,13 @@ async function createChargesUIstartUp(){
 	
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
-	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);	
-	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
+
+	if (document.querySelector("#topMenuNewProtocolBtnsDiv") == null){
+		document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
+	}
+	if (document.querySelector("#chargesFilterMenu") == null){
+		document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
+	}
 
 	if (document.querySelector('#reqProtocolBtn')){
 		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
@@ -792,7 +815,7 @@ export async function createUIstartUp(){
 	document.querySelector('#showEmployeesBtn').style.display = "inline-block"; 
 	document.querySelector('#showToSignOnlyBtn').style.display = "inline-block"; 
 
-	const uploadBtn=`<button class="isButton isGreen "><i class="far fa-plus-square"></i></button>`;
+	const uploadBtn=`<button class="isButton isGreen " title="Προσθήκη νέου έγγραφο"><i class="far fa-plus-square"></i></button>`;
 	document.querySelector("#uploadBtnDiv").innerHTML =uploadBtn;
 	document.querySelector("#uploadBtnDiv").addEventListener("click",()=> document.querySelector("#uploadModal").showModal());
 	//create Upload UI
@@ -936,10 +959,10 @@ async function roleChanged(){
 	// -----------------------------------------------------------								
 	//updateRolesUI();								24-10-23
 
-	document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
-	document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
-	document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);	
-	document.querySelector("#protocolBookBtn>a").addEventListener("click",createProtocolUIstartUp);		
+	//document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
+	//document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
+	//document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);	
+	//document.querySelector("#protocolBookBtn>a").addEventListener("click",createProtocolUIstartUp);		
 
     switch (page){
         case Pages.SIGNATURE :
@@ -978,21 +1001,37 @@ async function roleChanged(){
 	}
 }
 
+function getSignals(){
+	return signals;
+}
+
+function getControllers(){
+	return abortControllers;
+}
+
 export async function getToSignRecordsAndFill(){
-	const records = getSigRecords().then( res => {
+	abortControllers.toSign = new AbortController();
+	signals.toSign = abortControllers.toSign.signal;
+	
+	const records = getSigRecords(signals.toSign, getControllers()).then( res => {
 		//createSearch();
 	}, rej => {});		
 }
 
 
 export async function getSignedRecordsAndFill(){
-	const records = getSignedRecords().then( res => {
+	abortControllers.signed = new AbortController();
+	signals.signed = abortControllers.signed.signal;
+	const records = getSignedRecords(signals.signed, getControllers()).then( res => {
 		//createSearch();
 	}, rej => {});			
 }
 
 export async function getChargesAndFill(){
-	const recordsNo = await getFilteredData(pagingStart,pagingSize)
+	abortControllers.charges = new AbortController();
+	signals.charges = abortControllers.charges.signal;
+
+	const recordsNo = await getFilteredData(pagingStart,pagingSize, signals.charges, getControllers())
 		//.then( res => {
 			//createSearch();
 		//}, rej => {});	
@@ -1006,12 +1045,15 @@ export async function getChargesAndFill(){
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
 		console.log(event.currentPage);
-		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize);
+		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize, signals.charges,getControllers());
 	})		
 }
 
 export async function getProtocolAndFill(){
-	const recordsNo = await getProtocolData(pagingStart,pagingSize);
+	abortControllers.protocol = new AbortController();
+	signals.protocol = abortControllers.protocol.signal;
+
+	const recordsNo = await getProtocolData(pagingStart,pagingSize, signals.protocol, getControllers());
 		//.then( res => {
 			//createSearch();
 		//}, rej => {});
@@ -1025,7 +1067,7 @@ export async function getProtocolAndFill(){
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
 		console.log(event.currentPage);
-		const recordsNo = await getProtocolData(event.currentPage -1,pagingSize);
+		const recordsNo = await getProtocolData(event.currentPage -1,pagingSize, signals.protocol, getControllers());
 	})							
 }
 

@@ -20,6 +20,7 @@ const historyContent = `
                 </tbody>
             </table>
         </div>
+        <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
     </div>`;
 
 class History extends HTMLElement {
@@ -50,7 +51,7 @@ class History extends HTMLElement {
 
         const res = await runFetch("/api/getHistory.php", "GET", urlparams);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
             this.shadow.querySelector("#historySpinner").display = "none"; 
         }
         else{

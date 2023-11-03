@@ -236,19 +236,21 @@ class Upload extends HTMLElement {
         
         data.append('numFiles',numFiles);
             
-        const res = await runFetch("/api/uploadSigFiles.php", "POST", formdata);
+        const res = await runFetch("/api/uploadSigFiles.php", "POST", data);
         if (!res.success){
-            console.log(res.msg);
+            alert(res.msg);
         }
         else {
             //this.shadow.querySelector("#loadingDialog").close();
-            this.shadow.querySelector("#viewSelectedFiles").innerHTML = "";
-            this.shadow.querySelector("#selectedFile").value = null;
+            //this.shadow.querySelector("#viewSelectedFiles").innerHTML = "";
+            //this.shadow.querySelector("#selectedFile").value = null;
             const uploadEvent = new CustomEvent("uploadEvent",  { bubbles: true, cancelable: false });
             this.dispatchEvent(uploadEvent);
             //const records = getSigRecords().then( res => {
             //    createSearch();
-            //}, rej => {});	
+            //}, rej => {});
+            this.undoChanges();  
+            this.parentElement.close();	
             alert("Το έγγραφο έχει αποσταλεί! Μάλλον... :)");
         }
     }

@@ -125,6 +125,7 @@ const assignmentsContent = `
             <div style="background-color: var(--bs-success);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Κοιν.</div>
         </div>
         <div id="assignmentsTitle" style="color: DarkRed;font-size: 12px;">Χρεώσεις</div>
+        <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
         <div class="col-12" id="assignments" name="assignments" style="padding:0.5em;background: rgba(155, 130, 136, 0.2)!important;">
             <div id="assignmentsToAbsent" style="background: rgba(155, 130, 136, 0.2)!important;">';
             </div>';
@@ -161,6 +162,9 @@ class Assignments extends HTMLElement {
         }
         this.shadow.querySelector("#assignments").innerHTML = employeesTree;
         const chargesArrFromDb = await this.getCharges(this.protocolNo, this.protocolYear);
+        if (chargesArrFromDb === null){
+            return;
+        }
         this.protocolCharges = chargesArrFromDb.map((item)=>{
             const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment)};
             return charge;
@@ -364,7 +368,8 @@ class Assignments extends HTMLElement {
         let urlparams = new URLSearchParams({protocolNo, currentYear : this.protocolYear});
         const res = await runFetch("/api/getCharges.php", "GET", urlparams);
         if (!res.success){
-            alert(res.msg);
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
+            return null;
         }
         else{
             return res.result;

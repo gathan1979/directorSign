@@ -39,8 +39,8 @@
 		<!--fontawesome-->
 				
 		<script type="module" >
-			import {createUIstartUp, getPage, getToSignRecordsAndFill, getSignedRecordsAndFill, getChargesAndFill, getProtocolAndFill, Pages} from "./modules/UI_test.js";
-			createUIstartUp();
+			import {startUp, createUIstartUp, getPage, getToSignRecordsAndFill, getSignedRecordsAndFill, getChargesAndFill, getProtocolAndFill, Pages} from "./modules/UI_test.js";
+			startUp();
 			
 		</script>
 	

@@ -2,7 +2,6 @@ import refreshToken from "./RefreshToken.js"
 import getFromLocalStorage from "./LocalStorage.js"
 import {uploadFileTest} from "./Upload.js";
 import { createSearch } from "./Filter.js";
-import runFetch, {FetchResponseType} from "./CustomFetch.js";
 
 
 const entityMap = {
@@ -320,54 +319,127 @@ export function createActionsTemplate(){
 //------------------------------------------------------ΑΠΟ ΕΔΩ ΚΑΙ ΚΑΤΩ ΜΕΘΟΔΟΙ ---------------------------------------------------------------------------------
 
 export async function getUserData(){
-	const res = await runFetch("/api/getUserData.php", "GET", null);
-	if (!res.success){
-		console.log(res.msg);
+	// const loginData = JSON.parse(localStorage.getItem("loginData"));
+	// const jwt = loginData.jwt;
+	// console.log(jwt);
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let init = {method: 'POST', headers : myHeaders};
+	console.log(init);
+	const res = await fetch("/api/getUserData.php",init);
+	if (!res.ok){
+		if (res.status>=400 && res.status <= 499){
+			refreshToken();
+			getUserData();
+		}
+		else{
+			const error = new Error("unauthorized")
+			error.code = "400"
+			throw error;
+		}
 	}
 	else{
-		return  res.result;
+		return res.json();
 	}
 }
 
 async function getRecordHistory(aa){
+	console.log("retrieving history ... !!");
+	//document.querySelector("#recordsSpinner").style.display = 'inline-block';
 	const {jwt,role} = getFromLocalStorage();
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
 	let init = {method: 'GET', headers : myHeaders};
+	//console.log(init);
 
 	const params = new URLSearchParams({
 		role: role,
 		aa
 	});
 
-	const res = await runFetch("/api/getRecordHistory.php", "GET", params);
-	if (!res.success){
-		console.log(res.msg);
+	const res = await fetch("/api/getRecordHistory.php?"+params,init);
+	if (!res.ok){
+		//document.querySelector("#recordsSpinner").style.display = 'none';
+		if (res.status == 401){
+			const reqToken = await refreshToken();
+			if (reqToken ==1){
+				getRecordHistory(aa);
+				const error = new Error("token expired")
+				error.code = "400"
+				throw error;
+			}
+			else{
+				alert('σφάλμα εξουσιοδότησης');
+				const error = new Error("token invalid")
+				error.code = "400"
+				throw error;
+			}
+		}
+		else{
+			const error = new Error("unauthorized")
+			error.code = "400"
+			throw error;
+		}
 	}
 	else{
-		const result =  res.result;     
+		//return res;
 		//document.querySelector("#recordsSpinner").style.display = 'none';
-		fillHistoryModal(result);
+		fillHistoryModal(await res.json());
 		return "ok";
 	}
 }
 
 
-export async function getSigRecords(){
+export async function getSigRecords(signal, controllers){
+	document.querySelector("#syncRecords>i").classList.add('faa-circle');
+
 	const {jwt,role} = getFromLocalStorage();
-	console.log("begin")
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let init = {method: 'GET', headers : myHeaders};
+	//console.log(init);
+
 	const params = new URLSearchParams({
-		role
+		role: role
 	});
-	const res = await runFetch("/api/getSigRecords.php", "GET", params);
-	if (!res.success){
-		console.log(res.msg);
+	
+	for (const [key, value] of Object.entries(controllers)) {
+		if (key !== "toSign"){
+			value.abort();
+		}
+	}
+
+	init.signal = signal;
+
+	const res = await fetch("/api/getSigRecords.php?"+params,init);
+	if (!res.ok){
+		//document.querySelector("#recordsSpinner").style.display = 'none';
+		//document.querySelector("#myNavBar").classList.remove("disabledDiv");
+		if (res.status == 401){
+			const reqToken = await refreshToken();
+			if (reqToken ==1){
+				getSigRecords(signal, controllers)
+				const error = new Error("token expired")
+				error.code = "400"
+				throw error;
+			}
+			else{
+				alert('σφάλμα εξουσιοδότησης');
+				const error = new Error("token invalid")
+				error.code = "400"
+				throw error;
+			}
+		}
+		else{
+			const error = new Error("unauthorized")
+			error.code = "400"
+			throw error;
+		}
 	}
 	else{
-		console.log("result")
-		const result =  res.result; 
-		fillTableToBeSigned(result);
-		return "ok";
+		fillTableToBeSigned(await res.json());
+		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+		return 1;
 	}
 }
 
@@ -613,21 +685,44 @@ function prepareFindProtocolDebounce(){
 async function findLinkProtocol(protocolNo, currentYear){
 	if(protocolNo == ""){
 		document.querySelector("#searchProtocolResultDiv").innerHTML = "";
-		return;  
+		return;
 	}
 	else if(currentYear == ""){
 		document.querySelector("#searchProtocolResultDiv").innerHTML = "";
 		return;
 	}
-
+	//console.log("pass")
+	const {jwt,role} = getFromLocalStorage();
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
 	let urlParams = new URLSearchParams({protocolNo, currentYear});
 
-	const res = await runFetch("/api/getLinkProtocol.php", "GET", urlParams);
-	if (!res.success){
-		console.log(res.msg);
+	let init = {method: 'GET', headers : myHeaders};
+	const res = await fetch("/api/getLinkProtocol.php?"+urlParams,init);
+	if (!res.ok){
+		const resdec = await res.json();
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ==1){
+				findLinkProtocol(protocolNo, year);
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");
+			}
+		}
+		else if (res.status==403){
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+		}
+		else if (res.status==404){
+			alert("το πρωτόκολλο δε βρέθηκε");
+		}
+		else{
+			alert("Σφάλμα!!!");
+		}
 	}
-	else{  
-		document.querySelector("#searchProtocolResultDiv").innerHTML = res.result;
+	else {
+		const resdec = await res.json();
+		document.querySelector("#searchProtocolResultDiv").innerHTML = resdec;
 	}
 }
 
@@ -636,16 +731,39 @@ function closeFileMoveDialog(){
 }
 
 async function moveSignedToProtocol(filename, folder="",relevantDocs, protocolNo, year){
-	let formdata = new FormData();
+	const formdata = new FormData();
 	formdata.append("filename", filename);
 	formdata.append("folder",folder);
 	formdata.append("relevantDocs",relevantDocs);
 	formdata.append("protocolNo",protocolNo);
 	formdata.append("year",year);
-
-	const res = await runFetch("/api/moveSignedToProtocol.php", "POST", formdata);
-	if (!res.success){
-		console.log(res.msg);
+	const {jwt,role} = getFromLocalStorage();
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let init = {method: 'POST', headers : myHeaders, body : formdata};
+	const res = await fetch("/api/moveSignedToProtocol.php",init);
+	if (!res.ok){
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ===1){
+				moveSignedToProtocol(filename, folder="",protocolNo, year);
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");
+			}
+		}
+		else if (res.status==403){
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πρωτόκολλο");
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		else if (res.status==500){
+			alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
+		}
+		else {
+			alert("Σφάλμα");
+		}
 	}
 	else {
 		alert("Το αρχείο μεταφέρθηκε με επιτυχία");
@@ -658,14 +776,40 @@ export async function viewFile(filename, folder=""){
 		alert("Δεν έχει οριστεί όνομα αρχείου");
 		return;
 	}
-
+	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename), folder});
-	const res = await runFetch("/api/viewFile.php", "GET", urlpar, FetchResponseType.blob);
-	if (!res.success){
-		console.log(res.msg);
+	const jwt = loginData.jwt;
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+	let init = {method: 'GET', headers : myHeaders};
+
+	const res = await fetch("/api/viewFile.php?"+urlpar,init);
+	if (!res.ok){
+		if (res.status ==  401){
+			const resRef = await refreshToken();
+			if (resRef ===1){
+				viewFile(filename, folder);
+			}
+			else{
+				alert("σφάλμα εξουσιοδότησης");
+			}
+		}
+		else if (res.status==403){
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		else if (res.status==500){
+			alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
+		}
+		else {
+			alert("Σφάλμα");
+		}
 	}
-	else{  
-		const dispHeader = res.responseHeaders.get('Content-Disposition');
+	else {
+
+		const dispHeader = res.headers.get('Content-Disposition');
 		if (dispHeader !== null){
 			const parts = dispHeader.split(';');
 			filename = parts[1].split('=')[1];
@@ -675,7 +819,7 @@ export async function viewFile(filename, folder=""){
 			filename = "tempfile.tmp";
 		}
 		const fileExtension = filename.split('.').pop();
-		const blob = res.result;
+		const blob = await res.blob();
 		const href = URL.createObjectURL(blob);
 		const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
 
@@ -805,12 +949,17 @@ export async function signExactCopy(aa){
 		//----------------------------------------------------------------------------------------------------
 
 	const {jwt,role} = getFromLocalStorage();
-	
+	const myHeaders = new Headers();
+	myHeaders.append('Authorization', jwt);
+
+	//const comment = document.getElementById('signText').value;
 	let formData = new FormData();
-	
+	// signDocument(aa, isLast=0, objection=0)
 	formData.append("role", role);
 	formData.append("aa", aa);
-
+	//formData.append("comment", comment);
+	//formData.append("objection", objection);
+	//formData.append("isLast", isLast);
 	formData.append("provider", providerName);
 	const extraFieldsStatus =keys.every( key => {
 		if (params[key].type === "file"){
@@ -835,9 +984,12 @@ export async function signExactCopy(aa){
 		return;
 	};
 
-	const res = await runFetch("/api/signSendFile.php", "POST", formData);
-	if (!res.success){
-		console.log(res.msg);
+	let init = {method: 'POST', headers : myHeaders, body : formData};
+	const res = await fetch("/api/signSendFile.php",init);
+	if (!res.ok){
+		document.querySelector('#signExactCopyBtn').removeAttribute("disabled");
+		document.querySelector('#signSpinner').style.display = "none";
+		const resdec = res.json();
 		if (res.status ==  401){
 			if (resdec === "mindigital"){
 				alert("Αποσυνδεθείτε και επανασυνδεθείτε στο σύστημα υπογραφών Mindigital");
@@ -851,6 +1003,15 @@ export async function signExactCopy(aa){
 					alert("σφάλμα εξουσιοδότησης");
 				}
 			}
+		}
+		else if (res.status==403){
+			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+		}
+		else if (res.status==404){
+			alert("το αρχείο δε βρέθηκε");
+		}
+		else{
+			alert("Σφάλμα!!!");
 		}
 	}
 	else {
@@ -1555,9 +1716,9 @@ async function requestOTP(){
 
 
 
-export async function getSignedRecords(){
-	document.querySelector("#myNavBar").classList.toggle("disabledDiv");
-	document.querySelector("#recordsSpinner").style.display = 'inline-block';
+export async function getSignedRecords(signal,controllers){
+	document.querySelector("#syncRecords>i").classList.add('faa-circle');
+
 	const {jwt,role} = getFromLocalStorage();	
 	const myHeaders = new Headers();
 	myHeaders.append('Authorization', jwt);
@@ -1567,15 +1728,27 @@ export async function getSignedRecords(){
 	const params = new URLSearchParams({
 		role: role
 	});
+	if (signal !== null || signal !==undefined){
+		init.signal = signal;	
+	}
 	
+	for (const [key, value] of Object.entries(controllers)) {
+		if (key !== "signed"){
+			console.log("aborting "+ key)
+			value.abort();
+		}
+	}
+
+	init.signal = signal;
+
 	const res = await fetch("/api/getSignedRecords.php?"+params,init); 
 	if (!res.ok){
 		if (res.status == 401){
-			document.querySelector("#recordsSpinner").style.display = 'none';
-			document.querySelector("#myNavBar").classList.remove("disabledDiv");
+			//document.querySelector("#recordsSpinner").style.display = 'none';
+			//document.querySelector("#myNavBar").classList.remove("disabledDiv");
 			const reqToken = await refreshToken();
 			if (reqToken ==1){
-				getSignedRecords();
+				getSignedRecords(signal,controllers);
 				const error = new Error("token expired")
 				error.code = "400"
 				throw error;
@@ -1596,9 +1769,8 @@ export async function getSignedRecords(){
 	else{
 		//return res;
 		fillTableWithSigned(await res.json());
-		document.querySelector("#recordsSpinner").style.display = 'none';
-		document.querySelector("#myNavBar").classList.remove("disabledDiv");
-		return "ok";
+		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+		return 1;
 	}
 }
 
@@ -1650,7 +1822,7 @@ export function fillTableWithSigned(result){
 		let relevantDocsElement = "&nbsp&nbsp&nbsp";
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
-				relevantDocsElement +='<i id="rel_btn_'+result[key]['revisionId']+'_'+l+'" class="isButton outline fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>&nbsp';		
+				relevantDocsElement +='<i id="rel_btn_'+result[key]['revisionId']+'_'+l+'" class="isButton fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>&nbsp';		
 			}
 		}						
 		
@@ -1779,6 +1951,3 @@ async function requestExactCopy(event){
 		return("Το αίτημα έχει καταχωρηθεί");
 	}
 }
-
-
-

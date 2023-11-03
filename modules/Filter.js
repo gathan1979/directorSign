@@ -29,14 +29,14 @@ localStorage.setItem("filter", JSON.stringify(filter));
 	
 export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
 		// diff = 0 είναι για υπογραφή στο τμήμα
-	const table = document.querySelector("#"+tableName);
-
+	const table = document.querySelector("#"+tableName+">div");
+	console.log(table)
 	//console.log(searchObject)
-	for (const tempRow of Array.from(table.rows)){                       			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
+	for (const tempRow of Array.from(table)){                       			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
 		if (tempRow.dataset.author && tempRow.dataset.diff){   	// απορρίπτει γραμμές του header, footer
 			let hide = false;
 			for(const [key,value] of Object.entries(searchObject.dataKeys)){
-				console.log(key,value,tempRow.dataset[key] );
+				//console.log(key,value,tempRow.dataset[key] );
 				if (value != null){
 					if (tempRow.dataset[key] != value){
 						hide = true;
@@ -49,7 +49,7 @@ export function filterTable (tableName, searchObject){   	// searchObject exampl
 				for (const cell of tempRow.cells){
 					if (cell.textContent.indexOf(searchObject.searchString) !== -1){
 						findTextInRow = true;
-						console.log("το κείμενο βρέθηκε στη γραμμή ")
+						//console.log("το κείμενο βρέθηκε στη γραμμή ")
 					}
 				}
 			}
@@ -107,14 +107,14 @@ export function createSearch(event) {
 	else{
 		filterObject.searchString = null;
 	}
-	console.log(filterObject);
+	//console.log(filterObject);
 	let debouncedFilter = null;
 	const page = getPage();
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
 		 debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
 	}
-	else if (page == Pages.CHARGES){
-		 debouncedFilter = debounce( () => filterTable("chargesTable",filterObject));
+	else if (page == Pages.CHARGES || Pages.PROTOCOL){
+		 debouncedFilter = debounce( () => filterTable("chargesTableContent",filterObject));
 	}
 	debouncedFilter();
 }
