@@ -74,13 +74,13 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	let tableContent = "";
 	for (const record of result){
 		if(record["statusField"]=="1"){ //Προς αρχείο
-			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, DarkOrange); justify-content:center;" data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, DarkOrange);" data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}
 		else if(record["statusField"]=="2"){ // Αρχείο
-			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, Gray); justify-content:center;" data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, Gray); " data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}
 		else if(record["statusField"]=="0"){ //Εκκρεμ.
-			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, lightGray); justify-content:center;" data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, lightGray); " data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}	
 		
 

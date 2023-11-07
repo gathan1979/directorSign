@@ -19,8 +19,8 @@ let interCharges = null;
 let interToSign = null;
 let interSigned = null;
 let timer = null;
-let abortControllers = {};
-let signals = {};
+export let abortControllers = {};
+export let signals = {};
 
 
 const passwordModalDiv =
@@ -372,9 +372,8 @@ function pagesCommonCode(){
 				break;
 			case Pages.PROTOCOL :
 				res = await getProtocolAndFill();
-				console.log(res)
+				//console.log(res)
 				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
-				console.log("removedddddddddd")
 				break;
 			default :
 				alert("Σελίδα μη διαθέσιμη");
@@ -819,7 +818,11 @@ export async function createUIstartUp(){
 	document.querySelector("#uploadBtnDiv").innerHTML =uploadBtn;
 	document.querySelector("#uploadBtnDiv").addEventListener("click",()=> document.querySelector("#uploadModal").showModal());
 	//create Upload UI
-	document.querySelector("#uploadModal").innerHTML = `<file-upload></file-upload>`;
+	document.querySelector("#uploadModal").innerHTML = `<file-upload id="fileUploadDiv"></file-upload>`;
+
+	document.querySelector("#fileUploadDiv").addEventListener("uploadEvent", async ()=>{
+		const toSignRes = await getToSignRecordsAndFill(); 
+	})
 
 	//document.querySelector("#selectedFile").addEventListener("change",() => enableFileLoadButton());
 	//document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
@@ -1005,7 +1008,7 @@ function getSignals(){
 	return signals;
 }
 
-function getControllers(){
+export function getControllers(){
 	return abortControllers;
 }
 

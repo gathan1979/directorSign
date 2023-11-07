@@ -2,6 +2,7 @@ import refreshToken from "./RefreshToken.js"
 import getFromLocalStorage from "./LocalStorage.js"
 import {uploadFileTest} from "./Upload.js";
 import { createSearch } from "./Filter.js";
+import {signals, abortControllers, getControllers} from "./UI_test.js"
 
 
 const entityMap = {
@@ -292,7 +293,7 @@ export function createActionsTemplate(){
         const isExactCopy = e.relatedTarget.getAttribute('data-isExactCopy');
         const relevantBtn = document.querySelector("#rejectButton");
         const relevantText = document.querySelector("#rejectText");
-		relevantText.textContent = "";
+		relevantText.value = "";
         
         relevantText.addEventListener("keyup",()=> {if(relevantText.value != ""){relevantBtn.removeAttribute("disabled")}else{relevantBtn.setAttribute("disabled",true)} });
         relevantBtn.addEventListener("click",() => rejectDocument(+recordAA, isExactCopy));
@@ -476,12 +477,9 @@ export function fillTableToBeSigned(result){
 	//const table = $('#example1').DataTable();
 	//table.clear().draw();
 
-	const table = document.getElementById("dataToSignTable");
-	var rows = table.rows;
-	var i = rows.length;
-	while (--i) {
-		table.deleteRow(i);
-	}
+	const table = document.querySelector("#dataToSignTable>tbody");
+	console.log(table)
+	table.innerHTML = "";
 
 	if (localStorage.getItem("loginData") == null){
 		alert("Δεν υπάρχουν πληροφορίες σύνδεσης");
@@ -501,6 +499,7 @@ export function fillTableToBeSigned(result){
 	}
 
 	for (let key=0;key<result.length;key++) {
+		//document.querySelector("#"+tableName+">tr")
 		let row = table.insertRow(-1); // We are adding at the end
 		let c1 = row.insertCell(0);
 		let c2 = row.insertCell(1);
@@ -1220,11 +1219,16 @@ export async function rejectDocument(aa, isExactCopy=0){
 		const myModalEl = document.querySelector("#rejectModal");
 		const modal = bootstrap.Modal.getInstance(myModalEl)
 		modal.hide();
-		alert("Το έγγραφο έχει διαγραφεί! Μάλλον...");
-		const records = getSigRecords().then( res => {
-			createSearch();
-		}, rej => {});
-	}
+
+		abortControllers.toSign = new AbortController();
+		signals.toSign = abortControllers.toSign.signal;
+		
+		const records = getSigRecords(signals.toSign, getControllers()).then( res => {
+			//createSearch();
+			alert("Το έγγραφο έχει διαγραφεί! Μάλλον...");
+		}, rej => {});	
+		}
+		
 }
 
 export async function returnDocument(aa){

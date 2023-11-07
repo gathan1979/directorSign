@@ -565,3 +565,26 @@ td .fa-crosshairs{
 .undo{
 	background-color : cadetblue;
 }
+
+@media (max-width: 800px) {
+	#dataToSignTable {
+		overflow-x: scroll;
+	}
+	#chargesTableContent>div{
+		justify-content : space-evenly;
+	}
+
+	#chargesTableHeader>div{
+		justify-content : space-evenly;
+	}
+
+	#chargesTableContent>div>span:nth-child(n+5){
+		display:none;
+	}
+
+	#chargesTableHeader>div>span:nth-child(n+5){
+		display:none;
+	}
+
+
+}

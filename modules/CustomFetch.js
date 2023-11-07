@@ -55,7 +55,7 @@ export default async function runFetch(url, method, params, responseType = Fetch
                 }
                 else{
                     msg = ("Σφάλμα εξουσιοδότησης");
-                    window.location = "10.142.49.10/directorSign/"	
+                    window.location = "//10.142.49.10/directorSign/"	
                 }
             }
             else{

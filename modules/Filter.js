@@ -1,6 +1,6 @@
 import refreshToken from "./RefreshToken.js";
 import getFromLocalStorage from "./LocalStorage.js";
-import {getPage, Pages} from "./UI_test.js";
+import {getPage, Pages, getChargesAndFill} from "./UI_test.js";
 import { getFilteredData } from "./ProtocolData.js";
 
 let filter = {};
@@ -29,7 +29,15 @@ localStorage.setItem("filter", JSON.stringify(filter));
 	
 export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
 		// diff = 0 είναι για υπογραφή στο τμήμα
-	const table = document.querySelector("#"+tableName+">div");
+	let table = null;
+	const page = getPage();
+	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
+		table = document.querySelectorAll("#"+tableName+">tbody");
+	}	
+	else{
+		table = document.querySelector("#"+tableName+">div");
+	}
+
 	console.log(table)
 	//console.log(searchObject)
 	for (const tempRow of Array.from(table)){                       			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
@@ -135,8 +143,8 @@ export default function createFilter(parentElement){
 	console.log(userData.roles[currentRole].protocolAccessLevel);
 	let parentElementContent = "";
 	if (userData.roles[currentRole].protocolAccessLevel == 1){
-			parentElementContent =`<div id="upperToolBar">
-					<div style="padding-top:0.3em;">
+			parentElementContent =`<div id="upperToolBar" class="flexVertical" style="padding: 1em;">
+					<div class="flexHorizontal" style="padding-top:0.3em;">
 							<div ><i class="fas fa-filter"></i><b> Αχρέωτα : </b></div>
 							<div >
 								<select id="noAssignmentfilter" class="form-control-sm"  data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα εγγραφών χωρίς καμιά χρέωση">
@@ -145,19 +153,19 @@ export default function createFilter(parentElement){
 								</select>
 							</div>
 					</div>
-					<div  style="padding-top:0.3em;">
+					<div class="flexHorizontal" style="padding-top:0.3em;">
 							<div ><i class="fas fa-filter"></i><b> Ημερ. : </b></div>
 							<div >
 								<input type="date" id="datefilter" class="form-control-sm"  data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα εγγραφών με ημερομηνία"/>
 							</div>
 					</div>
-					<div  style="padding-top:0.3em;">
+					<div class="flexHorizontal" style="padding-top:0.3em;">
 							<div ><i  class="fas fa-filter" ></i><b> Προς Αρχείο : </b></div>
 							<div >
 								<input  type="checkbox"  id="showForArchive" />
 							</div>
 					</div>
-					<div  style="padding-top:0.3em;">
+					<div class="flexHorizontal" style="padding-top:0.3em;">
 							<div ><i  class="fas fa-filter" ></i><b> Απόκρυψη αρχειοθετημένων : </b></div>
 							<div >
 								<input  type="checkbox"  id="hideArchieved" />
@@ -168,8 +176,8 @@ export default function createFilter(parentElement){
 			</div>`;		
  	}
 	else if (userData.roles[currentRole].accessLevel ==1){
-			parentElementContent =`<div id="upperToolBar" >
-				<div style="padding-top:0.3em;">
+			parentElementContent =`<div id="upperToolBar" class="flexVertical" style="padding: 1em;">
+				<div class="flexHorizontal" style="padding-top:0.3em;">
 					<div  style="padding-top:0.3em;"><i class="fas fa-filter"></i><b> Αχρέωτα : </b></div>
 					<div  style="padding-bottom:0.3em;padding-top:0.3em;">
 						<select id="noAssignmentfilter" class="form-control-sm"  data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα εγγραφών χωρίς καμιά χρέωση">
@@ -178,13 +186,13 @@ export default function createFilter(parentElement){
 						</select>
 					</div>
 				</div>
-				<div style="padding-top:0.3em;">
+				<div class="flexHorizontal" style="padding-top:0.3em;">
 					<div  style="padding-top:0.3em;"><i class="fas fa-filter"></i><b> Ημερ. : </b></div>
 					<div  style="padding-bottom:0.3em;padding-top:0.3em;">
 						<input type="date" id="datefilter" class="form-control-sm"  data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα εγγραφών με ημερομηνία"/>
 					</div>
 				</div>
-				<div style="padding-top:0.3em;">
+				<div class="flexHorizontal" style="padding-top:0.3em;">
 					<div  style="padding-top:0.3em;"><i class="fas fa-filter"></i><b> Τελευταίες Χρεώσεις : </b></div>
 					<div  style="padding-bottom:0.3em;padding-top:0.3em;">
 						<select id="lastAssignedFilter" class="form-control-sm"  data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα με βάση τη χρέωση">
@@ -193,7 +201,7 @@ export default function createFilter(parentElement){
 						</select>
 					</div>	
 				</div>
-				<div style="padding-top:0.3em;">
+				<div class="flexHorizontal" style="padding-top:0.3em;">
 					<div  style="padding-top:0.3em;"><i class="fas fa-filter"></i><b> Απόκρυψη Κοινοποιήσεων : </b></div>
 					<div  style="padding-bottom:0.3em;padding-top:0.3em;">
 						<select id="hideNotificationsFilter" class="form-control-sm"  data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα κοινοποιήσεων">
@@ -205,8 +213,8 @@ export default function createFilter(parentElement){
 			</div>`;	
 	}	
 	else{ 
-			parentElementContent =`<div id="upperToolBar" >
-				<div style="padding-top:0.3em;">
+		parentElementContent =`<div id="upperToolBar" class="flexVertical" style="padding: 1em;">
+				<div class="flexHorizontal" style="padding-top:0.3em;">
 					<div  style="padding-top:0.3em;"><i class="fas fa-filter"></i><b> Τελευταίες Χρεώσεις : </b></div>
 					<div  style="padding-bottom:0.3em;padding-top:0.3em;">
 						<select id="lastAssignedFilter" class="form-control-sm" data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα με βάση τη χρέωση">
@@ -215,7 +223,7 @@ export default function createFilter(parentElement){
 						</select>
 					</div>	
 				</div>
-				<div style="padding-top:0.3em;">
+				<div class="flexHorizontal" style="padding-top:0.3em;">
 					<div  style="padding-top:0.3em;"><i class="fas fa-filter"></i><b> Απόκρυψη Κοινοποιήσεων : </b></div>
 					<div  style="padding-bottom:0.3em;padding-top:0.3em;">
 						<select id="hideNotificationsFilter" class="form-control-sm"  data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα κοινοποιήσεων">
@@ -337,29 +345,38 @@ export function updateFilterStorage(){
 
 function addListeners(){
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;
+	if (userData == null){
+		console.log("Δε βρέθηκαν δεδομένα χρήστη κατά την προσθήκη listeners")
+		return;
+	}
 	const currentRole = localStorage.getItem("currentRole");
+	if (currentRole == null){
+		console.log("Δε βρέθηκε ρόλος χρήστη");
+		return;
+	}
 	//administrator
-	document.getElementById("showForArchive")?document.getElementById("showForArchive").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
-	document.getElementById("hideArchieved")?document.getElementById("hideArchieved").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+	document.getElementById("showForArchive")?document.getElementById("showForArchive").addEventListener("change",()=> getChargesAndFill()):null;
+	document.getElementById("hideArchieved")?document.getElementById("hideArchieved").addEventListener("change",()=> getChargesAndFill()):null;
 	//user
 	//head
 	if (userData.roles[currentRole].protocolAccessLevel == 1){
-		console.log("event listener if protocolAccessLevel");
-		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
-		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+		//console.log("event listener if protocolAccessLevel");
+		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> getChargesAndFill()):null;
+		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> getChargesAndFill()):null;
 	}
 	else if (userData.roles[currentRole].accessLevel == 1){
-		console.log("event listener else if");
-		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
-		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
-		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
-		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+		//console.log("event listener else if");
+		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> getChargesAndFill()):null;
+		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> getChargesAndFill()):null;
+		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> getChargesAndFill()):null;
+		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> getChargesAndFill()):null;
 	}
 	else{
-		console.log("event listener else");
-		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
-		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> getFilteredData(pagingStart, pagingSize)):null;
+		//console.log("event listener else");
+		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> getChargesAndFill()):null;
+		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> getChargesAndFill()):null;
 	}
 }
+
 
 // Filters ----
