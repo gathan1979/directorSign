@@ -537,6 +537,10 @@ td .fa-crosshairs{
 	background-color: var(--bs-secondary);
 }
 
+.primary{
+	background-color: var(--bs-primary);
+}
+
 .customModal{
 	font-family : 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

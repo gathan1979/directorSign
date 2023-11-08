@@ -2,7 +2,8 @@ import refreshToken from "./RefreshToken.js"
 import getFromLocalStorage from "./LocalStorage.js"
 import {uploadFileTest} from "./Upload.js";
 import { createSearch } from "./Filter.js";
-import {signals, abortControllers, getControllers} from "./UI_test.js"
+import {signals, abortControllers, getControllers} from "./UI_test.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 
 const entityMap = {
@@ -97,24 +98,21 @@ export function createActionsTemplate(){
         </div>`;
 
     const rejectModalDiv =
-        `<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document" >
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <b>Οριστική Απόρριψη Εγγράφου</b>
-                    </div>
-                    <div class="modal-body" id="rejectForm">
-                        <textarea id="rejectText" cols="100" rows="3" size="200" class="form-control" placeholder="το κείμενο είναι απαραίτητο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <div class="otherContentFooter">
-                        </div>
-                        <button id="closeRejectModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </div>`;
+        `<dialog class="customDialog" id="rejectModal">
+			<div class="customDialogContentTitle">
+				<span style="font-weight:bold;" id="rejectDialogTitle">Οριστική Απόρριψη Εγγράφου</span>
+				<div class="topButtons" style="display:flex;gap: 7px;">
+					<div class="topActionButtons"></div>
+					<button class="isButton " name="closeRejectModalBtn" id="closeRejectModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+				</div>
+			</div>
+			<div class="customDialogContent">
+				<div class="modal-body" id="rejectForm">
+					<textarea id="rejectText" cols="100" rows="3" size="200" class="form-control" placeholder="το κείμενο είναι απαραίτητο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+				</div>
+			</div>
+			<div class="modal-footer"></div>
+        </dialog>`;
 
     const returnModalDiv =
         `<div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-labelledby="returnModalLabel" aria-hidden="true">
@@ -137,24 +135,19 @@ export function createActionsTemplate(){
         </div>`;
 
     const historyModalDiv =
-        `<div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="historyModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document" style="max-width : 80%">
-                <div class="modal-content">
-                    <div class="modal-header"> 
-                        <b>Ιστορικό Εγγράφου</b>
-                    </div>
-                    <div class="modal-body" id="historyBody">
-
-                    </div>
-                    <div class="modal-footer">
-                        <div class="otherContentFooter">
-                        </div>
-                        <button id="closeHistoryModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </div>`;  
+        `<dialog class="customDialog" id="historyModal">
+			<div class="customDialogContentTitle">
+					<span style="font-weight:bold;" id="rejectDialogTitle">Ιστορικό Εγγράφου</span>
+					<div class="topButtons" style="display:flex;gap: 7px;">
+						<div class="topActionButtons"></div>
+						<button class="isButton " name="closeHistoryModalBtn" id="closeHistoryModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+					</div>
+			</div>
+			<div class="customDialogContent">	
+				<div id="historyBody" class="flexVertical" style="background-color: white;gap : 1em;"></div>
+			</div>
+			<div class="modal-footer"></div>
+        </dialog>`;  
 
 	if (document.querySelector("#signModal") !== null){
  		document.querySelector("#signModal").remove();
@@ -286,18 +279,6 @@ export function createActionsTemplate(){
         // }
     })
 
-    document.querySelector("#rejectModal").addEventListener("show.bs.modal",(e)=> {
-        const contentFooterDivContent = `<button id="rejectButton" type="button" class="btn btn-danger" disabled>Απόρριψη</button>`;
-        document.querySelector("#rejectModal .otherContentFooter").innerHTML = contentFooterDivContent;
-        const recordAA = e.relatedTarget.getAttribute('data-whatever');
-        const isExactCopy = e.relatedTarget.getAttribute('data-isExactCopy');
-        const relevantBtn = document.querySelector("#rejectButton");
-        const relevantText = document.querySelector("#rejectText");
-		relevantText.value = "";
-        
-        relevantText.addEventListener("keyup",()=> {if(relevantText.value != ""){relevantBtn.removeAttribute("disabled")}else{relevantBtn.setAttribute("disabled",true)} });
-        relevantBtn.addEventListener("click",() => rejectDocument(+recordAA, isExactCopy));
-    });
 
     document.querySelector("#returnModal").addEventListener("show.bs.modal",(e)=> {
         const contentFooterDivContent = `<button id="returnButton" type="button" class="btn btn-warning" disabled>Επιστροφή</button>`;
@@ -310,10 +291,6 @@ export function createActionsTemplate(){
         relevantBtn.addEventListener("click",() => returnDocument(+recordAA));
     });
 
-    document.querySelector("#historyModal").addEventListener("show.bs.modal",(e)=> {
-        const recordAA = e.relatedTarget.getAttribute('data-whatever');
-        getRecordHistory(recordAA);
-    });
 
 }
 
@@ -385,8 +362,8 @@ async function getRecordHistory(aa){
 	else{
 		//return res;
 		//document.querySelector("#recordsSpinner").style.display = 'none';
-		fillHistoryModal(await res.json());
-		return "ok";
+		const resDec = await res.json();
+		return resDec;
 	}
 }
 
@@ -449,22 +426,31 @@ function fillHistoryModal(result){
 	document.querySelector("#historyBody").innerHTML ="";
 	let insertDate = result[0]['date'];
 	for (let key=0;key<result.length;key++) {
-		let tmpElement ="";
-        if (result[key]['depName'] !=""){
-            tmpElement = '<div style="font-size:0.8em;margin:1em;"><i style="margin-right:0.5em;" class="fas fa-arrow-circle-down"></i>'+result[key]['depName']+'</div>';
-        }
-		if (result[key]['hasObjection'] ==1){
-			tmpElement += '<div class="flexHorizontal"><span style="align-self: center;margin-left:3px;background-color :darkorange!important" class="badge rounded-pill bg-warning " title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></span>';
+		let tmpElement = "";
+		if (+result[key]['nextLevel'] == -2){
+			tmpElement = `<div class="flexHorizontal" style="background-color: tomato;">`;
 		}
 		else{
-			tmpElement += "<div class='flexHorizontal' style='margin-left:2em;'>"
+			tmpElement = `<div class="flexHorizontal">`;
 		}
+		
+		if (+result[key]['dep'] !== 0){
+			tmpElement += '<div style="font-size:0.8em;margin:1em; flex-basis: 20%;"><i style="margin-right:0.5em;" class="fas fa-arrow-circle-down"></i>'+result[key]['depName']+'</div>';
+		}
+		else{
+			tmpElement += '<div style="font-size:0.8em;margin:1em; flex-basis: 20%;"><i style="margin-right:0.5em;" class="fas fa-arrow-circle-down"></i>'+result[key-1]['nextLevelName']+'</div>';
+		}
+		if (result[key]['hasObjection'] ==1){
+			tmpElement += '<span style="align-self: center;margin-left:3px;background-color :darkorange!important" class="badge rounded-pill bg-warning " title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></span>';
+		}
+
 		tmpElement += '<div style="width:30%;" class="filenameDiv"><button  id="historyRecord_'+result[key]['aa']+'" class="btn btn-success btn-sm" >'+
 										result[key]['filename']+'</button>'+"</div><div style='width:30%;text-align:center;'>"+
 										result[key]['fullname']+"</div><div style='width:20%;text-align:center;'>"+
-										result[key]['comments']+"</div><div style='width:20%;text-align:center;'>"+result[key]['date']+"</div></div>";
-		const arrow = '<div style="font-size:0.8em;margin:1em;"><i style="margin-right:0.5em;" class="fas fa-arrow-circle-down"></i>'+result[key]['nextLevelName']+'</div>';
-        tmpElement += arrow;
+										result[key]['comments']+"</div><div style='width:20%;text-align:center;'>"+result[key]['date']+"</div>";
+		tmpElement +="<div>";
+		
+        
         //console.log(tmpElement);
         document.querySelector("#historyBody").innerHTML += tmpElement;
 	}
@@ -598,8 +584,8 @@ export function fillTableToBeSigned(result){
 				}
 			}
 		}	
-		historyBtn = '<button  class="btn btn-primary btn-sm" type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#historyModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i></button>';
-		rejectBtn = '<button id="showRejectModal'+result[key]['aa']+'" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
+		historyBtn = '<button id="showHistoryModal'+result[key]['aa']+'" class="isButton small primary" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i></button>';
+		rejectBtn = '<button id="showRejectModal'+result[key]['aa']+'"  class="isButton small dismiss" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
 		temp1[4] = 	'<div class="recordButtons">'+reuploadFile+signModalBtn+returnBtn+historyBtn+rejectBtn+'</div>';
 
 		c1.innerHTML = temp1[0];
@@ -607,6 +593,30 @@ export function fillTableToBeSigned(result){
 		c3.innerHTML = temp1[2];
 		c4.innerHTML = temp1[3];
 		c5.innerHTML = temp1[4];
+
+		document.querySelector("#showRejectModal"+result[key]['aa']).addEventListener("click", (event) => {
+			document.querySelector("#rejectModal .topActionButtons").innerHTML = `<button id="rejectButton" type="button" class="btn btn-danger" disabled>Απόρριψη</button>`;
+			const recordAA = event.currentTarget.getAttribute('data-whatever');
+			const isExactCopy = event.currentTarget.getAttribute('data-isExactCopy');
+			console.log(recordAA, isExactCopy)
+			const relevantBtn = document.querySelector("#rejectButton");
+			const relevantText = document.querySelector("#rejectText");
+			relevantText.value = "";
+			relevantText.addEventListener("keyup",()=> {if(relevantText.value != ""){relevantBtn.removeAttribute("disabled")}else{relevantBtn.setAttribute("disabled",true)} });
+			relevantBtn.addEventListener("click", async () => {
+				const res = await rejectDocument(+recordAA, isExactCopy);
+				document.querySelector("#rejectModal").close();
+			});
+
+			document.querySelector("#rejectModal").showModal();
+		})
+
+		document.querySelector("#showHistoryModal"+result[key]['aa']).addEventListener("click", async (event) => {
+			const recordAA = event.currentTarget.getAttribute('data-whatever');
+			const resDecoded = await getRecordHistory(recordAA);
+			fillHistoryModal(resDecoded);
+			document.querySelector("#historyModal").showModal();
+		})
 
 		if(reuploadFile!==""){
 			document.querySelector("#reuploadFileBtn"+result[key]['aa']).addEventListener("change",()=>uploadFileTest(undefined,result[key]['aa']));
@@ -621,6 +631,8 @@ export function fillTableToBeSigned(result){
 			}
 		}
 	}
+	document.querySelector("#closeRejectModalBtn").addEventListener("click", () => {document.querySelector("#rejectModal").close();});
+	document.querySelector("#closeHistoryModalBtn").addEventListener("click", () => {document.querySelector("#historyModal").close();});
 	createSearch();
 }
 
@@ -1177,52 +1189,22 @@ export async function signDocument(aa, isLast=0, objection=0){
 
 
 export async function rejectDocument(aa, isExactCopy=0){
-	//console.log("rejecting ..."+aa);
-	//return;
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-
 	const comment = document.getElementById('rejectText').value;
 	let formData = new FormData();
 	formData.append("aa",aa);
-	formData.append("role", role);
 	formData.append("comment", comment);
 	formData.append("isExactCopy", isExactCopy);
-
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/rejectDoc.php",init);
-	if (!res.ok){
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ===1){
-				rejectDocument(aa, isExactCopy);
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");
-			}
-		}
-		else if(res.status==400){
-			alert("σφάλμα κλήσης");
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else{
-			alert("σφάλμα κλήσης");
-		}
+	const res = await runFetch("/api/rejectDoc.php", "POST", formData);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
-		const myModalEl = document.querySelector("#rejectModal");
-		const modal = bootstrap.Modal.getInstance(myModalEl)
-		modal.hide();
+	else{
+		const resdec = res.result;
+		const rejectDialog = document.querySelector("#rejectModal");
+		rejectDialog.close();
 
 		abortControllers.toSign = new AbortController();
 		signals.toSign = abortControllers.toSign.signal;
-		
 		const records = getSigRecords(signals.toSign, getControllers()).then( res => {
 			//createSearch();
 			alert("Το έγγραφο έχει διαγραφεί! Μάλλον...");
@@ -1774,6 +1756,8 @@ export async function getSignedRecords(signal,controllers){
 		//return res;
 		fillTableWithSigned(await res.json());
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+		//const resDec = await res.json();
+		//return resDec;
 		return 1;
 	}
 }
@@ -1854,7 +1838,7 @@ export function fillTableWithSigned(result){
 		
 		let historyBtn = "";
 		let reqExactCopyBtn = "";
-		historyBtn = '<button  class="btn btn-primary btn-sm" type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#historyModal" data-whatever="'+result[key].revisionId+'">'+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i></button>';
+		historyBtn = '<button id="showHistoryModal'+result[key]['aa']+'" class="isButton small primary" data-whatever="'+result[key].revisionId+'">'+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i></button>';
 
 		//if (result[key].objection>0){
 			//historyBtn = "<a class='btn btn-primary btn-sm' href='/directorSign/history.php?aa="+result[key].revisionId+"'>"+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i>'+"<span class='glyphicon glyphicon-flash' style='font-size: 20px;' aria-hidden='true' data-toggle='tooltip'></span></a>";
@@ -1893,6 +1877,15 @@ export function fillTableWithSigned(result){
                 document.querySelector("#excopyBtn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['exactCopyFilename'],result[key].date));
             }
 		}
+
+		document.querySelector("#showHistoryModal"+result[key]['aa']).addEventListener("click", async (event) => {
+			const recordAA = event.currentTarget.getAttribute('data-whatever');
+			const resDecoded = await getRecordHistory(recordAA);
+			fillHistoryModal(resDecoded);
+			document.querySelector("#historyModal").showModal();
+		})
+
+
 		document.querySelector("#btn_"+result[key]['revisionId']).addEventListener("click",()=>viewFile(result[key]['filename'],result[key].date));
 		document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['lastFilename']+"&insertDate="+result[key].date+"&id="+result[key].revisionId+"#zoom=page-fit"));
 
