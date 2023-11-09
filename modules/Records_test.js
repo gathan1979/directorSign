@@ -430,6 +430,9 @@ function fillHistoryModal(result){
 		if (+result[key]['nextLevel'] == -2){
 			tmpElement = `<div class="flexHorizontal" style="background-color: tomato;">`;
 		}
+		else if (+result[key]['nextLevel'] == 0){
+			tmpElement = `<div class="flexHorizontal" style="background-color: lightgreen;">`;
+		}
 		else{
 			tmpElement = `<div class="flexHorizontal">`;
 		}
@@ -443,19 +446,23 @@ function fillHistoryModal(result){
 		if (result[key]['hasObjection'] ==1){
 			tmpElement += '<span style="align-self: center;margin-left:3px;background-color :darkorange!important" class="badge rounded-pill bg-warning " title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></span>';
 		}
+		let openfileBtn = "";
+		if ( result[key]['filename'] !==""){
+			openfileBtn = `<button  id="historyRecord_${result[key]['aa']}" class="btn btn-success btn-sm" >${result[key]['filename']}</button>`;
 
-		tmpElement += '<div style="width:30%;" class="filenameDiv"><button  id="historyRecord_'+result[key]['aa']+'" class="btn btn-success btn-sm" >'+
-										result[key]['filename']+'</button>'+"</div><div style='width:30%;text-align:center;'>"+
+		}  
+		tmpElement += '<div style="width:30%;" class="filenameDiv">'+openfileBtn+"</div><div style='width:30%;text-align:center;'>"+
 										result[key]['fullname']+"</div><div style='width:20%;text-align:center;'>"+
 										result[key]['comments']+"</div><div style='width:20%;text-align:center;'>"+result[key]['date']+"</div>";
 		tmpElement +="<div>";
 		
-        
         //console.log(tmpElement);
         document.querySelector("#historyBody").innerHTML += tmpElement;
 	}
 	for (let key=0;key<result.length;key++) {
-		document.querySelector("#historyRecord_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename'],insertDate));
+		if ( result[key]['filename'] !==""){
+			document.querySelector("#historyRecord_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename'],insertDate));
+		}
 	}
 }
 

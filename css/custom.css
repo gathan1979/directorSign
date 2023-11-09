@@ -570,6 +570,14 @@ td .fa-crosshairs{
 	background-color : cadetblue;
 }
 
+[data-isRead="0"] {
+	font-weight: 500;
+}
+
+[data-isRead="1"] {
+	font-weight: 400;
+}
+
 @media (max-width: 800px) {
 	#dataToSignTable {
 		overflow-x: scroll;

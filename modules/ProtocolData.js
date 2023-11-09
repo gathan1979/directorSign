@@ -74,13 +74,13 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	let tableContent = "";
 	for (const record of result){
 		if(record["statusField"]=="1"){ //Προς αρχείο
-			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, DarkOrange);" data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, DarkOrange);" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}
 		else if(record["statusField"]=="2"){ // Αρχείο
-			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, Gray); " data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, Gray); " data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}
 		else if(record["statusField"]=="0"){ //Εκκρεμ.
-			tableContent +='<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, lightGray); " data-statusField="'+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, lightGray); " data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}	
 		
 
@@ -107,14 +107,7 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 					case 2 : value= "Αρχ.";break;
 				}
 			}
-			tableContent +=`<span style="width:${customWidth};`;
-			if(record["isRead"]==1){
-				tableContent += 'font-weight : normal;';
-			}
-			else{
-				tableContent += 'font-weight :500;';
-			}
-			
+			tableContent +=`<span style="width:${customWidth};"`;
 			tableContent +=`" data-colname="`+key+'">'+value+"</span>"	
 		}
 		tableContent +="</div>"
@@ -194,11 +187,13 @@ export function openProtocolRecord(subject,record,recordDate, event){
 		document.querySelector("#bottomSectionButtons").innerHTML += 
 		`<button class="btn btn-warning ektos mr-2" name="copyProtocolBtn" id="copyProtocolBtn" onclick="copyProtocol();" data-toggle="tooltip" title="Αντίγραφο Πρωτοκόλλου"><i class="far fa-copy"></i></button>&nbsp`;
 	}
+	else{
+		document.querySelector("#bottomSectionButtons").innerHTML += `<button class="btn btn-warning ektos mr-2" name="makeUnread" id="makeUnread" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
+	}
 	if (currentRoleObject.protocolAccessLevel ==1 || currentRoleObject.accessLevel ==1){
 		document.querySelector("#bottomSectionButtons").innerHTML += 
 		`<button class="btn btn-info ektos mr-2" name="publishToSiteBtn" id="publishToSiteBtn" title="Αίτημα Ανάρτησης στη Σελίδα"><i class="fas fa-cloud-upload-alt"></i></button>`;
 	}
-	document.querySelector("#bottomSectionButtons").innerHTML += `<button class="btn btn-warning ektos mr-2" name="makeUnread" id="makeUnread" onclick="makeMessageUnread()" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
 	document.querySelector("#bottomSectionTitle").innerHTML = `<button title=="Επεξεργασία Πρωτοκόλλου" id="editRecordBtn" class="btn btn-info"><i class="fas fa-edit"></i></button>`+'<span style="font-weight:bold;">'+record+"/"+currentYear+" | "+subject+"</span>";
 	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
 	
@@ -207,6 +202,23 @@ export function openProtocolRecord(subject,record,recordDate, event){
 	if (document.querySelector("#publishToSiteBtn")){
 		document.querySelector("#publishToSiteBtn").addEventListener("click", () => publishToSite());
 		document.querySelector("#copyProtocolBtn").addEventListener("click", () => copyProtocol());
+	}
+	if (document.querySelector("#makeUnread")){
+		document.querySelector("#makeUnread").addEventListener("click", async () => makeMessageUnread(record, recordDate.split("-")[0]));
+	}
+}
+
+async function makeMessageUnread(protocolNo, protocolYear){
+	const formdata = new FormData();
+	formdata.append('protocolNo', protocolNo);
+	formdata.append('currentYear', protocolYear);
+
+	const res = await runFetch("/api/makeMessageUnRead.php", "POST", formdata);
+	if (!res.success){
+		console.log(res.msg);
+	}
+	else{
+		document.querySelector(`div [data-record="${this.protocolNo}"]`).dataset.isread = 0;
 	}
 }
 

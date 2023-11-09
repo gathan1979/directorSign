@@ -146,6 +146,7 @@ class Assignments extends HTMLElement {
 
     // Ο πίνακας assignments δουλεύει με το ΑΑ του STAFF
     async connectedCallback(){
+        let isRead = 0;
         const loginData = JSON.parse(localStorage.getItem("loginData"));
 	    const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
         //console.log(currentRoleObject);
@@ -165,11 +166,28 @@ class Assignments extends HTMLElement {
         if (chargesArrFromDb === null){
             return;
         }
+        
         this.protocolCharges = chargesArrFromDb.map((item)=>{
             const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment)};
+            if ((item.assignedToUser == loginData.user.aa_staff) && (item.isRead == 1)){
+                isRead = 1;        
+            }
             return charge;
         });
-        console.log(this.protocolCharges);
+        if (!isRead){
+            const formdata = new FormData();
+            formdata.append('protocolNo',this.protocolNo);
+            formdata.append('currentYear',this.protocolYear);
+            const res = await runFetch("/api/makeMessageRead.php", "POST", formdata);
+            if (!res.success){
+                console.log(res.msg);
+            }
+            else{
+                //const resdec = res.result;
+                document.querySelector(`div [data-record="${this.protocolNo}"]`).dataset.isread = 1;
+            }  
+        }
+        //console.log(this.protocolCharges);
         this.selectedCharges = [...this.protocolCharges];
         //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
         this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {

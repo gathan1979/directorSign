@@ -233,6 +233,9 @@ function pagesCommonCode(){
 	if (document.querySelector("#dataToSignTable")!==null){
 		document.querySelector("#dataToSignTable").remove();
 	}
+	if(document.querySelector("#pageSelectorDiv")){
+		document.querySelector("#pageSelectorDiv").remove();	
+	}
 
 	switch (page){
 		case Pages.SIGNATURE :
