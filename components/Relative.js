@@ -68,6 +68,8 @@ class Relative extends HTMLElement {
         this.loadRelativeFull(this.protocolNo,1, true);
         this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
+        
+        this.shadow.querySelector("#insertRelativeYearField").value = localStorage.getItem("currentYear")!==null?localStorage.getItem("currentYear"):"";
     }
 
     disconnectedCallback() {    

@@ -28,25 +28,52 @@ localStorage.setItem("filter", JSON.stringify(filter));
 	
 	
 export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
-		// diff = 0 είναι για υπογραφή στο τμήμα
+	// diff = 0 είναι για υπογραφή στο τμήμα
+	console.log("filterTable running");
 	let table = null;
 	const page = getPage();
-	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
-		table = document.querySelectorAll("#"+tableName+">tbody");
+	if (page == Pages.SIGNATURE || page == Pages.SIGNED){							//Η διάκριση ανάλογα με σελίδα θα σταματήσει μόλις γίνουν και υπογραφές χωρίς χρήση πίνακα
+		table = document.querySelectorAll("#"+tableName+">tbody>tr");
+		for (const tempRow of Array.from(table)){   
+			console.log(tempRow)                    			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
+			if (tempRow.dataset.author && tempRow.dataset.diff){   	// απορρίπτει γραμμές του header, footer
+				let hide = false;
+				for(const [key,value] of Object.entries(searchObject.dataKeys)){
+					//console.log(key,value,tempRow.dataset[key] );
+					if (value != null){
+						if (tempRow.dataset[key].toUpperCase() != value.toUpperCase()){
+							hide = true;
+						}
+					}
+				}
+				let findTextInRow = true;
+				if (searchObject.searchString !== "" && searchObject.searchString !==null){
+					findTextInRow = false;
+					for (const cell of tempRow.cells){
+						if (cell.textContent.toUpperCase().indexOf(searchObject.searchString.toUpperCase()) !== -1){
+							findTextInRow = true;
+							//console.log("το κείμενο βρέθηκε στη γραμμή ")
+						}
+					}
+				}
+				if (hide || !findTextInRow){
+					tempRow.setAttribute("hidden","hidden");
+				}
+				else{
+					tempRow.removeAttribute("hidden");
+				}
+			}
+		}
 	}	
 	else{
 		table = document.querySelector("#"+tableName+">div");
-	}
-
-	console.log(table)
-	//console.log(searchObject)
-	for (const tempRow of Array.from(table)){                       			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
-		if (tempRow.dataset.author && tempRow.dataset.diff){   	// απορρίπτει γραμμές του header, footer
+		for (const tempRow of Array.from(table)){   
+			console.log(tempRow)                    			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
 			let hide = false;
 			for(const [key,value] of Object.entries(searchObject.dataKeys)){
 				//console.log(key,value,tempRow.dataset[key] );
 				if (value != null){
-					if (tempRow.dataset[key] != value){
+					if (tempRow.dataset[key].toUpperCase() != value.toUpperCase()){
 						hide = true;
 					}
 				}
@@ -55,7 +82,7 @@ export function filterTable (tableName, searchObject){   	// searchObject exampl
 			if (searchObject.searchString !== "" && searchObject.searchString !==null){
 				findTextInRow = false;
 				for (const cell of tempRow.cells){
-					if (cell.textContent.indexOf(searchObject.searchString) !== -1){
+					if (cell.textContent.toUpperCase().indexOf(searchObject.searchString.toUpperCase()) !== -1){
 						findTextInRow = true;
 						//console.log("το κείμενο βρέθηκε στη γραμμή ")
 					}
@@ -68,6 +95,7 @@ export function filterTable (tableName, searchObject){   	// searchObject exampl
 				tempRow.removeAttribute("hidden");
 			}
 		}
+		
 	}
 }
 
@@ -78,46 +106,52 @@ export function createSearch(event) {
 	const department = loginData.user.roles[currentRole].department;
 	const user = loginData.user.user;
 
-	const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
-	const showEmployeesBtn = document.getElementById('showEmployeesBtn');
-	const tableSearchInput = document.getElementById('tableSearchInput');
+	const page = getPage();
+	let  filterObject = null;
 
-	let  filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
+	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
+		const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
+		const showEmployeesBtn = document.getElementById('showEmployeesBtn');
+		const tableSearchInput = document.getElementById('tableSearchInput');
 
-	if (event !== undefined){
-		if(event.target.dataset.active == "0"){
-			event.target.classList.remove('btn-danger');
-			event.target.classList.add('btn-success');
-			event.target.dataset.active = "1";
+		filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
+
+		if (event !== undefined){
+			if(event.target.dataset.active == "0"){
+				event.target.classList.remove('btn-danger');
+				event.target.classList.add('btn-success');
+				event.target.dataset.active = "1";
+			}
+			else if(event.target.dataset.active == "1"){
+				event.target.classList.remove('btn-success');
+				event.target.classList.add('btn-danger');
+				event.target.dataset.active = "0";
+			}
 		}
-		else if(event.target.dataset.active == "1"){
-			event.target.classList.remove('btn-success');
-			event.target.classList.add('btn-danger');
-			event.target.dataset.active = "0";
+
+		if (showToSignOnlyBtn.dataset.active == 1){
+			filterObject.dataKeys.currentDep = null;
+		}
+		else{
+			filterObject.dataKeys.currentDep = department;
+		}
+		if (showEmployeesBtn.dataset.active == 1){
+			filterObject.dataKeys.author = user;
+		}
+		else{
+			filterObject.dataKeys.author = null;
+		}
+		if (tableSearchInput.value != ""){
+			filterObject.searchString = tableSearchInput.value;
+		}
+		else{
+			filterObject.searchString = null;
 		}
 	}
-
-	if (showToSignOnlyBtn.dataset.active == 1){
-		filterObject.dataKeys.currentDep = null;
-	}
-	else{
-		filterObject.dataKeys.currentDep = department;
-	}
-	if (showEmployeesBtn.dataset.active == 1){
-		filterObject.dataKeys.author = user;
-	}
-	else{
-		filterObject.dataKeys.author = null;
-	}
-	if (tableSearchInput.value != ""){
-		filterObject.searchString = tableSearchInput.value;
-	}
-	else{
-		filterObject.searchString = null;
-	}
+	
 	//console.log(filterObject);
 	let debouncedFilter = null;
-	const page = getPage();
+	
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
 		 debouncedFilter = debounce( () => filterTable("dataToSignTable",filterObject));
 	}
@@ -239,7 +273,10 @@ export default function createFilter(parentElement){
 }
 
 export function updateBtnsFromFilter(){
-	filter = JSON.parse(localStorage.getItem("filter"));
+	const filter = JSON.parse(localStorage.getItem("filter"));
+	const userData = JSON.parse(localStorage.getItem("loginData")).user;
+	const currentRole = localStorage.getItem("currentRole");
+	console.log(filter);
 	const archiveBtn = document.querySelector('#showForArchive');
 	const hideArchieved = document.querySelector('#hideArchieved');
 	const dateBtn = document.querySelector('#datefilter');
@@ -254,19 +291,46 @@ export function updateBtnsFromFilter(){
 		(filter.hideArchieved?hideArchieved.checked =true:hideArchieved.checked =false);
 	}
 	if (dateBtn!==null){
-		if (filter.date !==""){
-			dateBtn.value = +filter.showSelectedDate;
+		if (userData.roles[currentRole].protocolAccessLevel == 1){
+			if (filter.selectedDate !==""){
+				dateBtn.value = filter.selectedDate;
+			}
+		}
+		else{
+			if (filter.selectedDateDep !==""){
+				dateBtn.value = filter.selectedDateDep;
+			}
 		}
 	}
 	if (notAssignedBtn!==null){
-		notAssignedBtn.value = +filter.showNotAssigned;
+		//notAssignedBtn.value = +filter.showNotAssigned;
+		notAssignedBtn.value = +filter.isAssignedToDep;
 	}
 	if (lastAssignedBtn!==null){
-		lastAssignedBtn.value = +filter.showLastAssigned;
+		lastAssignedBtn.value = +filter.isAssignedLast;
 	}
 	if (hideNotificationsBtn!==null){
 		hideNotificationsBtn.value = +filter.noNotifications;
 	}
+
+	const filterBtn = document.querySelector('#openFilterBtn');
+	const vals = Object.values(filter);
+	let filterActive = 0;
+	vals.forEach( val => {
+		if (val!==0	&& val!==null && val!==""){
+			filterActive = 1;
+		}
+	});
+	if (filterActive){
+		filterBtn.classList.remove('btn-primary');
+		filterBtn.classList.add('btn-warning');	
+	}
+	else{
+		filterBtn.classList.remove('btn-warning');
+		filterBtn.classList.add('btn-primary');	
+	}
+	console.log(filter);
+
 }
 
 export function updateFilterStorage(){
@@ -323,24 +387,9 @@ export function updateFilterStorage(){
 		(+hideNotificationsBtn.value?filter.noNotifications =1:filter.noNotifications =0);	
 	}
 	
-	const filterBtn = document.querySelector('#openFilterBtn');
-	const vals = Object.values(filter);
-	let filterActive = 0;
-	vals.forEach( val => {
-		if (val!==0	&& val!==null && val!==""){
-			filterActive = 1;
-		}
-	});
-	if (filterActive){
-		filterBtn.classList.remove('btn-primary');
-		filterBtn.classList.add('btn-warning');	
-	}
-	else{
-		filterBtn.classList.remove('btn-warning');
-		filterBtn.classList.add('btn-primary');	
-	}
-	console.log(filter);
 	localStorage.setItem('filter', JSON.stringify(filter));
+	updateBtnsFromFilter();
+	
 }
 
 function addListeners(){
@@ -355,26 +404,26 @@ function addListeners(){
 		return;
 	}
 	//administrator
-	document.getElementById("showForArchive")?document.getElementById("showForArchive").addEventListener("change",()=> getChargesAndFill()):null;
-	document.getElementById("hideArchieved")?document.getElementById("hideArchieved").addEventListener("change",()=> getChargesAndFill()):null;
+	document.getElementById("showForArchive")?document.getElementById("showForArchive").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
+	document.getElementById("hideArchieved")?document.getElementById("hideArchieved").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 	//user
 	//head
 	if (userData.roles[currentRole].protocolAccessLevel == 1){
 		//console.log("event listener if protocolAccessLevel");
-		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> getChargesAndFill()):null;
-		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> getChargesAndFill()):null;
+		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
+		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 	}
 	else if (userData.roles[currentRole].accessLevel == 1){
 		//console.log("event listener else if");
-		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> getChargesAndFill()):null;
-		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> getChargesAndFill()):null;
-		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> getChargesAndFill()):null;
-		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> getChargesAndFill()):null;
+		document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
+		document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
+		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
+		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 	}
 	else{
 		//console.log("event listener else");
-		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> getChargesAndFill()):null;
-		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> getChargesAndFill()):null;
+		document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
+		document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 	}
 }
 

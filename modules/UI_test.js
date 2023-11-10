@@ -352,11 +352,13 @@ function pagesCommonCode(){
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
 	//console.log("keyup listener added");
-	if (document.querySelector('#showEmployeesBtn')){
-		document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
-	}
-	if (document.querySelector('#showToSignOnlyBtn')){
-		document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
+	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
+		if (document.querySelector('#showEmployeesBtn')){
+			document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
+		}
+		if (document.querySelector('#showToSignOnlyBtn')){
+			document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
+		}
 	}
 	
 
@@ -558,9 +560,6 @@ async function createChargesUIstartUp(){
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",addRecordDialog);
-	
-	createFilter(document.querySelector("#filterContent"));
-	updateBtnsFromFilter();
 
 	if (document.querySelector("#topMenuNewProtocolBtnsDiv") == null){
 		document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
@@ -568,6 +567,7 @@ async function createChargesUIstartUp(){
 	if (document.querySelector("#chargesFilterMenu") == null){
 		document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
 	}
+
 
 	if (document.querySelector('#reqProtocolBtn')){
 		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
@@ -601,7 +601,11 @@ async function createChargesUIstartUp(){
 			});
 		}
 	}
+
+	createFilter(document.querySelector("#filterContent"));
+	updateBtnsFromFilter();
 	//---------------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
+	
 	const changesButton  = document.querySelector("#openChangesBtn");
 	const filterButton  = document.querySelector("#openFilterBtn");
 	const changesCloseButton  = document.querySelector("#changesCloseButton");
@@ -636,7 +640,7 @@ async function createChargesUIstartUp(){
 		})
 	});
 
-	//---------------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
+	//!!!!-----------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
 
 	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
 		let debounceFunc = debounce( async () =>  {
@@ -1050,7 +1054,7 @@ export async function getChargesAndFill(){
 
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
-		console.log(event.currentPage);
+		//console.log(event.currentPage);
 		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize, signals.charges,getControllers());
 	})		
 }
@@ -1072,7 +1076,7 @@ export async function getProtocolAndFill(){
 
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
-		console.log(event.currentPage);
+		//console.log(event.currentPage);
 		const recordsNo = await getProtocolData(event.currentPage -1,pagingSize, signals.protocol, getControllers());
 	})							
 }

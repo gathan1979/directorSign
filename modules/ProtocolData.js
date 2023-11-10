@@ -4,7 +4,7 @@ import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 
-	updateFilterStorage();
+	//updateFilterStorage();
 
 	const currentFilter = JSON.parse(localStorage.getItem("filter"));
 	const currentFilterAsArray = Object.entries(currentFilter);
@@ -42,7 +42,7 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 
-	updateFilterStorage();
+	//updateFilterStorage();
 	
 	const completeOblect ={
 		customPagingStart,
