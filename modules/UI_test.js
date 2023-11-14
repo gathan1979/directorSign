@@ -458,11 +458,11 @@ async function createChargesUIstartUp(){
 				+loginData.user.roles[cRole].protocolAccessLevel?
 				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Άλλες εφαρμογές</div>
 				<div class="flexHorizontal">
-					<div><a rel="opener"  title="Άνοιγμα αλληλογραφίας" rel="referer" target="_blank" href="../mich_login.php"><span style="font-weight: bold;
+					<div><a rel="opener"  title="Άνοιγμα αλληλογραφίας" rel="referer" target="_blank" href="/nocc-1.9.8/mich_login.php"><span style="font-weight: bold;
 						border-radius: 5px; border-style: solid; 
 						border-width: 1px;padding: 2px 6px;color: white; background-color:lightseagreen;border-color:lightseagreen;"><i style="color:white" class="fas fa-mail-bulk  fa-lg"></i></span></a>
 					</div>
-					<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="../kside/index.php"><span style="font-size: 0.7rem;font-weight: bold;
+					<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="/nocc-1.9.8/kside/index.php"><span style="font-size: 0.7rem;font-weight: bold;
 															border-radius: 5px; border-style: solid; 
 															border-width: 1px;padding: 0px 2px;color: white; background-color:lightseagreen;border-color:lightseagreen;">ΚΣΗΔΕ</span></a>
 					</div>
@@ -522,7 +522,7 @@ async function createChargesUIstartUp(){
 								<div id="changesDetailsContent" style="margin-top:1em;"></div>
 							</dialog>
 
-							<dialog id="filterDiv" class="customModal">
+							<dialog id="filterDiv" class="customModal" style="position: absolute; top :0">
 								<div id="filterTitle" class="customDialogContentTitle">
 									<div>Φίλτρο αναζήτησης</div>
 									<div class="topButtons" style="display:flex;gap: 7px;">
@@ -531,7 +531,7 @@ async function createChargesUIstartUp(){
 										</div>
 									</div>
 								</div>
-								<div id="filterContent"></div>
+								<div id="filterContent" ></div>
 								<div id="filterApplyDiv"></div>
 							</dialog>`;
 
@@ -604,6 +604,7 @@ async function createChargesUIstartUp(){
 
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
+
 	//---------------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
 	
 	const changesButton  = document.querySelector("#openChangesBtn");
@@ -617,7 +618,7 @@ async function createChargesUIstartUp(){
 	});
 
 	filterButton.addEventListener("click", () => {
-		const filterDiv  = document.querySelector("#filterDiv").showModal();
+		const filterDiv  = document.querySelector("#filterDiv").show();
 	});
 
 	changesCloseButton.addEventListener("click", () => {
@@ -707,23 +708,11 @@ async function createProtocolUIstartUp(){
 	const chargesFilterMenuDiv = 
 	`<div id="chargesFilterMenu" class="flexVertical ">
 		<div id="topSettingsDiv" class="flexHorizontal" >	
-			<div id="recordChangesBtnDiv" >
-				<button class="btn btn-primary btn-sm" type="button" id="openChangesBtn" data-toggle="tooltip" data-original-title="Αλλαγές σε πρωτόκολλα">
-					<i class="fas fa-info"></i>
-				</button>
-				
-			</div>
 			<div id="filterBtnDiv" >
 				<button class="btn btn-primary btn-sm" type="button" id="openFilterBtn" data-toggle="tooltip" data-original-title="Φίλτρο">
 					<i class="fas fa-filter"></i>
 				</button>
 				
-			</div>
-			
-			<div id="removeNotificationsBtnDiv" >
-				<button class="btn btn-primary btn-sm" name="removeNotifications" id="removeNotifications" onclick="removeNotifications()" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
-				<i class="fab fa-stack-overflow"></i>
-				</button>
 			</div>
 
 		</div>
@@ -747,16 +736,20 @@ async function createProtocolUIstartUp(){
 						<div id="changesDetailsContent" style="margin-top:1em;"></div>
 					</dialog>
 
-					<dialog id="filterDiv" class="customModal">
-						<div id="filterTitle" class="customTitle">
+					<dialog id="filterDiv" class="customModal" style="position: absolute; top :0">
+						<div id="filterTitle" class="customDialogContentTitle">
 							<div>Φίλτρο αναζήτησης</div>
-							<div id="filterCloseButtonDiv">
-								<button id="filterCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+							<div class="topButtons" style="display:flex;gap: 7px;">
+								<div id="filterCloseButtonDiv">
+									<button id="filterCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+								</div>
 							</div>
 						</div>
 						<div id="filterContent"></div>
 						<div id="filterApplyDiv"></div>
 					</dialog>`;
+
+
 
 	const peddingAccessequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal">
 		<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
@@ -773,11 +766,25 @@ async function createProtocolUIstartUp(){
 	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
 
 
-	createFilter(document.querySelector("#filterContent"));
-	updateBtnsFromFilter();
+	
 	
 	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
 	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
+
+	const filterButton  = document.querySelector("#openFilterBtn");	
+	const filterCloseButton  = document.querySelector("#filterCloseButton");	
+
+	filterButton.addEventListener("click", () => {
+		const filterDiv  = document.querySelector("#filterDiv").show();
+	});
+
+	filterCloseButton.addEventListener("click", () => {
+		const filterDiv  = document.querySelector("#filterDiv").close();
+	});
+
+	createFilter(document.querySelector("#filterContent"));
+	updateBtnsFromFilter();
+
 
 	if(document.querySelector("#reqProtocolAccessBtn")){
 		document.querySelector("#reqProtocolAccessBtn").addEventListener("click", ()=>{

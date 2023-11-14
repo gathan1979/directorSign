@@ -177,7 +177,7 @@ export default function createFilter(parentElement){
 	console.log(userData.roles[currentRole].protocolAccessLevel);
 	let parentElementContent = "";
 	if (userData.roles[currentRole].protocolAccessLevel == 1){
-			parentElementContent =`<div id="upperToolBar" class="flexVertical" style="padding: 1em;">
+			parentElementContent =`
 					<div class="flexHorizontal" style="padding-top:0.3em;">
 							<div ><i class="fas fa-filter"></i><b> Αχρέωτα : </b></div>
 							<div >
@@ -204,13 +204,10 @@ export default function createFilter(parentElement){
 							<div >
 								<input  type="checkbox"  id="hideArchieved" />
 							</div>
-					</div>
-					
-
-			</div>`;		
+					</div>`;		
  	}
 	else if (userData.roles[currentRole].accessLevel ==1){
-			parentElementContent =`<div id="upperToolBar" class="flexVertical" style="padding: 1em;">
+			parentElementContent =`
 				<div class="flexHorizontal" style="padding-top:0.3em;">
 					<div  style="padding-top:0.3em;"><i class="fas fa-filter"></i><b> Αχρέωτα : </b></div>
 					<div  style="padding-bottom:0.3em;padding-top:0.3em;">
@@ -243,11 +240,10 @@ export default function createFilter(parentElement){
 							<option value="1">ΝΑΙ</option>
 						</select>
 					</div>
-				</div>
-			</div>`;	
+				</div>`;	
 	}	
 	else{ 
-		parentElementContent =`<div id="upperToolBar" class="flexVertical" style="padding: 1em;">
+		parentElementContent =`
 				<div class="flexHorizontal" style="padding-top:0.3em;">
 					<div  style="padding-top:0.3em;"><i class="fas fa-filter"></i><b> Τελευταίες Χρεώσεις : </b></div>
 					<div  style="padding-bottom:0.3em;padding-top:0.3em;">
@@ -265,10 +261,9 @@ export default function createFilter(parentElement){
 							<option value="1">ΝΑΙ</option>
 						</select>
 					</div>
-				</div>
-			</div>`;	
+				</div>`;	
 	}  
-	parentElement.innerHTML = parentElementContent;	
+	parentElement.innerHTML = `<div id="upperToolBar" class="flexHorizontal" style="flex-wrap : wrap; padding: 1em; gap: 1.5em;">${parentElementContent}</div>`;	
 	addListeners();
 }
 
@@ -304,7 +299,12 @@ export function updateBtnsFromFilter(){
 	}
 	if (notAssignedBtn!==null){
 		//notAssignedBtn.value = +filter.showNotAssigned;
-		notAssignedBtn.value = +filter.isAssignedToDep;
+		if (userData.roles[currentRole].protocolAccessLevel == 1){
+			notAssignedBtn.value = +filter.isAssigned;
+		}
+		else if (userData.roles[currentRole].accessLevel == 1){
+			notAssignedBtn.value = +filter.isAssignedToDep;
+		}
 	}
 	if (lastAssignedBtn!==null){
 		lastAssignedBtn.value = +filter.isAssignedLast;
@@ -316,6 +316,7 @@ export function updateBtnsFromFilter(){
 	const filterBtn = document.querySelector('#openFilterBtn');
 	const vals = Object.values(filter);
 	let filterActive = 0;
+	return;
 	vals.forEach( val => {
 		if (val!==0	&& val!==null && val!==""){
 			filterActive = 1;
@@ -329,8 +330,7 @@ export function updateBtnsFromFilter(){
 		filterBtn.classList.remove('btn-warning');
 		filterBtn.classList.add('btn-primary');	
 	}
-	console.log(filter);
-
+	//console.log(filter);
 }
 
 export function updateFilterStorage(){

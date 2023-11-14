@@ -348,6 +348,7 @@ td .fa-crosshairs{
 	border-radius : 10px;
 	border-left : blue solid;
 	border-right : blue solid;
+	padding: 0.7em;
 }
 
 .isGreen {
