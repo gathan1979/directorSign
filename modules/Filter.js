@@ -29,59 +29,33 @@ localStorage.setItem("filter", JSON.stringify(filter));
 	
 export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
 	// diff = 0 είναι για υπογραφή στο τμήμα
-	console.log("filterTable running");
+	console.log("filterTable running", searchObject);
 	let table = null;
 	const page = getPage();
-	if (page == Pages.SIGNATURE || page == Pages.SIGNED){							//Η διάκριση ανάλογα με σελίδα θα σταματήσει μόλις γίνουν και υπογραφές χωρίς χρήση πίνακα
+	if (page == Pages.SIGNATURE || page == Pages.SIGNED){	
+		//console.log(page)						//Η διάκριση ανάλογα με σελίδα θα σταματήσει μόλις γίνουν και υπογραφές χωρίς χρήση πίνακα
 		table = document.querySelectorAll("#"+tableName+">tbody>tr");
-		for (const tempRow of Array.from(table)){   
-			console.log(tempRow)                    			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
-			if (tempRow.dataset.author && tempRow.dataset.diff){   	// απορρίπτει γραμμές του header, footer
-				let hide = false;
-				for(const [key,value] of Object.entries(searchObject.dataKeys)){
-					//console.log(key,value,tempRow.dataset[key] );
-					if (value != null){
+		console.log(Array.from(table))
+		for (const tempRow of Array.from(table)){  
+			//console.log(page)			 
+			let hide = false;
+			for(const [key,value] of Object.entries(searchObject.dataKeys)){
+				//console.log(key,value,tempRow.dataset[key] );
+				if (value != null){
+					if (tempRow.dataset[key] !== undefined){
 						if (tempRow.dataset[key].toUpperCase() != value.toUpperCase()){
 							hide = true;
 						}
 					}
 				}
-				let findTextInRow = true;
-				if (searchObject.searchString !== "" && searchObject.searchString !==null){
-					findTextInRow = false;
-					for (const cell of tempRow.cells){
-						if (cell.textContent.toUpperCase().indexOf(searchObject.searchString.toUpperCase()) !== -1){
-							findTextInRow = true;
-							//console.log("το κείμενο βρέθηκε στη γραμμή ")
-						}
-					}
-				}
-				if (hide || !findTextInRow){
-					tempRow.setAttribute("hidden","hidden");
-				}
-				else{
-					tempRow.removeAttribute("hidden");
-				}
-			}
-		}
-	}	
-	else{
-		table = document.querySelector("#"+tableName+">div");
-		for (const tempRow of Array.from(table)){   
-			console.log(tempRow)                    			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
-			let hide = false;
-			for(const [key,value] of Object.entries(searchObject.dataKeys)){
-				//console.log(key,value,tempRow.dataset[key] );
-				if (value != null){
-					if (tempRow.dataset[key].toUpperCase() != value.toUpperCase()){
-						hide = true;
-					}
-				}
 			}
 			let findTextInRow = true;
-			if (searchObject.searchString !== "" && searchObject.searchString !==null){
-				findTextInRow = false;
+			//console.log(searchObject)
+			if ((searchObject.searchString !== "") && (searchObject.searchString !==null)){
+				//console.log(searchObject)
+				findTextInRow = false; 
 				for (const cell of tempRow.cells){
+					//console.log(cell)
 					if (cell.textContent.toUpperCase().indexOf(searchObject.searchString.toUpperCase()) !== -1){
 						findTextInRow = true;
 						//console.log("το κείμενο βρέθηκε στη γραμμή ")
@@ -95,7 +69,45 @@ export function filterTable (tableName, searchObject){   	// searchObject exampl
 				tempRow.removeAttribute("hidden");
 			}
 		}
-		
+	}	
+	else{
+		console.log(searchObject)
+		table = document.querySelectorAll("#"+tableName+">div");
+		console.log(table);
+		for (const tempRow of Array.from(table)){   
+			//console.log(tempRow)                    			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
+			let hide = false;
+			for(const [key,value] of Object.entries(searchObject.dataKeys)){
+				console.log(key,value,tempRow.dataset[key] );
+				if (value != null){
+					if (tempRow.dataset[key] !== undefined){
+						if (tempRow.dataset[key].toUpperCase() != value.toUpperCase()){
+							hide = true;
+						}
+					}
+				}
+			}
+			let findTextInRow = true;
+			console.log("test",searchObject.searchString)
+			if (searchObject.searchString !== "" && searchObject.searchString !==null){
+				findTextInRow = false;
+				for (const cell of tempRow.children){
+					if (cell.textContent.toUpperCase().indexOf(searchObject.searchString.toUpperCase()) !== -1){
+						findTextInRow = true;
+						console.log("το κείμενο βρέθηκε στη γραμμή ")
+					}
+					else{
+						console.log("not found")
+					}
+				}
+			}
+			if (hide || !findTextInRow){
+				tempRow.setAttribute("hidden","hidden");
+			}
+			else{
+				tempRow.removeAttribute("hidden");
+			}
+		}
 	}
 }
 
@@ -108,13 +120,12 @@ export function createSearch(event) {
 
 	const page = getPage();
 	let  filterObject = null;
+	filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
+	const tableSearchInput = document.getElementById('tableSearchInput');
 
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
 		const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
 		const showEmployeesBtn = document.getElementById('showEmployeesBtn');
-		const tableSearchInput = document.getElementById('tableSearchInput');
-
-		filterObject = {dataKeys : {author :null , currentDep : null} , searchString : null};
 
 		if (event !== undefined){
 			if(event.target.dataset.active == "0"){
@@ -148,8 +159,16 @@ export function createSearch(event) {
 			filterObject.searchString = null;
 		}
 	}
+	else{
+		if (tableSearchInput.value != ""){
+			filterObject.searchString = tableSearchInput.value;
+		}
+		else{
+			filterObject.searchString = null;
+		}
+	}
 	
-	//console.log(filterObject);
+	console.log(filterObject);
 	let debouncedFilter = null;
 	
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){

@@ -1813,12 +1813,8 @@ export async function getSignedRecords(signal,controllers){
 export function fillTableWithSigned(result){
 	//const table = $('#example1').DataTable();
 	//table.clear().draw();
-	const table = document.getElementById("dataToSignTable");
-	var rows = table.rows;
-	var i = rows.length;
-	while (--i) {
-		table.deleteRow(i);
-	}
+	const table = document.querySelector("#dataToSignTable>tbody");
+	table.innerHTML = "";
 	
 	if (localStorage.getItem("loginData") == null){
 		alert("Δεν υπάρχουν πληροφορίες σύνδεσης");

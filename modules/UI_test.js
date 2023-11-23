@@ -471,7 +471,6 @@ async function createChargesUIstartUp(){
 		</div>
 		<year-selector id="yearSelectorDiv"></year-selector>`;
 
-
 	const addRecordDialog =
 		`<dialog id="addRecordModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
 			<record-add  style="display:flex; flex-direction:column; gap: 10px;"></record-add>
@@ -555,7 +554,6 @@ async function createChargesUIstartUp(){
 		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 	</dialog>`;
 
-
 	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
@@ -565,7 +563,7 @@ async function createChargesUIstartUp(){
 		document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
 	}
 	if (document.querySelector("#chargesFilterMenu") == null){
-		document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
+		document.querySelector("#generalFilterDiv").insertAdjacentHTML("afterend",chargesFilterMenuDiv);	
 	}
 
 
