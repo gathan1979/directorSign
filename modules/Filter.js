@@ -27,7 +27,7 @@ localStorage.setItem("filter", JSON.stringify(filter));
 //updateFilterStorage();
 	
 	
-export function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
+export async function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
 	// diff = 0 είναι για υπογραφή στο τμήμα
 	console.log("filterTable running", searchObject);
 	let table = null;
@@ -35,7 +35,7 @@ export function filterTable (tableName, searchObject){   	// searchObject exampl
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){	
 		//console.log(page)						//Η διάκριση ανάλογα με σελίδα θα σταματήσει μόλις γίνουν και υπογραφές χωρίς χρήση πίνακα
 		table = document.querySelectorAll("#"+tableName+">tbody>tr");
-		console.log(Array.from(table))
+		//console.log(Array.from(table))
 		for (const tempRow of Array.from(table)){  
 			//console.log(page)			 
 			let hide = false;
@@ -71,42 +71,47 @@ export function filterTable (tableName, searchObject){   	// searchObject exampl
 		}
 	}	
 	else{
-		console.log(searchObject)
-		table = document.querySelectorAll("#"+tableName+">div");
-		console.log(table);
-		for (const tempRow of Array.from(table)){   
-			//console.log(tempRow)                    			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
-			let hide = false;
-			for(const [key,value] of Object.entries(searchObject.dataKeys)){
-				console.log(key,value,tempRow.dataset[key] );
-				if (value != null){
-					if (tempRow.dataset[key] !== undefined){
-						if (tempRow.dataset[key].toUpperCase() != value.toUpperCase()){
-							hide = true;
+		if (+localStorage.getItem("globalSearch") === 0){	
+			//console.log(searchObject)
+			table = document.querySelectorAll("#"+tableName+">div");
+			//console.log(table);
+			for (const tempRow of Array.from(table)){   
+				//console.log(tempRow)                    			// π.χ. <tr data-diff="0" data-author="ΖΗΚΟΣ ΑΘΑΝΑΣΙΟΣ">
+				let hide = false;
+				for(const [key,value] of Object.entries(searchObject.dataKeys)){
+					//console.log(key,value,tempRow.dataset[key] );
+					if (value != null){
+						if (tempRow.dataset[key] !== undefined){
+							if (tempRow.dataset[key].toUpperCase() != value.toUpperCase()){
+								hide = true;
+							}
 						}
 					}
 				}
-			}
-			let findTextInRow = true;
-			console.log("test",searchObject.searchString)
-			if (searchObject.searchString !== "" && searchObject.searchString !==null){
-				findTextInRow = false;
-				for (const cell of tempRow.children){
-					if (cell.textContent.toUpperCase().indexOf(searchObject.searchString.toUpperCase()) !== -1){
-						findTextInRow = true;
-						console.log("το κείμενο βρέθηκε στη γραμμή ")
-					}
-					else{
-						console.log("not found")
+				let findTextInRow = true;
+				//console.log("test",searchObject.searchString)
+				if (searchObject.searchString !== "" && searchObject.searchString !==null){
+					findTextInRow = false;
+					for (const cell of tempRow.children){
+						if (cell.textContent.toUpperCase().indexOf(searchObject.searchString.toUpperCase()) !== -1){
+							findTextInRow = true;
+							//console.log("το κείμενο βρέθηκε στη γραμμή ")
+						}
+						else{
+							//console.log("not found")
+						}
 					}
 				}
+				if (hide || !findTextInRow){
+					tempRow.setAttribute("hidden","hidden");
+				}
+				else{
+					tempRow.removeAttribute("hidden");
+				}
 			}
-			if (hide || !findTextInRow){
-				tempRow.setAttribute("hidden","hidden");
-			}
-			else{
-				tempRow.removeAttribute("hidden");
-			}
+		}
+		else{
+			//Έλεγχος μετά από κλήση 
 		}
 	}
 }
@@ -168,7 +173,7 @@ export function createSearch(event) {
 		}
 	}
 	
-	console.log(filterObject);
+	//console.log(filterObject);
 	let debouncedFilter = null;
 	
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
@@ -335,19 +340,18 @@ export function updateBtnsFromFilter(){
 	const filterBtn = document.querySelector('#openFilterBtn');
 	const vals = Object.values(filter);
 	let filterActive = 0;
-	return;
 	vals.forEach( val => {
 		if (val!==0	&& val!==null && val!==""){
 			filterActive = 1;
 		}
 	});
 	if (filterActive){
-		filterBtn.classList.remove('btn-primary');
-		filterBtn.classList.add('btn-warning');	
+		filterBtn.classList.remove('primary');
+		filterBtn.classList.add('active');	
 	}
 	else{
-		filterBtn.classList.remove('btn-warning');
-		filterBtn.classList.add('btn-primary');	
+		filterBtn.classList.remove('active');
+		filterBtn.classList.add('primary');	
 	}
 	//console.log(filter);
 }

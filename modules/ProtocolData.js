@@ -9,22 +9,28 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	const currentFilter = JSON.parse(localStorage.getItem("filter"));
 	const currentFilterAsArray = Object.entries(currentFilter);
 	const filtered = currentFilterAsArray.filter(([key, value]) => !(value==0 || value=="" || value==null));
-	console.log("a");
-	console.log(filtered);
+	//console.log("a");
+	//console.log(filtered); // Εύρεση ενεργών φίλτρων
 	const filteredObject = Object.fromEntries(filtered);
-	console.log("b");
-	console.log(filteredObject);
+	//console.log("b");
+	//console.log(filteredObject);
 
-	const customObject ={
+	let customObject ={
 		customPagingStart,
 		customPagingSize,
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
 	}
-	const  completeOblect= Object.assign(filteredObject ,customObject);
-	console.log("c");
-	console.log(completeOblect);
+
+	if (+localStorage.getItem("globalSearch") === 1){
+		const searchText = document.querySelector("#tableSearchInput").value;
+		customObject.searchText = searchText;
+	}
+
+	const  completeOblect= Object.assign(filteredObject, customObject);
+	//console.log("c");
+	//console.log(completeOblect);
 	const urlpar = new URLSearchParams(completeOblect);
-	console.log(urlpar)
+	//console.log(urlpar)
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar);
 	if (!res.success){
 		console.log(res.msg);

@@ -203,7 +203,7 @@ function pagesCommonCode(){
 	//--------- Μεταφέρθηκαν στο starUp()
 
 	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
-		<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton active"><i class="fas fa-sync"></i></button>
+		<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton primary"><i class="fas fa-sync"></i></button>
 		<div class="flexVertical" id="uploadBtnDiv">
 		</div>
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
@@ -350,7 +350,20 @@ function pagesCommonCode(){
 
 	document.querySelector("#setPwd").addEventListener("click",changePassword);	
 
-	document.querySelector('#tableSearchInput').addEventListener("keyup", createSearch);
+	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
+		if (page == Pages.CHARGES || page == Pages.PROTOCOL){
+			if(+localStorage.getItem("globalSearch") === 1){
+				let debounceFunc = debounce( async () =>  {
+					const chargesRes = await getChargesAndFill(); 
+				});
+				debounceFunc();
+			}
+			else{
+				createSearch();
+			}
+		}
+		createSearch();
+	});
 	//console.log("keyup listener added");
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
 		if (document.querySelector('#showEmployeesBtn')){
@@ -414,13 +427,15 @@ async function createChargesUIstartUp(){
 	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
 	let cRole = localStorage.getItem("currentRole");
 	
+	const yearSelector = `<year-selector id="yearSelectorDiv"></year-selector>`;
+
 	const protocolExtraBtns = 
 		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;">	
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
 				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Νέα Πρωτόκολλα</div>
 				<div class="flexHorizontal" style="padding:0px 5px;">
-					<div><button id="addProtocolBtn" title="Νέο πρωτόκολλο" class="isButton small" style="background-color: var(--bs-success);"> <i class="fas fa-plus-square"></i></button></div>
+					<div><button id="addProtocolBtn" title="Νέο πρωτόκολλο" class="isButton small primary" > <i class="fas fa-plus-square"></i></button></div>
 					<div><button class="isButton small" style="background-color: var(--bs-red);"> 
 						<span id="peddingRequestsNo" name="peddingRequestsNo" style="background-color:red; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span></button>
 					</div>
@@ -468,8 +483,7 @@ async function createChargesUIstartUp(){
 					</div>
 				</div>`:``
 			}
-		</div>
-		<year-selector id="yearSelectorDiv"></year-selector>`;
+		</div>`;
 
 	const addRecordDialog =
 		`<dialog id="addRecordModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
@@ -479,24 +493,31 @@ async function createChargesUIstartUp(){
 	const chargesFilterMenuDiv = 
 	`<div id="chargesFilterMenu" class="flexVertical ">
 		<div id="topSettingsDiv" class="flexHorizontal" >	
+			<div id="globalSearchBtnDiv" >
+				<button class="isButton small primary" name="globalSearchBtn" id="globalSearchBtn" data-toggle="tooltip" title="Αναζήτηση στο σύνολο των εγγραφών">
+					<i class="fas fa-globe-europe"></i>
+				</button>
+			</div>
 			<div id="recordChangesBtnDiv" >
-				<button class="btn btn-primary btn-sm" type="button" id="openChangesBtn" data-toggle="tooltip" data-original-title="Αλλαγές σε πρωτόκολλα">
+				<button class="isButton small primary" type="button" id="openChangesBtn" data-toggle="tooltip" title="Αλλαγές σε πρωτόκολλα">
 					<i class="fas fa-info"></i>
 				</button>
 				
 			</div>
 			<div id="filterBtnDiv" >
-				<button class="btn btn-primary btn-sm" type="button" id="openFilterBtn" data-toggle="tooltip" data-original-title="Φίλτρο">
+				<button class="isButton small primary" type="button" id="openFilterBtn" data-toggle="tooltip" title="Φίλτρο">
 					<i class="fas fa-filter"></i>
 				</button>
 				
 			</div>
-			
-			<div id="removeNotificationsBtnDiv" >
-				<button class="btn btn-primary btn-sm" name="removeNotifications" id="removeNotifications" onclick="removeNotifications()" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
-				<i class="fab fa-stack-overflow"></i>
-				</button>
-			</div>
+			${
+				+loginData.user.roles[cRole].protocolAccessLevel?
+					``:
+					`<div id="removeNotificationsBtnDiv" >
+						<button class="btn btn-primary btn-sm" name="removeNotifications" id="removeNotifications" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
+						<i class="fab fa-stack-overflow"></i>
+						</button>
+					</div>`}
 
 		</div>
 		<div id="recentProtocolsDiv" class="col-lg-5 col-sm-12" >	
@@ -559,6 +580,10 @@ async function createChargesUIstartUp(){
 	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",addRecordDialog);
 
+	if (document.querySelector("#roleSelectorDiv") !== null){
+		document.querySelector("#roleSelectorDiv").insertAdjacentHTML("afterend",yearSelector);
+	}
+
 	if (document.querySelector("#topMenuNewProtocolBtnsDiv") == null){
 		document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
 	}
@@ -603,6 +628,20 @@ async function createChargesUIstartUp(){
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
 
+	const lsGlobalSearchValue = localStorage.getItem("globalSearch");
+	if (lsGlobalSearchValue === null){
+		localStorage.setItem("globalSearch",1);
+	}
+
+	if (+localStorage.getItem("globalSearch")){
+		document.querySelector("#globalSearchBtn").classList.remove("primary");
+		document.querySelector("#globalSearchBtn").classList.add("active");
+	}
+	else{
+		document.querySelector("#globalSearchBtn").classList.remove("active");
+		document.querySelector("#globalSearchBtn").classList.add("primary");
+	}
+
 	//---------------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
 	
 	const changesButton  = document.querySelector("#openChangesBtn");
@@ -610,6 +649,7 @@ async function createChargesUIstartUp(){
 	const changesCloseButton  = document.querySelector("#changesCloseButton");
 	const filterCloseButton  = document.querySelector("#filterCloseButton");
 	const changesDatesBtns = document.querySelectorAll("#changesDatesDiv button");
+	const globalSearchBtn  = document.querySelector("#globalSearchBtn");
 
 	changesButton.addEventListener("click", () => {
 		const changesDiv  = document.querySelector("#changesDiv").showModal();
@@ -627,6 +667,24 @@ async function createChargesUIstartUp(){
 		const filterDiv  = document.querySelector("#filterDiv").close();
 	});
 
+	globalSearchBtn.addEventListener("click", ()=>{
+		const lsGlobalSearchValue = localStorage.getItem("globalSearch");
+		if(lsGlobalSearchValue === null || lsGlobalSearchValue>1 || lsGlobalSearchValue<0){
+			localStorage.setItem("globalSearch", 1);
+		}
+		else{
+			localStorage.setItem("globalSearch", 1-(+lsGlobalSearchValue));
+		}
+		if (+localStorage.getItem("globalSearch") === 1){
+			document.querySelector("#globalSearchBtn").classList.remove("primary");
+			document.querySelector("#globalSearchBtn").classList.add("active");
+		}
+		else{
+			document.querySelector("#globalSearchBtn").classList.remove("active");
+			document.querySelector("#globalSearchBtn").classList.add("primary");
+		}
+	})
+
 	changesDatesBtns.forEach(item => { 
 		item.addEventListener("click", () => {
 			changesDatesBtns.forEach(btn => {
@@ -641,12 +699,14 @@ async function createChargesUIstartUp(){
 
 	//!!!!-----------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
 
-	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
-		let debounceFunc = debounce( async () =>  {
-			const chargesRes = await getChargesAndFill(); 
-		});
-		debounceFunc();
-	})
+	if (document.querySelector("#yearSelectorDiv")){
+		document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
+			let debounceFunc = debounce( async () =>  {
+				const chargesRes = await getChargesAndFill(); 
+			});
+			debounceFunc();
+		})
+	}
 
 	const peddingReqs = await getPeddingProtocolReqs();
 
@@ -1059,8 +1119,8 @@ export async function getChargesAndFill(){
 
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
-		//console.log(event.currentPage);
-		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize, signals.charges,getControllers());
+		console.log("page to render:", event.currentPage);
+		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize, signals.charges, getControllers());
 	})		
 }
 

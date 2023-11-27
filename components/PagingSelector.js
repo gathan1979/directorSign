@@ -126,6 +126,7 @@ class PagingSelector extends HTMLElement {
     totalRecords;
     paggingStart;
     paggingSize;
+    timer = null;
 
     constructor() {
         super();
@@ -148,7 +149,8 @@ class PagingSelector extends HTMLElement {
                     this.shadow.querySelector('#currentPageSelector').value -=1;
                     const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
                     pageChangeEvent.currentPage = +this.shadow.querySelector('#currentPageSelector').value;
-                    this.dispatchEvent(pageChangeEvent);
+                    let debouncedFilter = this.debounce( () =>  this.dispatchEvent(pageChangeEvent));
+                    debouncedFilter();
                     this.checkDisabledArrows()
                 }
             });
@@ -161,7 +163,8 @@ class PagingSelector extends HTMLElement {
                     this.shadow.querySelector('#currentPageSelector').value= + this.shadow.querySelector('#currentPageSelector').value + 1;
                     const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
                     pageChangeEvent.currentPage = +this.shadow.querySelector('#currentPageSelector').value;
-                    this.dispatchEvent(pageChangeEvent);
+                    let debouncedFilter = this.debounce( () =>  this.dispatchEvent(pageChangeEvent));
+                    debouncedFilter();
                     this.checkDisabledArrows()
                 }
             });
@@ -184,6 +187,13 @@ class PagingSelector extends HTMLElement {
     }
 
     disconnectedCallback() {    
+    }
+
+    debounce(func, timeout = 1000){
+        return (...args) => {
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => { func.apply(this, args); }, timeout);
+        };
     }
 
     checkDisabledArrows(){

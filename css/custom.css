@@ -1,3 +1,12 @@
+:root {
+	--my-success: #198754;
+	--my-danger: rgb(185, 25, 25);
+	--my-warning : rgb(255, 170, 0);
+	--my-secondary : gray;
+	--my-primary : rgb(51, 114, 177);
+}
+
+
 body{
 	/*background-image: url("images/newYear.jpg");*/	
 	background-repeat:repeat;
@@ -151,7 +160,7 @@ td .fa-crosshairs{
 	align-items :flex-start;
 	margin : 0.2em;
 	margin-bottom : 1em;
-	align-items : top;
+	align-items : start;
 }
 
 
@@ -493,7 +502,7 @@ td .fa-crosshairs{
 
 
 .isButton{
-	background-color: var(--bs-secondary);
+	background-color: var(--my-secondary);
 	font-family: var(--bs-body-font-family);
 	color : white;
 	border-radius:5px;
@@ -523,23 +532,24 @@ td .fa-crosshairs{
 }
 
 .active{
-	background-color: var(--bs-success);
+	background-color: var(--my-success);
 }
 
 .dismiss{
-	background-color: var(--bs-danger);
+	background-color: var(--my-danger);
 }
 
 .warning{
-	background-color: var(--bs-warning);
+	background-color: var(--my-warning);
+	color: black;
 }
 
 .secondary{
-	background-color: var(--bs-secondary);
+	background-color: var(--my-secondary);
 }
 
 .primary{
-	background-color: var(--bs-primary);
+	background-color: var(--my-primary);
 }
 
 .customModal{

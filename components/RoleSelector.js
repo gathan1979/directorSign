@@ -17,7 +17,7 @@ const roleSelectorDiv = `
             }
 
             .isButton{
-                background-color: var(--bs-secondary);
+                background-color: var(--my-secondary);
                 font-family: var(--bs-body-font-family);
                 color : white;
                 border-radius:5px;
@@ -28,11 +28,11 @@ const roleSelectorDiv = `
             }
 
             .active{
-                background-color: var(--bs-success);
+                background-color: var(--my-success);
             }
 
             .notification{
-                background-color: var(--bs-blue);
+                background-color: var(--my-blue);
             }
 
             .outline{
@@ -50,11 +50,11 @@ const roleSelectorDiv = `
             }
             
             .active{
-                background-color: var(--bs-success);
+                background-color: var(--my-success);
             }
             
             .dismiss{
-                background-color: var(--bs-danger);
+                background-color: var(--my-danger);
             }
 
             .customDialogContent{
@@ -112,7 +112,7 @@ const roleSelectorDiv = `
             }
         </style>
         <link href="css/all.css" rel="stylesheet">    
-        <div id="topMenuAdminYearsDiv" class="flexHorizontal" style="align-items: center;align-self: stretch; padding: 5px; ">
+        <div id="topMenuAdminRolesDiv" class="flexHorizontal" style="align-items: center;align-self: stretch; padding: 5px; ">
 			<span id="upRoleBtn" style="cursor:pointer;"><i class="fas fa-chevron-up"></i></span>
 			<div id="allRoles"></div>	
 			<span id="downRoleBtn" style="cursor:pointer;"><i class="fas fa-chevron-down"></i></span>
@@ -149,7 +149,7 @@ class RoleSelector extends HTMLElement {
                     this.shadow.querySelector('#downRoleBtn').removeAttribute("disabled"); 
                 }
                 //this.shadow.querySelector("#selectedRole").innerHTML = roles.at(currentRole).roleName;
-                const btn1 = `<button class="isButton extraSmall" style="background-color: var(--bs-success);width: 60ch" data-role='${currentRole}'> ${roles.at(currentRole).roleName}</button>`;
+                const btn1 = `<button class="isButton extraSmall active" style="width: 60ch" data-role='${currentRole}'> ${roles.at(currentRole).roleName}</button>`;
                 console.log(btn1);
                 this.shadow.querySelector("#allRoles").innerHTML += btn1;
         }
