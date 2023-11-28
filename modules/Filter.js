@@ -200,7 +200,17 @@ export default function createFilter(parentElement){
 	const currentRole = localStorage.getItem("currentRole");
 	console.log(userData.roles[currentRole].protocolAccessLevel);
 	let parentElementContent = "";
-	if (userData.roles[currentRole].protocolAccessLevel == 1){
+	const page = getPage();
+	if (page == Pages.PROTOCOL){	
+		parentElementContent =`
+			<div class="flexHorizontal" style="padding-top:0.3em;">
+					<div ><i class="fas fa-filter"></i><b> Ημερ. : </b></div>
+					<div >
+						<input type="date" id="datefilter" class="form-control-sm"  data-toggle="tooltip" data-placement="top" title="Φιλτράρισμα εγγραφών με ημερομηνία"/>
+					</div>
+			</div>`;		
+	}
+	else if (userData.roles[currentRole].protocolAccessLevel == 1){
 			parentElementContent =`
 					<div class="flexHorizontal" style="padding-top:0.3em;">
 							<div ><i class="fas fa-filter"></i><b> Αχρέωτα : </b></div>

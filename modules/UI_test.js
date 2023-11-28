@@ -11,8 +11,8 @@ let page = null;
 export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed', PROTOCOL : "protocol"};
 Object.freeze(Pages);       
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
-const pwdBtn = '<button class="isButton" id="changePwdBtn" style="background-color: var(--bs-yellow);color:black;" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtnIcon"></i></button>';
-const logoutBtn = '<div><button class="isButton" style="background-color: var(--bs-yellow);color:black;" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
+const pwdBtn = '<button class="isButton warning" id="changePwdBtn" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtnIcon"></i></button>';
+const logoutBtn = '<div><button class="isButton warning" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
 
 let interPeddingReqs = null;
 let interCharges = null;
@@ -207,11 +207,11 @@ function pagesCommonCode(){
 		<div class="flexVertical" id="uploadBtnDiv">
 		</div>
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
-		<div id="outerFilterDiv" class="flexHorizontal smallPadding">
+		<div id="outerFilterDiv" class="flexHorizontal smallPadding" style="align-items: flex-start;">
 			<div id="generalFilterDiv" class="flexHorizontal ">
-				<input id="tableSearchInput" class="form-control form-control-sm" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
-				<button data-active="0" class="btn btn-danger btn-sm" id="showEmployeesBtn">Προσωπικά</button>
-				<button data-active="0" class="btn btn-danger btn-sm" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
+				<input id="tableSearchInput" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
+				<button data-active="0" class="isButton extraSmall dismiss" id="showEmployeesBtn">Προσωπικά</button>
+				<button data-active="0" class="isButton extraSmall dismiss" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
 			</div>
 		</div>
 		
@@ -430,48 +430,50 @@ async function createChargesUIstartUp(){
 	const yearSelector = `<year-selector id="yearSelectorDiv"></year-selector>`;
 
 	const protocolExtraBtns = 
-		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;">	
+		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;padding: 5px;">	
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
 				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Νέα Πρωτόκολλα</div>
 				<div class="flexHorizontal" style="padding:0px 5px;">
-					<div><button id="addProtocolBtn" title="Νέο πρωτόκολλο" class="isButton small primary" > <i class="fas fa-plus-square"></i></button></div>
-					<div><button class="isButton small" style="background-color: var(--bs-red);"> 
+					<div><button id="addProtocolBtn" title="Νέο πρωτόκολλο" class="isButton extraSmall primary" > <i class="fas fa-plus-square"></i></button></div>
+					<div><button class="isButton extraSmall" style="background-color: var(--bs-red);"> 
 						<span id="peddingRequestsNo" name="peddingRequestsNo" style="background-color:red; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span></button>
 					</div>
 					<div>
-						<button id="refreshPeddingReqsBtn" title="Ανανέωση Αιτημάτων" type="button" class="isButton small"><i class="fas fa-sync"></i></button>
+						<button id="refreshPeddingReqsBtn" title="Ανανέωση Αιτημάτων" type="button" class="isButton extraSmall"><i class="fas fa-sync"></i></button>
 					</div>
 				</div>`:
 				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Νέα Πρωτόκολλα</div>
 				<div class="flexHorizontal" style="padding:0px 5px;">
-					<button id="reqProtocolBtn" name="reqProtocolBtn" class="isButton small" title="Aίτηση νέου πρωτοκόλλου" style="background-color:lightseagreen"><i class="fas fa-phone-volume"></i></button>
-					<div><button class="isButton small" style="background-color: var(--bs-red);"> 
+					<button id="reqProtocolBtn" name="reqProtocolBtn" class="isButton extraSmall" title="Aίτηση νέου πρωτοκόλλου" style="background-color:lightseagreen"><i class="fas fa-phone-volume"></i></button>
+					<div><button class="isButton extraSmall" style="background-color: var(--bs-red);"> 
 						<span id="peddingRequestsNo" name="peddingRequestsNo" style="background-color:red; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span></button>
 					</div>
 				</div>`
 			}
 		</div>
 
-		<div id="topMenuProtocolAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;">	
+		
 		${
 			+loginData.user.roles[cRole].protocolAccessLevel?
-			`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αιτήματα Πρόσβασης</div>
-			<div class="flexHorizontal" style="padding:0px 5px;">
-					<button class="isButton small" style="background-color: var(--bs-orange);"> 
-						<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
-					</button>
-					<div>
-						<button id="refreshPeddingAccessReqsBtn" title="Ανανέωση Αιτημάτων Πρόσβασης" type="button" class="isButton small"><i class="fas fa-sync"></i></button>
-					</div>
+			`<div id="topMenuProtocolAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch; padding: 5px;">
+				<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αιτήματα Πρόσβασης</div>
+					<div class="flexHorizontal" style="padding:0px 5px;">
+						<button class="isButton extraSmall" style="background-color: var(--bs-orange);"> 
+							<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
+						</button>
+						<div>
+							<button id="refreshPeddingAccessReqsBtn" title="Ανανέωση Αιτημάτων Πρόσβασης" type="button" class="isButton extraSmall"><i class="fas fa-sync"></i></button>
+						</div>
+				</div>
 			</div>`:``
 		}
-		</div>	
 
-		<div id="topMenuAdminBtnsDiv" class="flexVertical" style="align-items: center;align-self: stretch;">	
+		
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
-				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Άλλες εφαρμογές</div>
+			`<div id="topMenuAdminBtnsDiv" class="flexVertical" style="align-items: center;align-self: stretch;padding: 5px;">	
+				<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Άλλες εφαρμογές</div>
 				<div class="flexHorizontal">
 					<div><a rel="opener"  title="Άνοιγμα αλληλογραφίας" rel="referer" target="_blank" href="/nocc-1.9.8/mich_login.php"><span style="font-weight: bold;
 						border-radius: 5px; border-style: solid; 
@@ -481,9 +483,10 @@ async function createChargesUIstartUp(){
 															border-radius: 5px; border-style: solid; 
 															border-width: 1px;padding: 0px 2px;color: white; background-color:lightseagreen;border-color:lightseagreen;">ΚΣΗΔΕ</span></a>
 					</div>
-				</div>`:``
+				</div>
+			</div>`:``
 			}
-		</div>`;
+		`;
 
 	const addRecordDialog =
 		`<dialog id="addRecordModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
@@ -494,18 +497,18 @@ async function createChargesUIstartUp(){
 	`<div id="chargesFilterMenu" class="flexVertical ">
 		<div id="topSettingsDiv" class="flexHorizontal" >	
 			<div id="globalSearchBtnDiv" >
-				<button class="isButton small primary" name="globalSearchBtn" id="globalSearchBtn" data-toggle="tooltip" title="Αναζήτηση στο σύνολο των εγγραφών">
+				<button class="isButton extraSmall primary" name="globalSearchBtn" id="globalSearchBtn" data-toggle="tooltip" title="Αναζήτηση στο σύνολο των εγγραφών">
 					<i class="fas fa-globe-europe"></i>
 				</button>
 			</div>
 			<div id="recordChangesBtnDiv" >
-				<button class="isButton small primary" type="button" id="openChangesBtn" data-toggle="tooltip" title="Αλλαγές σε πρωτόκολλα">
+				<button class="isButton extraSmall primary" type="button" id="openChangesBtn" data-toggle="tooltip" title="Αλλαγές σε πρωτόκολλα">
 					<i class="fas fa-info"></i>
 				</button>
 				
 			</div>
 			<div id="filterBtnDiv" >
-				<button class="isButton small primary" type="button" id="openFilterBtn" data-toggle="tooltip" title="Φίλτρο">
+				<button class="isButton extraSmall primary" type="button" id="openFilterBtn" data-toggle="tooltip" title="Φίλτρο">
 					<i class="fas fa-filter"></i>
 				</button>
 				
@@ -514,13 +517,11 @@ async function createChargesUIstartUp(){
 				+loginData.user.roles[cRole].protocolAccessLevel?
 					``:
 					`<div id="removeNotificationsBtnDiv" >
-						<button class="btn btn-primary btn-sm" name="removeNotifications" id="removeNotifications" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
+						<button class="isButton extraSmall primary" name="removeNotifications" id="removeNotifications" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
 						<i class="fab fa-stack-overflow"></i>
 						</button>
 					</div>`}
 
-		</div>
-		<div id="recentProtocolsDiv" class="col-lg-5 col-sm-12" >	
 		</div>
 	</div>`;
 
@@ -760,21 +761,19 @@ async function createProtocolUIstartUp(){
 				
 			</div>`
 		}
-		</div>	
-		<year-selector id="yearSelectorDiv"></year-selector>`;
+		</div>`;
 	
 	const chargesFilterMenuDiv = 
 	`<div id="chargesFilterMenu" class="flexVertical ">
 		<div id="topSettingsDiv" class="flexHorizontal" >	
 			<div id="filterBtnDiv" >
-				<button class="btn btn-primary btn-sm" type="button" id="openFilterBtn" data-toggle="tooltip" data-original-title="Φίλτρο">
+				<button class="isButton extraSmall primary" type="button" id="openFilterBtn" data-toggle="tooltip" title="Φίλτρο">
 					<i class="fas fa-filter"></i>
 				</button>
 				
 			</div>
 
 		</div>
-		<div id="recentProtocolsDiv" class="col-lg-5 col-sm-12" >	
 		</div>
 	</div>`;
 
@@ -827,6 +826,7 @@ async function createProtocolUIstartUp(){
 	
 	
 	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
+	document.querySelector("role-selector").insertAdjacentHTML("afterend", `<year-selector id="yearSelectorDiv"></year-selector>`);
 	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
 
 	const filterButton  = document.querySelector("#openFilterBtn");	
@@ -886,7 +886,7 @@ export async function createUIstartUp(){
 	document.querySelector('#showEmployeesBtn').style.display = "inline-block"; 
 	document.querySelector('#showToSignOnlyBtn').style.display = "inline-block"; 
 
-	const uploadBtn=`<button class="isButton isGreen " title="Προσθήκη νέου έγγραφο"><i class="far fa-plus-square"></i></button>`;
+	const uploadBtn=`<button class="isButton primary " title="Προσθήκη νέου έγγραφο"><i class="far fa-plus-square"></i></button>`;
 	document.querySelector("#uploadBtnDiv").innerHTML =uploadBtn;
 	document.querySelector("#uploadBtnDiv").addEventListener("click",()=> document.querySelector("#uploadModal").showModal());
 	//create Upload UI

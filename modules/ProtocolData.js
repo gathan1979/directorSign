@@ -191,10 +191,10 @@ export function openProtocolRecord(subject,record,recordDate, event){
 	//Fill protocolWindowContent 
 	if (currentRoleObject.protocolAccessLevel ==1){
 		document.querySelector("#bottomSectionButtons").innerHTML += 
-		`<button class="btn btn-warning ektos mr-2" name="copyProtocolBtn" id="copyProtocolBtn" onclick="copyProtocol();" data-toggle="tooltip" title="Αντίγραφο Πρωτοκόλλου"><i class="far fa-copy"></i></button>&nbsp`;
+		`<button class="isButton primary" name="copyProtocolBtn" id="copyProtocolBtn" onclick="copyProtocol();" data-toggle="tooltip" title="Αντίγραφο Πρωτοκόλλου"><i class="far fa-copy"></i></button>&nbsp`;
 	}
 	else{
-		document.querySelector("#bottomSectionButtons").innerHTML += `<button class="btn btn-warning ektos mr-2" name="makeUnread" id="makeUnread" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
+		document.querySelector("#bottomSectionButtons").innerHTML += `<button class="isButton primary" name="makeUnread" id="makeUnread" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
 	}
 	if (currentRoleObject.protocolAccessLevel ==1 || currentRoleObject.accessLevel ==1){
 		document.querySelector("#bottomSectionButtons").innerHTML += 
@@ -207,6 +207,8 @@ export function openProtocolRecord(subject,record,recordDate, event){
 	document.querySelector("#editRecordBtn").addEventListener("click", ()=> document.querySelector("#editRecordModal").showModal());
 	if (document.querySelector("#publishToSiteBtn")){
 		document.querySelector("#publishToSiteBtn").addEventListener("click", () => publishToSite());
+	}
+	if (document.querySelector("#copyProtocolBtn")){
 		document.querySelector("#copyProtocolBtn").addEventListener("click", () => copyProtocol());
 	}
 	if (document.querySelector("#makeUnread")){

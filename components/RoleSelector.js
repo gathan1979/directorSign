@@ -21,8 +21,11 @@ const roleSelectorDiv = `
                 font-family: var(--bs-body-font-family);
                 color : white;
                 border-radius:5px;
-                border:1px solid transparent;
-                padding : 10px;
+                border-style: none;
+                border-right-style: solid;
+                border-bottom-style: solid;
+                border-color: #4f4a4a;
+                padding : 5px;
                 cursor : pointer;
                 font-size: 1em;
             }
