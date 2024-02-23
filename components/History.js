@@ -1,5 +1,6 @@
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
+
 const historyContent = `    
     <div id="historyModule" style="display:flex;gap:10px;flex-direction:column;background: rgba(122, 160, 180, 0.2)!important;padding:10px;height:100%;">	
         <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
@@ -24,6 +25,8 @@ const historyContent = `
     </div>`;
 
 class History extends HTMLElement {
+    static observedAttributes = ["timestamp"];
+
     protocolNo;
     protocolYear;
     shadow;
@@ -37,6 +40,11 @@ class History extends HTMLElement {
         this.shadow.innerHTML = historyContent;
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
+        this.loadHistory(this.protocolNo);
+    }
+
+    attributeChangedCallback(name, oldValue, newValue){
+        //console.log("attribute changed");
         this.loadHistory(this.protocolNo);
     }
 

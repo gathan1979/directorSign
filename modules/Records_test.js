@@ -1,10 +1,12 @@
-import refreshToken from "./RefreshToken.js"
-import getFromLocalStorage from "./LocalStorage.js"
 import {uploadFileTest} from "./Upload.js";
 import { createSearch } from "./Filter.js";
 import {signals, abortControllers, getControllers} from "./UI_test.js";
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
+let timer = null;
+
+const signatureController = {};
+const signatureSignal = {};
 
 const entityMap = {
 	'&': '&amp;',
@@ -98,25 +100,23 @@ export function createActionsTemplate(){
 			<div class="modal-footer"></div>
         </dialog>`;
 
-    const returnModalDiv =
-        `<div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-labelledby="returnModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document" >
-                <div class="modal-content">
-                    <div class="modal-header"> 
-                        <b>Επιστροφή Εγγράφου</b>
-                    </div>
-                    <div class="modal-body" id="returnForm">
-                        <textarea id="returnText" cols="100" rows="3" size="200" class="form-control" placeholder="το κείμενο είναι απαραίτητο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <div class="otherContentFooter">
-                        </div>
-                        <button id="closeReturnModalBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </div>`;
+	const returnModalDiv =
+        `<dialog class="customDialog" id="returnModal">
+			<div class="customDialogContentTitle">
+				<span style="font-weight:bold;" id="returnDialogTitle">Επιστροφή Εγγράφου</span>
+				<div class="topButtons" style="display:flex;gap: 7px;">
+					<div class="topActionButtons"></div>
+					<button class="isButton " name="closeReturnModalBtn" id="closeReturnModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+				</div>
+			</div>
+			<div class="customDialogContent">
+				<div class="modal-body" id="returnForm">
+					<textarea id="returnText" cols="100" rows="3" size="200" class="form-control" placeholder="το κείμενο είναι απαραίτητο" aria-label="keyword" aria-describedby="basic-addon1"></textarea>
+				</div>
+			</div>
+			<div class="modal-footer"></div>
+        </dialog>`;
+
 
     const historyModalDiv =
         `<dialog class="customDialog" id="historyModal">
@@ -200,107 +200,48 @@ export function createActionsTemplate(){
         // }
     })
 
-
-    document.querySelector("#returnModal").addEventListener("show.bs.modal",(e)=> {
-        const contentFooterDivContent = `<button id="returnButton" type="button" class="btn btn-warning" disabled>Επιστροφή</button>`;
-        document.querySelector("#returnModal .otherContentFooter").innerHTML = contentFooterDivContent;
-        const recordAA = e.relatedTarget.getAttribute('data-whatever');
-        const relevantBtn = document.querySelector("#returnButton");
-        const relevantText = document.querySelector("#returnText");
-        
-        relevantText.addEventListener("keyup",()=> {if(relevantText.value != ""){relevantBtn.removeAttribute("disabled")}else{relevantBtn.setAttribute("disabled",true)} });
-        relevantBtn.addEventListener("click",() => returnDocument(+recordAA));
-    });
-
-
 }
 
 //------------------------------------------------------ΑΠΟ ΕΔΩ ΚΑΙ ΚΑΤΩ ΜΕΘΟΔΟΙ ---------------------------------------------------------------------------------
 
-export async function getUserData(){
-	// const loginData = JSON.parse(localStorage.getItem("loginData"));
-	// const jwt = loginData.jwt;
-	// console.log(jwt);
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'POST', headers : myHeaders};
-	console.log(init);
-	const res = await fetch("/api/getUserData.php",init);
-	if (!res.ok){
-		if (res.status>=400 && res.status <= 499){
-			refreshToken();
-			getUserData();
-		}
-		else{
-			const error = new Error("unauthorized")
-			error.code = "400"
-			throw error;
-		}
-	}
-	else{
-		return res.json();
-	}
-}
+// export async function getUserData(){
+// 	const myHeaders = new Headers();
+// 	myHeaders.append('Authorization', jwt);
+// 	let init = {method: 'POST', headers : myHeaders};
+// 	console.log(init);
+// 	const res = await fetch("/api/getUserData.php",init);
+// 	if (!res.ok){
+// 		if (res.status>=400 && res.status <= 499){
+// 			refreshToken();
+// 			getUserData();
+// 		}
+// 		else{
+// 			const error = new Error("unauthorized")
+// 			error.code = "400"
+// 			throw error;
+// 		}
+// 	}
+// 	else{
+// 		return res.json();
+// 	}
+// }
 
 async function getRecordHistory(aa){
-	console.log("retrieving history ... !!");
-	//document.querySelector("#recordsSpinner").style.display = 'inline-block';
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'GET', headers : myHeaders};
-	//console.log(init);
-
 	const params = new URLSearchParams({
-		role: role,
 		aa
 	});
-
-	const res = await fetch("/api/getRecordHistory.php?"+params,init);
-	if (!res.ok){
-		//document.querySelector("#recordsSpinner").style.display = 'none';
-		if (res.status == 401){
-			const reqToken = await refreshToken();
-			if (reqToken ==1){
-				getRecordHistory(aa);
-				const error = new Error("token expired")
-				error.code = "400"
-				throw error;
-			}
-			else{
-				alert('σφάλμα εξουσιοδότησης');
-				const error = new Error("token invalid")
-				error.code = "400"
-				throw error;
-			}
-		}
-		else{
-			const error = new Error("unauthorized")
-			error.code = "400"
-			throw error;
-		}
+	const res = await runFetch("/api/getRecordHistory.php", "GET", params);
+	if (!res.success){
+		alert(res.msg);
 	}
 	else{
-		//return res;
-		//document.querySelector("#recordsSpinner").style.display = 'none';
-		const resDec = await res.json();
-		return resDec;
+		return res.result;
 	}
 }
 
 
-export async function getSigRecords(signal, controllers){
+export async function getSigRecords(signal, controllers) {
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
-
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'GET', headers : myHeaders};
-	//console.log(init);
-
-	const params = new URLSearchParams({
-		role: role
-	});
 	
 	for (const [key, value] of Object.entries(controllers)) {
 		if (key !== "toSign"){
@@ -308,36 +249,13 @@ export async function getSigRecords(signal, controllers){
 		}
 	}
 
-	init.signal = signal;
-
-	const res = await fetch("/api/getSigRecords.php?"+params,init);
-	if (!res.ok){
-		//document.querySelector("#recordsSpinner").style.display = 'none';
-		//document.querySelector("#myNavBar").classList.remove("disabledDiv");
-		if (res.status == 401){
-			const reqToken = await refreshToken();
-			if (reqToken ==1){
-				getSigRecords(signal, controllers)
-				const error = new Error("token expired")
-				error.code = "400"
-				throw error;
-			}
-			else{
-				alert('σφάλμα εξουσιοδότησης');
-				const error = new Error("token invalid")
-				error.code = "400"
-				throw error;
-			}
-		}
-		else{
-			const error = new Error("unauthorized")
-			error.code = "400"
-			throw error;
-		}
+	const res = await runFetch("/api/getSigRecords.php", "GET", null, undefined, signal);
+	if (!res.success){
+		alert(res.msg);
 	}
 	else{
-		fillTableToBeSigned(await res.json());
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
+		fillTableToBeSigned(res.result);	
 		return 1;
 	}
 }
@@ -390,9 +308,7 @@ function fillHistoryModal(result){
 export function fillTableToBeSigned(result){
 	//const table = $('#example1').DataTable();
 	//table.clear().draw();
-
 	const table = document.querySelector("#dataToSignTable>tbody");
-	console.log(table)
 	table.innerHTML = "";
 
 	if (localStorage.getItem("loginData") == null){
@@ -488,27 +404,37 @@ export function fillTableToBeSigned(result){
 			if (result[key].isExactCopy){
 				signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="isButton active"  data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
 			}
-			if (accessLevel==1){
-				signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="isButton active"  data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
-				if (!result[key].isExactCopy){
-					returnBtn = '<button id="showReturnModal'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-arrow-down" data-toggle="tooltip" title="Επιστροφή Εγγράφου"></i>'+"</button>";
-				}
-			}
+			
 			if (result[key].isReturned){   // πρόκειται για επιστροφή
 				if(result[key].dep == department){  // το αρχικό τμήμα του εγγράφου είναι ίδιο με το τμήμα του χρήστη (το έγγραφο επέστρεψε στο τμήμα του)
-					const currentRoleAA = loginData.user.roles[currentRole].aa_role;
-					if((result[key].lastUser != result[key].userId ) || (result[key].lastFileRecord === "")){ // ο τελευταίος χρήστης δεν είναι αυτός που το ανέβασε, οπότε δεν πάει για υπογραφή	
-						signModalBtn = "";	
-						if(result[key].userId == currentRoleAA){	// ο χρήστης είναι αυτός που το ανέβασε αρχικά και δεν είναι ο τελευταίος που το επεξεργάστηκε
-							reuploadFile = ' <input type="file" class="form-control form-control-sm" id="reuploadFileBtn'+result[key]['aa']+'">' ;
+					if (result[key].lastFileRecord ==""){ // το έγγραφο είναι σε κάθοδο
+						if(result[key].userId == loginData.user.aa_user){ // o χρήστης είναι αυτός που ανέβασε το έγγραφο αρχικά	
+							reuploadFile = `<div class="uploadBtns" forRecord="${result[key]['aa']}"><button class="isButton primary " title="Προσθήκη νέου εγγράφου"><i class="far fa-plus-square"></i></button></div>`;
+						}
+						//if(result[key].lastUserDepartment !== department){ // ο τελευταίος που επεξεργάστηκε το αρχείο δεν ανήκει στο τμήμα οπότε επιστρέφει στον προϊστάμενο
+							//if (loginData.user.roles[currentRole].accessLevel == 1){ //ο χρήστης είναι ο προϊστάμενος του τμήματος
+								
+							//}
+						//}
+							
+					}
+					else{ // Το έγγραφο είναι στο τμήμα και είναι σε άνοδο
+						if (loginData.user.roles[currentRole].accessLevel == 1){ //ο χρήστης είναι ο προϊστάμενος του τμήματος
+							signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="isButton active"  data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
 						}
 					}
-					else{
-						
-					}
+					
 				}
-				else{
-                    signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="isButton active"  data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
+				else{  // Το τμήμα είναι διαφορετικό από το τρέχον τμήμα του εγγράφου
+                   // signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="isButton active"  data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
+				}
+			}
+			else{
+				if (accessLevel==1){
+					signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="isButton active"  data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
+					if (!result[key].isExactCopy){
+						returnBtn = '<button id="showReturnModal'+result[key]['aa']+'" type="button" class="isButton warning"  data-whatever="'+result[key].aa+'">'+'<i class="fas fa-arrow-down" data-toggle="tooltip" title="Επιστροφή Εγγράφου"></i>'+"</button>";
+					}
 				}
 			}
 		}	
@@ -521,6 +447,8 @@ export function fillTableToBeSigned(result){
 		c3.innerHTML = temp1[2];
 		c4.innerHTML = temp1[3];
 		c5.innerHTML = temp1[4];
+
+		
 
 		if(document.querySelector("#showSignModalBtn"+result[key]['aa'])){
 			document.querySelector("#showSignModalBtn"+result[key]['aa']).addEventListener("click", (event) => {
@@ -609,6 +537,24 @@ export function fillTableToBeSigned(result){
 			})
 		}
 
+
+		if(document.querySelector("#showReturnModal"+result[key]['aa'])){
+			document.querySelector("#showReturnModal"+result[key]['aa']).addEventListener("click", (event) => {
+				document.querySelector("#returnModal .topActionButtons").innerHTML = `<button id="returnButton" type="button" class="btn btn-danger" disabled>Επιστροφή Εγγράφου</button>`;
+				const recordAA = event.currentTarget.getAttribute('data-whatever');
+				//console.log(recordAA, isExactCopy);
+				const relevantBtn = document.querySelector("#returnButton");
+				const relevantText = document.querySelector("#returnText");
+				relevantText.value = "";
+				relevantText.addEventListener("keyup",()=> {if(relevantText.value != ""){relevantBtn.removeAttribute("disabled")}else{relevantBtn.setAttribute("disabled",true)} });
+				relevantBtn.addEventListener("click", async () => {
+					const res = await returnDocument(+recordAA);
+					document.querySelector("#returnModal").close();
+				});
+				document.querySelector("#returnModal").showModal();
+			})
+		}
+
 		if(document.querySelector("#showHistoryModal"+result[key]['aa'])){
 			document.querySelector("#showHistoryModal"+result[key]['aa']).addEventListener("click", async (event) => {
 				const recordAA = event.currentTarget.getAttribute('data-whatever');
@@ -618,9 +564,6 @@ export function fillTableToBeSigned(result){
 			})
 		}
 
-		if(reuploadFile!==""){
-			document.querySelector("#reuploadFileBtn"+result[key]['aa']).addEventListener("change",()=>uploadFileTest(undefined,result[key]['aa']));
-		}
 		document.querySelector("#btn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename'],result[key].date));
 		// result[key].preview_file_last  Τελευταίο αρχείο που υπάρχει στον πίνακα για αυτό το αα
 		document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['preview_file_last']+"&insertDate="+result[key].date+"&id="+result[key].aa+"#zoom=page-fit"));
@@ -631,8 +574,17 @@ export function fillTableToBeSigned(result){
 			}
 		}
 	}
+
+	[...document.querySelectorAll(".uploadBtns")].forEach( btn => {
+		btn.addEventListener("click",(event) =>{
+			document.querySelector("#uploadModal").showModal();
+			document.querySelector("#fileUploadDiv").setAttribute("forrecord",event.currentTarget.getAttribute("forrecord"));
+		})
+	})
+
 	document.querySelector("#closeSignModalBtn").addEventListener("click", () => {document.querySelector("#signModal").close();});
 	document.querySelector("#closeRejectModalBtn").addEventListener("click", () => {document.querySelector("#rejectModal").close();});
+	document.querySelector("#closeReturnModalBtn").addEventListener("click", () => {document.querySelector("#returnModal").close();});
 	document.querySelector("#closeHistoryModalBtn").addEventListener("click", () => {document.querySelector("#historyModal").close();});
 	createSearch();
 }
@@ -694,6 +646,13 @@ function prepareFindProtocolDebounce(){
 	debouncedFilter();
 }
 
+function debounce(func, timeout = 1000){
+	return (...args) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => { func.apply(this, args); }, timeout);
+	};
+}
+
 async function findLinkProtocol(protocolNo, currentYear){
 	if(protocolNo == ""){
 		document.querySelector("#searchProtocolResultDiv").innerHTML = "";
@@ -703,38 +662,14 @@ async function findLinkProtocol(protocolNo, currentYear){
 		document.querySelector("#searchProtocolResultDiv").innerHTML = "";
 		return;
 	}
-	//console.log("pass")
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let urlParams = new URLSearchParams({protocolNo, currentYear});
+	let urlParams = new URLSearchParams({protocolNo});
 
-	let init = {method: 'GET', headers : myHeaders};
-	const res = await fetch("/api/getLinkProtocol.php?"+urlParams,init);
-	if (!res.ok){
-		const resdec = await res.json();
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ==1){
-				findLinkProtocol(protocolNo, year);
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το πρωτόκολλο δε βρέθηκε");
-		}
-		else{
-			alert("Σφάλμα!!!");
-		}
+	const res = await runFetch("/api/getLinkProtocol.php", "GET", urlParams);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
-		const resdec = await res.json();
-		document.querySelector("#searchProtocolResultDiv").innerHTML = resdec;
+	else{
+		document.querySelector("#searchProtocolResultDiv").innerHTML = res.result;
 	}
 }
 
@@ -749,35 +684,12 @@ async function moveSignedToProtocol(filename, folder="",relevantDocs, protocolNo
 	formdata.append("relevantDocs",relevantDocs);
 	formdata.append("protocolNo",protocolNo);
 	formdata.append("year",year);
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'POST', headers : myHeaders, body : formdata};
-	const res = await fetch("/api/moveSignedToProtocol.php",init);
-	if (!res.ok){
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ===1){
-				moveSignedToProtocol(filename, folder="",protocolNo, year);
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πρωτόκολλο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else if (res.status==500){
-			alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
-		}
-		else {
-			alert("Σφάλμα");
-		}
+
+	const res = await runFetch("/api/moveSignedToProtocol.php", "POST", formdata);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
+	else{
 		alert("Το αρχείο μεταφέρθηκε με επιτυχία");
 		document.querySelector("#fileMoveDialog").close();
 	}
@@ -788,40 +700,14 @@ export async function viewFile(filename, folder=""){
 		alert("Δεν έχει οριστεί όνομα αρχείου");
 		return;
 	}
-	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename), folder});
-	const jwt = loginData.jwt;
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'GET', headers : myHeaders};
 
-	const res = await fetch("/api/viewFile.php?"+urlpar,init);
-	if (!res.ok){
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ===1){
-				viewFile(filename, folder);
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else if (res.status==500){
-			alert("Σφάλμα. Επικοινωνήστε με το διαχειριστή για αυτό το σφάλμα. Όχι για όλα τα σφάλματα!!");
-		}
-		else {
-			alert("Σφάλμα");
-		}
+	const res = await runFetch("/api/viewFile.php", "GET", urlpar, FetchResponseType.blob);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
-
-		const dispHeader = res.headers.get('Content-Disposition');
+	else{
+		const dispHeader = res.responseHeaders.get('Content-Disposition');
 		if (dispHeader !== null){
 			const parts = dispHeader.split(';');
 			filename = parts[1].split('=')[1];
@@ -831,7 +717,7 @@ export async function viewFile(filename, folder=""){
 			filename = "tempfile.tmp";
 		}
 		const fileExtension = filename.split('.').pop();
-		const blob = await res.blob();
+		const blob = res.result;
 		const href = URL.createObjectURL(blob);
 		const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
 
@@ -848,20 +734,6 @@ export async function viewFile(filename, folder=""){
 				document.querySelector("#fileOpenDialog").showModal();
 			}
 			return;
-			let openFileAns = confirm("Ναι για απευθείας άνοιγμα, άκυρο για αποθήκευση");
-			if (openFileAns){
-				const pdfWin = window.open(href);
-				//pdfWin.document.title = decodeURI(filename);
-				setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
-			}
-			else{
-				const aElement = document.createElement('a');
-				aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
-				Object.assign(aElement, {
-				href,
-				download: decodeURI(filename)
-				}).click();
-			}
 		}
 		else{
 			const aElement = document.createElement('a');
@@ -899,8 +771,18 @@ function closeFromDialog(){
 //-------------------------------------------------------ΥΠΟΓΡΑΦΗ ΑΚΡΙΒΟΥΣ ΑΝΤΙΓΡΑΦΟΥ-------------------------------------------------------------------------
 
 export async function signExactCopy(aa){
-	document.querySelector('#signExactCopyBtn').setAttribute("disabled",true);
+	if (signatureController.controller !== undefined){
+		try{
+			signatureController.controller.abort();
+		}
+		catch(e){
+			console.log("aborted")
+		}
+	}
+
+	//document.querySelector('#signExactCopyBtn').setAttribute("disabled",true);
 	document.querySelector('#signSpinner').style.display = "inline-block";
+	document.querySelector('#signExactCopyBtn').setAttribute("disabled", true);
 
 	let providerExists = 0;
 	let providerName = "";
@@ -959,15 +841,12 @@ export async function signExactCopy(aa){
 		return;
 	}
 		//----------------------------------------------------------------------------------------------------
-
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
+	signatureController.controller = new AbortController();
+	signatureSignal.signal = signatureController.controller.signal;
 
 	//const comment = document.getElementById('signText').value;
 	let formData = new FormData();
 	// signDocument(aa, isLast=0, objection=0)
-	formData.append("role", role);
 	formData.append("aa", aa);
 	//formData.append("comment", comment);
 	//formData.append("objection", objection);
@@ -996,51 +875,26 @@ export async function signExactCopy(aa){
 		return;
 	};
 
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/signSendFile.php",init);
-	if (!res.ok){
+	const res = await runFetch("/api/signSendFile.php", "POST", formData, undefined, signatureSignal.signal);
+	if (!res.success){
 		document.querySelector('#signExactCopyBtn').removeAttribute("disabled");
 		document.querySelector('#signSpinner').style.display = "none";
-		const resdec = res.json();
-		if (res.status ==  401){
-			if (resdec === "mindigital"){
-				alert("Αποσυνδεθείτε και επανασυνδεθείτε στο σύστημα υπογραφών Mindigital");
-			}
-			else{
-				const resRef = await refreshToken();
-				if (resRef ==1){
-					signExactCopy(aa);
-				}
-				else{
-					alert("σφάλμα εξουσιοδότησης");
-				}
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else{
-			alert("Σφάλμα!!!");
-		}
+		alert (res.msg);
 	}
-	else {
+	else{
 		document.querySelector('#signExactCopyBtn').removeAttribute("disabled");
 		document.querySelector('#signSpinner').style.display = "none";
 
 		if(providerName === "MINDIGITAL"){
 			document.querySelector("#otpText").value = "";
 		}
-		const myModalEl = document.querySelector("#signModal");
-		const modal = bootstrap.Modal.getInstance(myModalEl)
-		modal.hide();
+		document.querySelector("#signModal").close();
 		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
 			createSearch();
 		}, rej => {});
 	}
+	console.log(signatureController);
 }
 
 //-----------------------------------------------------ΥΠΟΓΡΑΦΗ ΕΓΓΡΑΦΟΥ ΚΑΙ ΛΟΙΠΑ------------------------------------------------------------------------------
@@ -1106,14 +960,9 @@ export async function signDocument(aa, isLast=0, objection=0){
 		return;
 	}
 
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-
 	const comment = document.getElementById('signText').value;
 	let formData = new FormData();
 	// signDocument(aa, isLast=0, objection=0)
-	formData.append("role", role);
 	formData.append("aa", aa);
 	formData.append("comment", comment);
 	formData.append("objection", objection);
@@ -1142,35 +991,13 @@ export async function signDocument(aa, isLast=0, objection=0){
 		return;
 	};
 
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/signDoc.php",init);
-	if (!res.ok){
+
+	const res = await runFetch("/api/signDoc.php", "POST", formData, undefined);
+
+	if (!res.success){
 		document.querySelector('#signSpinner').style.display = "none";
 		document.querySelector('#signBtn').removeAttribute("disabled");
-		const resdec = res.json();
-		if (res.status ==  401){
-			if (resdec == "mindigital"){
-				alert("Αποσυνδεθείτε και επανασυνδεθείτε στο σύστημα υπογραφών Mindigital");
-			}
-			else{
-				const resRef = await refreshToken();
-				if (resRef ==1){
-					signDocument(aa, isLast, objection);
-				}
-				else{
-					alert("σφάλμα εξουσιοδότησης");
-				}
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else{
-			alert("Σφάλμα!!!");
-		}
+		alert (res.msg);
 	}
 	else {
 		document.querySelector('#signBtn').removeAttribute("disabled");
@@ -1178,9 +1005,7 @@ export async function signDocument(aa, isLast=0, objection=0){
 		if(providerName === "MINDIGITAL"){
 			document.querySelector("#otpText").value = "";
 		}
-		const myModalEl = document.querySelector("#signModal");
-		const modal = bootstrap.Modal.getInstance(myModalEl);
-		modal.hide();
+		document.querySelector("#signModal").close();
 		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
 			createSearch();
@@ -1214,48 +1039,22 @@ export async function rejectDocument(aa, isExactCopy=0){
 }
 
 export async function returnDocument(aa){
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
 
 	const comment = document.getElementById('returnText').value;
 	let formData = new FormData();
 	formData.append("aa",aa);
-	formData.append("role", role);
 	formData.append("comment", comment);
 
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/returnDoc.php",init);
-	if (!res.ok){
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ===1){
-				returnDocument(aa);
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");
-			}
-		}
-		else if (res.status==400){
-			alert("σφάλμα αιτήματος");
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else{
-			alert("γενικό σφάλμα");
-		}
+	const res = await runFetch("/api/returnDoc.php","POST", formData);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
-		const myModalEl = document.querySelector("#returnModal");
-		const modal = bootstrap.Modal.getInstance(myModalEl);
-		modal.hide();
+	else{
+		const resdec = res.result;
+		document.querySelector("#returnModal").close();
 		alert("Το έγγραφο έχει επιστραφεί! Μάλλον...");
 		const records = getSigRecords().then( res => {
-			createSearch();
+			//createSearch();
 		}, rej => {});
 	}
 }
@@ -1363,6 +1162,8 @@ function selectFile(event){
 }
 
 function mindigitallMiddleware(){
+	//console.log(MINDIGITAL);
+	MINDIGITAL.params.otp.value = null;
 	const providerDiv = document.querySelector("#providerMiddleware");
 	providerDiv.innerHTML =
 		`<div class="providerHeader flexHorizontal">
@@ -1478,20 +1279,12 @@ function FFMiddleware(){
 
 async function connectToEmail(username,password){
 	document.querySelector("#emailSpinner").style.display = 'inline-block';
-	const mindigitalStatusBtn = document.getElementById("emailConnectionButton");
+	const emailConnectionButton = document.getElementById("emailConnectionButton");
 
 	if(localStorage.getItem("EMAIL_token") !==null){
 		let ans = confirm("Αποσύνδεση;");
 		if(ans){
-			localStorage.removeItem("EMAIL_token");
-			emailConnectionButton.classList.remove('btn-success');
-			emailConnectionButton.classList.add('btn-danger');
-			document.querySelector("#emailUsername").value ="";
-			document.querySelector("#emailPassword").value ="";
-			document.querySelector("#emailUsername").style.display = "inline-block";
-			document.querySelector("#emailPassword").style.display = "inline-block";
-			document.querySelector("#requestOTPBtn").setAttribute("disabled",true);
-			document.querySelector("#emailSpinner").style.display = 'none';
+			disconnectEmail();
 			return;
 		}
 	}
@@ -1501,43 +1294,19 @@ async function connectToEmail(username,password){
 		return;
 	}
 
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-
 	let formData = new FormData();
 	formData.append("username",username);
 	formData.append("password", password);
 
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/saveEmailCred.php",init);
-	if (!res.ok){
+	const res = await runFetch("/api/getEmailCred.php", "POST", formData);
+	if (!res.success){
 		document.querySelector("#emailSpinner").style.display = 'none';
-		if (res.status ==  401){
-			if (await res.json() !== "remote Error"){
-				const resRef = await refreshToken();
-				if (resRef ===1){
-					connectToEmail(username, password);
-				}
-				else{
-					alert("σφάλμα εξουσιοδότησης");
-				}
-			}
-			else{
-				alert("Λάθος κωδικός ή όνομα χρήστη");
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
 		emailConnectionButton.classList.remove('btn-success');
 		emailConnectionButton.classList.add('btn-danger');
+		alert(res.msg);
 	}
-	else {
-		const token = await res.json();
+	else{
+		const token =  res.result;
 		localStorage.setItem("EMAIL_token", token);
 		emailConnectionButton.classList.remove('btn-danger');
 		emailConnectionButton.classList.add('btn-success');
@@ -1551,9 +1320,23 @@ async function connectToEmail(username,password){
 	}
 }
 
-function disconnectMindigital(){
-	localStorage.removeItem("MINDIGITAL_token");
+function disconnectEmail(){
+	const emailConnectionButton = document.getElementById("emailConnectionButton");
 	localStorage.removeItem("EMAIL_token");
+	emailConnectionButton.classList.remove('btn-success');
+	emailConnectionButton.classList.add('btn-danger');
+	document.querySelector("#emailUsername").value ="";
+	document.querySelector("#emailPassword").value ="";
+	document.querySelector("#emailUsername").style.display = "inline-block";
+	document.querySelector("#emailPassword").style.display = "inline-block";
+	document.querySelector("#requestOTPBtn").setAttribute("disabled",true);
+	document.querySelector("#emailSpinner").style.display = 'none';
+}
+
+function disconnectMindigital(){
+	disconnectEmail();
+	const mindigitalStatusBtn = document.getElementById("mindigitalConnectionButton");
+	localStorage.removeItem("MINDIGITAL_token");
 	localStorage.removeItem("otp_method");
 	mindigitalStatusBtn.classList.remove('btn-success');
 	mindigitalStatusBtn.classList.add('btn-danger');
@@ -1583,48 +1366,25 @@ async function connectToMindigital(username, password){
 		return;
 	}
 
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-
 	let formData = new FormData();
 	formData.append("username",username);
 	formData.append("password", password);
 
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/saveMindigitalCred.php",init);
-	if (!res.ok){
+	const res = await runFetch("/api/getMindigitalCred.php", "POST", formData);
+	if (!res.success){
 		document.querySelector("#mindigitalSpinner").style.display = 'none';
-		if (res.status ==  401){
-			if (await res.json() !== "remote Error"){
-				const resRef = await refreshToken();
-				if (resRef ===1){
-					connectToMindigital(username, password);
-				}
-				else{
-					alert("σφάλμα εξουσιοδότησης");
-				}
-			}
-			else{
-				alert("Λάθος κωδικός ή όνομα χρήστη");
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
 		mindigitalConnectionButton.classList.remove('btn-success');
 		mindigitalConnectionButton.classList.add('btn-danger');
+		alert(res.msg);
 	}
-	else {
-		const token = await res.json();
+	else{
+		const token = await res.result;
 		localStorage.setItem("MINDIGITAL_token", token);
 		if (localStorage.getItem("otp_method") === null){
 			const otpMethod = await requestOTP();
-			showOTPProperFields(otpMethod);
+			localStorage.setItem("otpMethod", otpMethod);
 		}
+		showOTPProperFields(localStorage.getItem("otp_method"));
 		mindigitalConnectionButton.classList.remove('btn-danger');
 		mindigitalConnectionButton.classList.add('btn-success');
 		document.querySelector("#mindigitalUsername").value ="";
@@ -1637,8 +1397,10 @@ async function connectToMindigital(username, password){
 }
 
 function showOTPProperFields(otpMethod){
+	document.querySelector("#providerMiddleware .providerContent").style.display = "flex";
 	switch (+otpMethod){
-		case 0 : {
+		case 0 :{
+			console.log("show otp fields");
 			document.querySelector("#requestOTPBtn").style.display ="inline-block";
 			document.querySelector("#otpText").style.display = "inline-block";
 			document.querySelector("#emailConnection").style.display = "flex";
@@ -1663,10 +1425,6 @@ async function requestOTP(){
 	document.querySelector('#otpText').value = "";
 	document.querySelector('#requestOTPBtn').setAttribute('disabled',true);
 
-	const {jwt,role} = getFromLocalStorage();
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-
 	let formData = new FormData();
 	if (localStorage.getItem("MINDIGITAL_token")==null){
 		//document.querySelector("#emailSpinner").style.display = 'none';
@@ -1679,133 +1437,59 @@ async function requestOTP(){
 	}
 	formData.append("MINDIGITAL_token", localStorage.getItem("MINDIGITAL_token"));
 
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	const res = await fetch("/api/getLastOTP.php",init);
-	const resDec = await res.json();
-	if (!res.ok){
+	const res = await runFetch("/api/getLastOTP.php", "POST", formData);
+	if (!res.success){
 		//document.querySelector("#emailSpinner").style.display = 'none';
 		document.querySelector('#requestOTPBtn').removeAttribute('disabled');
-		if (res.status ==  400){
-			if (resDec === "email"){
-				localStorage.removeItem("EMAIL_token");
-				mindigitallMiddleware();
-			}
-			else if (resDec === "mindigital"){
-				console.log("mindigital error ")
-				localStorage.removeItem("MINDIGITAL_token");
-				mindigitallMiddleware();
-			}
-		}
-		if (res.status ==  401){
-			if (resDec !== "remote Error"){
-				const resRef = await refreshToken();
-				if (resRef ===1){
-					requestOTP(username, password);
-				}
-				else{
-					alert("σφάλμα εξουσιοδότησης");
-				}
-			}
-			else{
-				alert("Λάθος κωδικός ή όνομα χρήστη");
-			}
-		}
-		else if (res.status==403){
-			alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-		}
-		else if (res.status==404){
-			alert("το αρχείο δε βρέθηκε");
-		}
-		else if (res.status>=500){
-			alert("πρόβλημα server");
-		}
+		alert(res.message);
 	}
 	else {
+		const resDec = res.result;
 		//document.querySelector("#emailSpinner").style.display = 'none';
 		document.querySelector('#requestOTPBtn').removeAttribute('disabled');
-		localStorage.setItem("otp_method", resDec[0]);
-		if (Array.isArray(resDec)){
-			if(resDec[0]===0){
-				if (resDec[1] == -1){
+		localStorage.setItem("otp_method", resDec["otpMethod"]);
+		if (Object.hasOwn(resDec,"otpMethod") && Object.hasOwn(resDec,"otpResultDesc")){
+			if(resDec["otpMethod"]===0){
+				if (resDec["otpResultDesc"] == -1){
 					alert("Συνδεθείτε στο email σας, για να λάβετε το OTP");
 				}
 				else{
-					document.querySelector("#otpText").value = resDec[1];
-					MINDIGITAL.params.otp.value = resDec[1];
+					document.querySelector("#otpText").value = resDec["otpResultDesc"];
+					MINDIGITAL.params.otp.value = resDec["otpResultDesc"];
 				}
 			}
-			else if(resDec[0]===1){
+			else if(resDec["otpMethod"]===1){
 				alert("Το OTP λαμβάνεται μέσω κινητού");
 			}
 			else{
-				alert(resDec[2]);
+				alert(resDec["nextuid"]);
 			}
-			return resDec[0];
+			return resDec["otpMethod"];
+		}
+		else{
+			alert("Σφάλμα στον έλεγχο διαδικασιών λήψης OTP");
 		}
 	}
 }
 
 
-
-
-
-
 export async function getSignedRecords(signal,controllers){
-	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 
-	const {jwt,role} = getFromLocalStorage();	
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
-	let init = {method: 'GET', headers : myHeaders};
-	//console.log(init);
-	
-	const params = new URLSearchParams({
-		role: role
-	});
-	if (signal !== null || signal !==undefined){
-		init.signal = signal;	
-	}
+	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 	
 	for (const [key, value] of Object.entries(controllers)) {
 		if (key !== "signed"){
-			console.log("aborting "+ key)
 			value.abort();
 		}
 	}
 
-	init.signal = signal;
-
-	const res = await fetch("/api/getSignedRecords.php?"+params,init); 
-	if (!res.ok){
-		if (res.status == 401){
-			//document.querySelector("#recordsSpinner").style.display = 'none';
-			//document.querySelector("#myNavBar").classList.remove("disabledDiv");
-			const reqToken = await refreshToken();
-			if (reqToken ==1){
-				getSignedRecords(signal,controllers);
-				const error = new Error("token expired")
-				error.code = "400"
-				throw error;
-			}
-			else{
-				alert('σφάλμα εξουσιοδότησης');
-				const error = new Error("token invalid")
-				error.code = "400"
-				throw error;
-			}
-		}
-		else{
-			const error = new Error("unauthorized")
-			error.code = "400"
-			throw error;	
-		}
+	const res = await runFetch("/api/getSignedRecords.php", "GET", null, undefined, signal);
+	if (!res.success){
+		alert(res.msg);
 	}
 	else{
-		//return res;
-		fillTableWithSigned(await res.json());
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
-		//const resDec = await res.json();
-		//return resDec;
+		fillTableWithSigned(res.result);	
 		return 1;
 	}
 }
@@ -1952,43 +1636,14 @@ async function requestExactCopy(event){
 		}
 	}
 	//console.log(filename);
-	const loginData = JSON.parse(localStorage.getItem("loginData"));
-	const jwt = loginData.jwt;
-	const myHeaders = new Headers();
-	myHeaders.append('Authorization', jwt);
 	let formData = new FormData();
 	formData.append("record",event.target.dataset.whatever);
-	let init = {method: 'POST', headers : myHeaders, body : formData};
-	
-	const res = await fetch("/api/requestExactCopy.php?",init); 
-	if (!res.ok){
-		if (res.status ==  401){
-			const resRef = await refreshToken();
-			if (resRef ===1){
-				requestExactCopy(event);
-			}
-			else{
-				alert("σφάλμα εξουσιοδότησης");	
-			}
-			throw Error("My error");
-		}
-		else if (res.status==403){
-			window.open('unAuthorized.html', '_blank');
-		}
-		else if (res.status==404){
-			//alert("το αρχείο δε βρέθηκε");
-			throw Error("το αρχείο δε βρέθηκε");
-		}
-		else if (res.status==409){
-			//alert("Υπάρχει αίτημα σε εκκρεμότητα");
-			throw Error("Υπάρχει αίτημα σε εκκρεμότητα");
-		}
-		else{
-			//alert("γενικό σφάλμα");
-			throw Error("My error");
-		}
+
+	const res = await runFetch("/api/requestExactCopy.php", "POST", formData);
+	if (!res.success){
+		alert(res.msg);
 	}
-	else {
+	else{
 		return("Το αίτημα έχει καταχωρηθεί");
 	}
 }

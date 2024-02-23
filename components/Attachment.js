@@ -1,4 +1,5 @@
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
+import {getPage,Pages} from "../modules/UI_test.js"
 
 const content = 
 `<div  id="attachmentsDiv"  style="display:flex;gap:10px;flex-direction:column;height:100%;background: rgba(122, 130, 136, 0.2)!important;border-radius:5px;padding:10px;">
@@ -112,22 +113,29 @@ class Attachments extends HTMLElement {
         const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):2023;
         this.shadow.querySelector("#actionStatus").innerHTML = "";
         //this.uploadFile(undefined,this.protocolNo,this.currentYear)
-        this.shadow.querySelector("#showAttachmentModalBtn").addEventListener("click",()=> {
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
-            this.shadow.querySelector("#attachmentModal .customDialogContentTitle>span").innerText = "Προσθήκη συνημμένου σε "+this.protocolNo+"/"+this.protocolYear;
-            this.shadow.querySelector("#attachmentModal .customDialogContent").innerHTML = `<form>
-                <div class="flexVertical" style="padding:5px;">
-                    <span></span>
-                    <input type="file" class="btn btn-default" name="selectedFile" id="selectedFile" />
-                    <button class="btn btn-outline-success ektos " id="uploadFileButton"  title="Μεταφόρτωση επιλεγμένου αρχείου"><i class="fas fa-upload"></i></button>
-                </div>
-            </form>`;
-            this.shadow.querySelector("#uploadFileButton").addEventListener("click",(event)=> {event.preventDefault();this.uploadFile(undefined,this.protocolNo,this.protocolYear)});
-            this.shadow.querySelector("#attachmentModal").showModal();
-        });  
+        if (getPage() === Pages.CHARGES){
+            this.shadow.querySelector("#showAttachmentModalBtn").addEventListener("click",()=> {
+                this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+                this.shadow.querySelector("#attachmentModal .customDialogContentTitle>span").innerText = "Προσθήκη συνημμένου σε "+this.protocolNo+"/"+this.protocolYear;
+                this.shadow.querySelector("#attachmentModal .customDialogContent").innerHTML = `<form>
+                    <div class="flexVertical" style="padding:5px;">
+                        <span></span>
+                        <input type="file" class="btn btn-default" name="selectedFile" id="selectedFile" />
+                        <button class="btn btn-outline-success ektos " id="uploadFileButton"  title="Μεταφόρτωση επιλεγμένου αρχείου"><i class="fas fa-upload"></i></button>
+                    </div>
+                </form>`;
+                this.shadow.querySelector("#uploadFileButton").addEventListener("click",(event)=> {event.preventDefault();this.uploadFile(undefined,this.protocolNo,this.protocolYear)});
+                this.shadow.querySelector("#attachmentModal").showModal();
+            }); 
+            await this.loadAttachments(1); 
+        }
+        else{
+            this.shadow.querySelector("#showAttachmentModalBtn").style.display = "none"; 
+            await this.loadAttachments(-1);
+        }
         this.shadow.querySelector("#closeAttModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#attachmentModal").close());
         this.shadow.querySelector("#closeGdprModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#gdprModal").close());
-        await this.loadAttachments(1);
+       
         // ??????this.users = await this.getUsers(1);  // get all active protocol users
     }
 
@@ -161,6 +169,9 @@ class Attachments extends HTMLElement {
             this.shadow.querySelector("#selectedFile").value = null;
             alert("Το έγγραφο έχει αποσταλεί! Μάλλον...");
             this.loadAttachments(1);
+            const historyRefreshEvent = new CustomEvent("historyRefreshEvent",  { bubbles: true, cancelable: false, composed: true });
+            this.dispatchEvent(historyRefreshEvent);
+            this.shadow.querySelector("#attachmentModal").close();
         }
     }
 
@@ -236,7 +247,10 @@ class Attachments extends HTMLElement {
                 //let openFileStringWithProtocol = '<button class="btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" onclick="viewAttachmentNewWithProtocol('+result[key1]['aa']+','+result[key1]['record']+',\''+result[key1]['filename']+'\''+','+result[key1]['isGdprProtected']+','+result[key1]['isGdprViewable']+','+result[key1]['externaldisk']+','+result[key1]['year']+')"><i class="far fa-window-maximize"></i></button>';
                 let openFileStringWithProtocol = '<button id="openAttWithProt_'+result[key1]['aa']+'" class="btn btn-sm  btn-success" data-toggle="tooltip" title="Άνοιγμα ως pdf με πρωτόκολλο" ><i class="fas fa-stamp"></i></button>';
                 
-                let setGdprString = '<button id="openAttGDPRModal_'+result[key1]['aa']+'" class="btn btn-sm btn-warning"  data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
+                let setGdprString = "";
+                if (level==1){	
+                    setGdprString = '<button id="openAttGDPRModal_'+result[key1]['aa']+'" class="btn btn-sm btn-warning"  data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
+                }
                 //if (level!=-1){	
                     //setGdprString = '<button '+(level ==1 ? "" : "disabled")+' class="btn-warning" data-toggle="modal" data-target="#gdprModal" data-id="'+result[key1]['aa']+'"><i data-toggle="tooltip" title="Ορισμός Δικαιωμάτων" class="fas fa-key "></i></button>';
                 //}
@@ -249,7 +263,7 @@ class Attachments extends HTMLElement {
             }
             for (let key1=0;key1<result.length;key1++) {
                 this.shadow.querySelector("#openAtt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa']));
-                if(level){
+                if(level ===1){
                     this.shadow.querySelector("#renameAtt_"+result[key1]['aa']).addEventListener("click",()=> {
                         this.shadow.querySelector("#attachmentModal").showModal();
                         this.shadow.querySelector(".customDialogContentTitle>span").innerText = "Μετονομασία συνημμένου";
@@ -260,8 +274,8 @@ class Attachments extends HTMLElement {
                                 <button class="btn btn-outline-success ektos " id="renameFileButton"  title="Μετονομασία συνημμένου"><i class="fas fa-upload"></i></button>
                             </div>
                         </form>`;
-                        this.shadow.querySelector("#renameFileButton").addEventListener("click",(event)=> {
-                            event.preventDefault();this.renameAttachment(result[key1]['aa'], this.protocolNo, this.protocolYear)
+                        this.shadow.querySelector("#renameFileButton").addEventListener("click",async (event)=> {
+                            event.preventDefault(); await this.renameAttachment(result[key1]['aa'], this.protocolNo, this.protocolYear)
                         });
                     });
                     if(this.shadow.querySelector("#openAttGDPRModal_"+result[key1]['aa'])){
@@ -272,12 +286,14 @@ class Attachments extends HTMLElement {
                         });
                     }
                 }
-                this.shadow.querySelector("#removeAtt_"+result[key1]['aa']).addEventListener("click",()=> this.removeAttachment(result[key1]['aa'], this.protocolNo, this.protocolYear));
+                if (level !== -1){
+                    this.shadow.querySelector("#removeAtt_"+result[key1]['aa']).addEventListener("click",()=> this.removeAttachment(result[key1]['aa'], this.protocolNo, this.protocolYear));
+                }
                 if (this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa'])){
                     this.shadow.querySelector("#openAttWithProt_"+result[key1]['aa']).addEventListener("click",()=> this.viewAttachment(result[key1]['aa'],1));
                 }
             }
-            this.shadow.getElementById('zipFileButton').addEventListener("click",()=>this.zipFiles());
+            this.shadow.getElementById('zipFileButton').addEventListener("click",async ()=> await this.zipFiles());
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";	
         }
     }
@@ -343,6 +359,7 @@ class Attachments extends HTMLElement {
         else{
             this.loadAttachments(1);
             this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+            this.shadow.querySelector("#attachmentModal").close();
         }
     }
 

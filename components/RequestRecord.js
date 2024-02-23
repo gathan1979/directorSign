@@ -140,7 +140,7 @@ const addContent = `
         }
 
     </style>
-    <link href="css/all.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/libraries/fontawesome-free-5.15.4-web/css/all.css" >
 
     <div class="customDialogContentTitle">
         <span style="font-weight:bold;">Νέο Πρωτόκολλο</span>

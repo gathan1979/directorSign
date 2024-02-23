@@ -3,7 +3,12 @@
 	--my-danger: rgb(185, 25, 25);
 	--my-warning : rgb(255, 170, 0);
 	--my-secondary : gray;
-	--my-primary : rgb(51, 114, 177);
+	--my-primary : rgb(43, 144, 245);
+	--my-info : #9feeff;
+}
+
+::view-transition-group(root){
+	animation-duration : 0.5s;
 }
 
 
@@ -22,9 +27,9 @@ td {
    font-size : 12px;
 }
 
-select{
+/* select{
 	font-size : 8px;
-}
+} */
 
 select.trano{
 	font-size : 14px;
@@ -37,18 +42,17 @@ select.trano{
 .table > thead > tr > th {
     vertical-align: middle;
 }
-@font-face { font-family: byz ; src: url('byz.ttf'); } 
-@font-face { font-family: Bradley ; src: url('BRADHITC.TTF'); } 
-@font-face { font-family: arcade ; src: url('ka1.ttf'); } 
-@font-face { font-family: robot ; src: url('joystix.ttf'); } 
-@font-face { font-family: electron ; 
-			src: url('game_over.ttf') format('truetype');
-			} 
+
+@font-face {
+	font-family: "roboto";
+	src: url("webfont/Roboto-Regular.ttf");
+}
+
 
 label.titlos{
 	font-size : 50px;
 	padding-left : 40px;
-	font-family : electron,"Mistal","Verdana";
+	font-family : roboto;
 	color : black;
 }
 
@@ -137,6 +141,10 @@ td .fa-crosshairs{
 
 #protocolRecordDialog::backdrop{
 	background-color: rgba(0, 0, 0, 0.8);
+}
+
+#popup::backdrop{
+	background-color: rgba(0, 0, 0, 0.5);
 }
 
 #dataToSignTable{
@@ -512,6 +520,7 @@ td .fa-crosshairs{
 	cursor : pointer;
 	font-size: 1em;
 	cursor : pointer!important;
+	min-width : 2.5rem;
 }
 
 .isGreen{
@@ -540,6 +549,10 @@ td .fa-crosshairs{
 	background-color: var(--my-danger);
 }
 
+.danger{
+	background-color: var(--my-danger);
+}
+
 .warning{
 	background-color: var(--my-warning);
 	color: black;
@@ -552,6 +565,52 @@ td .fa-crosshairs{
 .primary{
 	background-color: var(--my-primary);
 }
+
+.info{
+	background-color: var(--my-info);
+	color: black;
+}
+
+.usersTable{
+	border-width: 0px;
+	display: flex;
+	flex-direction : column;
+	gap:10px;
+	
+}
+
+.usersTable>div{
+	display: flex;
+	gap:30px;
+}
+
+.name{
+	flex-basis: 300px;
+	flex-grow: 0;
+	color: black;
+	font-weight: 600;
+	font-size: 0.9em;;
+}
+
+.userButtons{
+	flex-basis: 400px;
+	flex-grow: 1;
+	display:flex;
+	gap:10px;
+}
+
+.userButtons>span{
+	display: inline-flex;
+    justify-content: center;
+    align-items: center;
+	flex-basis: 200px;
+	border-radius: 15px;
+	color:white;
+	font-weight: 600;
+	font-size: 0.8em;
+	text-align: center;
+}
+
 
 .customModal{
 	font-family : 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -576,6 +635,16 @@ td .fa-crosshairs{
 
 .customDialog::backdrop{
 	background-color: rgba(0, 0, 0, 0.8);
+}
+
+span.on{
+	color:green; 
+	cursor:pointer;
+}
+
+span.off{
+	color:red; 
+	cursor:pointer;
 }
 
 .undo{

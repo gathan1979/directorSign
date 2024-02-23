@@ -29,7 +29,7 @@ localStorage.setItem("filter", JSON.stringify(filter));
 	
 export async function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
 	// diff = 0 είναι για υπογραφή στο τμήμα
-	console.log("filterTable running", searchObject);
+	//console.log("filterTable running", searchObject);
 	let table = null;
 	const page = getPage();
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){	
@@ -117,7 +117,7 @@ export async function filterTable (tableName, searchObject){   	// searchObject 
 }
 
 export function createSearch(event) {
-	console.log("creating search ...");
+	//console.log("creating search ...");
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentRole = (localStorage.getItem("currentRole")==null?0:localStorage.getItem("currentRole"));
 	const department = loginData.user.roles[currentRole].department;
@@ -198,7 +198,7 @@ function debounce(func, timeout = 500){
 export default function createFilter(parentElement){
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
 	const currentRole = localStorage.getItem("currentRole");
-	console.log(userData.roles[currentRole].protocolAccessLevel);
+	//console.log(userData.roles[currentRole].protocolAccessLevel);
 	let parentElementContent = "";
 	const page = getPage();
 	if (page == Pages.PROTOCOL){	
@@ -305,7 +305,7 @@ export function updateBtnsFromFilter(){
 	const filter = JSON.parse(localStorage.getItem("filter"));
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;
 	const currentRole = localStorage.getItem("currentRole");
-	console.log(filter);
+	//console.log(filter);
 	const archiveBtn = document.querySelector('#showForArchive');
 	const hideArchieved = document.querySelector('#hideArchieved');
 	const dateBtn = document.querySelector('#datefilter');

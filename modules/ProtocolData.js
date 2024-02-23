@@ -1,7 +1,8 @@
 import {updateFilterStorage,createSearch, pagingSize, pagingStart} from "./Filter.js"
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
+import { Pages, getPage } from "./UI_test.js";
 
-export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
+export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers){   		//εγγραφές χρεώσεων
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 
 	//updateFilterStorage();
@@ -24,14 +25,14 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	if (+localStorage.getItem("globalSearch") === 1){
 		const searchText = document.querySelector("#tableSearchInput").value;
 		customObject.searchText = searchText;
-	}
+	} 
 
 	const  completeOblect= Object.assign(filteredObject, customObject);
 	//console.log("c");
 	//console.log(completeOblect);
 	const urlpar = new URLSearchParams(completeOblect);
 	//console.log(urlpar)
-	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar);
+	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal);
 	if (!res.success){
 		console.log(res.msg);
 		//document.querySelector("#recordsSpinner").style.display = 'none';
@@ -45,7 +46,7 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	}
 }
 
-export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize){   		//εγγραφές χρεώσεων πρωτοκόλλου
+export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers){   		//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 
 	//updateFilterStorage();
@@ -57,14 +58,14 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
 	}
 	const urlpar = new URLSearchParams(completeOblect);
-	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar);
+	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal);
 	if (!res.success){
 		console.log(res.msg);
 		//document.querySelector("#recordsSpinner").style.display = 'none';
 	}
 	else{
 		const response = res.result;
-		console.log("εκτέλεση λήψης χρεώσεων 1");
+		//console.log("εκτέλεση λήψης χρεώσεων 1");
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
 
 		fillChargesTable(response, true);
@@ -123,19 +124,19 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 
 	if(!protocol){	
 		for (const record of result){
-			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], event));
+			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event));
 		}
 	}
 	else{
 		for (const record of result){
-			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], event));
+			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event));
 			//document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => document.querySelector('#requestProtocolAccessDialog').showModal());
 		}
 	}
 	createSearch();
 }
 
-export function openProtocolRecord(subject,record,recordDate, event){
+export async function openProtocolRecord(subject,record,recordDate, status, event){
 	console.log("record no ..."+record)
 	const protocolWindowContent = 
 	`<div id="bottomSection">
@@ -149,7 +150,6 @@ export function openProtocolRecord(subject,record,recordDate, event){
 		
 		<div id="bottomSectionBody">
 			<div style="flex-basis: 50%;" class="firstBottomSectionColumn">
-
 				<record-attachments style="max-height:40%;" protocolDate="${recordDate}" protocolNo="${record}"></record-attachments>
 				<record-relative style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-relative>
 				<record-comment style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-comment>
@@ -190,23 +190,72 @@ export function openProtocolRecord(subject,record,recordDate, event){
 	
 	//Fill protocolWindowContent 
 	if (currentRoleObject.protocolAccessLevel ==1){
-		document.querySelector("#bottomSectionButtons").innerHTML += 
-		`<button class="isButton primary" name="copyProtocolBtn" id="copyProtocolBtn" onclick="copyProtocol();" data-toggle="tooltip" title="Αντίγραφο Πρωτοκόλλου"><i class="far fa-copy"></i></button>&nbsp`;
+		document.querySelector("#bottomSectionButtons").innerHTML += (getPage()==Pages.CHARGES)?
+		`<button class="isButton primary" name="copyProtocolBtn" id="copyProtocolBtn" onclick="copyProtocol();" data-toggle="tooltip" title="Αντίγραφο Πρωτοκόλλου"><i class="far fa-copy"></i></button>&nbsp`:``;
 	}
 	else{
-		document.querySelector("#bottomSectionButtons").innerHTML += `<button class="isButton primary" name="makeUnread" id="makeUnread" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`;
+		document.querySelector("#bottomSectionButtons").innerHTML += (getPage()==Pages.CHARGES)?`<button class="isButton primary" name="makeUnread" id="makeUnread" data-toggle="tooltip" title="Σήμανση ως μη αναγνωσμένο"><i class="fas fa-book"></i></button>`:``;
 	}
 	if (currentRoleObject.protocolAccessLevel ==1 || currentRoleObject.accessLevel ==1){
-		document.querySelector("#bottomSectionButtons").innerHTML += 
-		`<button class="btn btn-info ektos mr-2" name="publishToSiteBtn" id="publishToSiteBtn" title="Αίτημα Ανάρτησης στη Σελίδα"><i class="fas fa-cloud-upload-alt"></i></button>`;
+		document.querySelector("#bottomSectionButtons").innerHTML += (getPage()==Pages.CHARGES)?
+		`<button class="isButton info" name="publishToSiteBtn" id="publishToSiteBtn" title="Αίτημα Ανάρτησης στη Σελίδα"><i class="fas fa-cloud-upload-alt"></i></button>`:``;
 	}
-	document.querySelector("#bottomSectionTitle").innerHTML = `<button title=="Επεξεργασία Πρωτοκόλλου" id="editRecordBtn" class="btn btn-info"><i class="fas fa-edit"></i></button>`+'<span style="font-weight:bold;">'+record+"/"+currentYear+" | "+subject+"</span>";
-	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
+	let bottomTitleDiv = document.querySelector("#bottomSectionTitle") ;
+	bottomTitleDiv.innerHTML	= (getPage()==Pages.CHARGES)?`<button title="Επεξεργασία Πρωτοκόλλου" id="editRecordBtn" class="isButton info"><i class="fas fa-edit"></i></button>`:``;
+	
+	 // Προσθήκη κουμπιών ενεργειών με βάση την ιδιότητα
+	 if (currentRoleObject.protocolAccessLevel == 1){
+		if (+status < 2){
+			bottomTitleDiv.innerHTML += '<button id="archiveRecordBtn" title="Αρχειοθέτηση" type="button" class="isButton warning" ><i class="fas fa-archive"></i></button>';	
+		}
+		if (+status !== 0){
+			bottomTitleDiv.innerHTML += '<button id="restoreRecordBtn" title="Επαναφορά" type="button" class="isButton warning" ><i class="fas fa-trash-restore"></i></button>';
+		}	
+	 }
+	 else{
+		bottomTitleDiv.innerHTML += '<button id="dischargeRecordBtn" title="Αποχρέωση" type="button" class="isButton warning" ><i class="fas fa-archive"></i></button>';
+	 }
+	
+	 bottomTitleDiv.innerHTML += `<span style="font-weight:bold;">${record}/${currentYear} | ${subject}</span>`;
+
+	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="isButton secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
 	
 	document.querySelector("#closeModalBtn").addEventListener("click", ()=> document.querySelector("#protocolRecordDialog").close());
-	document.querySelector("#editRecordBtn").addEventListener("click", ()=> document.querySelector("#editRecordModal").showModal());
+	
+	if (document.querySelector("#dischargeRecordBtn")){
+		document.querySelector("#dischargeRecordBtn").addEventListener("click", async ()=> {
+			if (confirm("Πρόκειται να αλλάξετε την κατάσταση της εγγραφής")){
+				await changeStatus(record, 1);
+			}
+		});
+	}
+	if (document.querySelector("#archiveRecordBtn")){
+		document.querySelector("#archiveRecordBtn").addEventListener("click", async ()=> {
+			if (+status == 1){
+				if (confirm("Πρόκειται να αλλάξετε την κατάσταση της εγγραφής")){
+					await changeStatus(record, 2);
+				}
+			}
+			else if (+status == 0){
+				if (confirm("Πρόκειται να αρχειοθετήσετε εγγραφή που δεν έχει αποχρεωθεί από το χρήστη")){
+					await changeStatus(record, 2);
+				}
+			}
+		});
+	}
+	if (document.querySelector("#restoreRecordBtn")){
+		document.querySelector("#restoreRecordBtn").addEventListener("click", async ()=> {
+			if (confirm("Πρόκειται να αλλάξετε την κατάσταση της εγγραφής")){
+				await changeStatus(record, 0);
+			}
+		});
+	}
+	
+	if (document.querySelector("#editRecordBtn")){
+		document.querySelector("#editRecordBtn").addEventListener("click", ()=> document.querySelector("#editRecordModal").showModal());
+	}
 	if (document.querySelector("#publishToSiteBtn")){
-		document.querySelector("#publishToSiteBtn").addEventListener("click", () => publishToSite());
+		document.querySelector("#publishToSiteBtn").addEventListener("click", async () => await publishToSite(record, recordDate));
 	}
 	if (document.querySelector("#copyProtocolBtn")){
 		document.querySelector("#copyProtocolBtn").addEventListener("click", () => copyProtocol());
@@ -214,6 +263,25 @@ export function openProtocolRecord(subject,record,recordDate, event){
 	if (document.querySelector("#makeUnread")){
 		document.querySelector("#makeUnread").addEventListener("click", async () => makeMessageUnread(record, recordDate.split("-")[0]));
 	}
+
+	document.querySelector("#bottomSectionBody").addEventListener("historyRefreshEvent", async (event)=>{
+		//console.log("event catched");
+		event.stopPropagation();
+		document.querySelector("record-history").setAttribute("timestamp", Date.now());
+		//this.loadHistory(this.protocolNo);
+	})
+	document.querySelector("#bottomSectionButtons").addEventListener("assignmentsRefreshEvent", async (event)=>{
+		console.log("event catched - assignments");
+		event.stopPropagation();
+		document.querySelector("record-assignments").setAttribute("timestamp", Date.now());
+		//this.loadHistory(this.protocolNo);
+	})
+	document.querySelector("#bottomSectionButtons").addEventListener("commentsRefreshEvent", async (event)=>{
+		console.log("event catched - comments");
+		event.stopPropagation();
+		document.querySelector("record-comment").setAttribute("timestamp", Date.now());
+		//this.loadHistory(this.protocolNo);
+	})
 }
 
 async function makeMessageUnread(protocolNo, protocolYear){
@@ -230,7 +298,7 @@ async function makeMessageUnread(protocolNo, protocolYear){
 	}
 }
 
-async function publishToSite(){
+async function publishToSite(protocolNo, protocolYear){
 	const formdata = new FormData();
 	formdata.append('protocolNo',protocolNo);
 	formdata.append('protocolYear',protocolYear);
@@ -240,9 +308,32 @@ async function publishToSite(){
 		alert(res.msg);
 	}
 	else{
+		const commentsRefreshEvent = new CustomEvent("commentsRefreshEvent",  { bubbles: true, cancelable: false});
+		document.querySelector("#publishToSiteBtn").dispatchEvent(commentsRefreshEvent);
+		const assignmentsRefreshEvent = new CustomEvent("assignmentsRefreshEvent",  { bubbles: true, cancelable: false});
+		document.querySelector("#publishToSiteBtn").dispatchEvent(assignmentsRefreshEvent);
+		console.log("events dispatched")
+		//alert(res.msg);
+	}
+}
+
+
+async function  changeStatus(protocolNo, newStatus){
+	const formdata = new FormData();
+	formdata.append('protocolNo', protocolNo);
+	formdata.append('newStatus', newStatus);
+
+	const res = await runFetch("/api/changeStatus.php", "POST", formdata);
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		await getFilteredData();
 		alert(res.msg);
 	}
 }
+
+
 
 async function copyProtocol(){
 	const formdata = new FormData();

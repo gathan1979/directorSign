@@ -1,20 +1,23 @@
-body{
-	/*background-image: url("images/newYear.jpg");	 */
-	background-color : blue;
+:root {
+	--my-success: #198754;
+	--my-danger: rgb(185, 25, 25);
+	--my-warning : rgb(255, 170, 0);
+	--my-secondary : gray;
+	--my-primary : rgb(43, 144, 245);
+	--my-info : #5cd1e9;
 }
 
+
+
 td {
-  word-wrap:break-word;
-  word-break:break-word;
+  	word-wrap:break-word;
+  	word-break:break-word;
 }
 
 .table-responsive {
-   font-size : 12px;
+    font-size : 12px;
 }
 
-select{
-	font-size : 8px;
-}
 
 select.trano{
 	font-size : 14px;
@@ -28,12 +31,20 @@ select.trano{
     vertical-align: middle;
 }
 
-@font-face { font-family: Bradley ; src: url('BRADHITC.TTF'); } 
+@font-face { font-family: Bradley; src: url('BRADHITC.TTF'); } 
+
+@font-face {
+	font-family: "roboto";
+	src: url("webfont/Roboto-Regular.ttf");
+}
+
+body {
+	font-family: "roboto", serif;
+}
 
 label.titlos{
 	font-size : 50px;
 	padding-left : 40px;
-	font-family : Bradley,"Mistal","Verdana";
 	color : gray;
 }
 
@@ -295,3 +306,105 @@ a,
 	color:#fff;
 }
 
+#inboxHeaderRow>div{
+	flex-grow: 1;
+}
+
+.col1{
+	flex-basis: 5%;
+}
+
+.col2{
+	flex-basis: 5%;
+}
+.col3{
+	flex-basis: 20%;
+}
+.col4{
+	flex-basis: 25%;
+}
+.col5{
+	flex-basis: 20%;
+}
+.col6{
+	flex-basis: 20%;
+}
+.col7{
+	flex-basis: 5%;
+}
+
+.messageRow{
+	border-bottom: rgba(95, 95,95, 0.2) solid 1px;
+}
+
+
+.isButton{
+	background-color: var(--my-secondary);
+	font-family: var(--bs-body-font-family);
+	color : white;
+	border-radius:5px;
+	border-style: none;
+	border-right-style: solid;
+	border-bottom-style: solid;
+	border-color: #4f4a4a;
+	padding : 0.25rem 0.5rem;
+	cursor : pointer;
+	font-size: 1em;
+	cursor : pointer!important;
+	min-width : 2.5rem;
+}
+
+.isGreen{
+	background-color : #198754;
+}
+
+.outline{
+	background-color: rgba(255,255,255,0.6);
+	color: black;
+	border: 2px solid RGBA(0,0,0,0.2);
+}
+
+.small{
+	font-size: 0.875rem;
+}
+
+.extraSmall{
+	font-size: 0.75rem;
+}
+
+.active{
+	background-color: var(--my-success);
+}
+
+.dismiss{
+	background-color: var(--my-danger);
+}
+
+.warning{
+	background-color: var(--my-warning);
+	color: black;
+}
+
+.secondary{
+	background-color: var(--my-secondary);
+}
+
+.primary{
+	background-color: var(--my-primary);
+}
+
+.info{
+	background-color: var(--my-info);
+	color: black;
+}
+
+@keyframes spin { 
+    100% { 
+        -webkit-transform: rotate(360deg); 
+        transform:rotate(360deg); 
+    } 
+}
+
+.rotate{
+	animation:spin 2s linear infinite;
+}

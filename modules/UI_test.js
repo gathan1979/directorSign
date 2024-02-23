@@ -24,8 +24,7 @@ export let signals = {};
 
 
 const passwordModalDiv =
-`
-<dialog id="passwordModal" class="customDialog" style="width:70%;"> 
+`<dialog id="passwordModal" class="customDialog" style="width:70%;"> 
 	<div class="customDialogContentTitle">
 		<span style="font-weight:bold;">Αλλαγή κωδικού</span>
 		<div class="topButtons" style="display:flex;gap: 7px;">
@@ -68,12 +67,10 @@ const requestProtocolAccessModal =
 
 const fileOpenModal = 
 	`<dialog id="fileOpenDialog">
-
 	</dialog>`;
 
 const fileMoveModal = 
 	`<dialog id="fileMoveDialog" style="width:30%;">
-
 	</dialog>`;
 
 const loadingModal = 
@@ -141,7 +138,7 @@ export function startUp(){
 	
 
 	
-	console.log("common page code executing...");
+	//console.log("common page code executing...");
 	if (document.querySelector("#myNavBar")!==null){
 		document.querySelector("#myNavBar").remove();
 	}
@@ -178,10 +175,38 @@ export function startUp(){
 	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
 	document.body.insertAdjacentHTML("beforeend",passwordModalDiv);
 
-	document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
-	document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
-	document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);	
-	document.querySelector("#protocolBookBtn>a").addEventListener("click",createProtocolUIstartUp);		
+	document.querySelector("#prosIpografi>a").addEventListener("click",()=>{
+		if(!document.startViewTransition){
+			createUIstartUp();
+		}
+		document.startViewTransition(()=>{
+			createUIstartUp();
+		})
+	});
+	document.querySelector("#ipogegrammena>a").addEventListener("click",()=>{
+		if(!document.startViewTransition){
+			createSignedUIstartUp();
+		}
+		document.startViewTransition(()=>{
+			createSignedUIstartUp();
+		})	
+	});	
+	document.querySelector("#xreoseis>a").addEventListener("click",()=>{
+		if(!document.startViewTransition){
+			createChargesUIstartUp();
+		}
+		document.startViewTransition(()=>{
+			createChargesUIstartUp();
+		})	
+	});	
+	document.querySelector("#protocolBookBtn>a").addEventListener("click",()=>{
+		if(!document.startViewTransition){
+			createProtocolUIstartUp();
+		}
+		document.startViewTransition(()=>{
+			createProtocolUIstartUp();
+		})
+	});		
 
 	createUIstartUp();
 }
@@ -190,9 +215,7 @@ function pagesCommonCode(){
 	loginData = localStorage.getItem("loginData");
 	let cRole = null;
 	if (loginData === null){
-		window.location.href = "index.php";
-		alert("Δεν υπάρχουν στοιχεία χρήστη");
-		return;
+		logout();
 	}
 	else{
 		loginData = JSON.parse(loginData);
@@ -266,8 +289,7 @@ function pagesCommonCode(){
 			document.querySelector("#ipogegrammena>a").classList.remove("active");
 			document.querySelector("#prosIpografi>a").classList.remove("active");
 			document.querySelector("#xreoseis>a").classList.remove("active");
-			document.querySelector("#protocolBookBtn>a").classList.add("active");
-			
+			document.querySelector("#protocolBookBtn>a").classList.add("active");	
 		break;
 		default :
 			alert("Σελίδα μη διαθέσιμη");
@@ -289,10 +311,11 @@ function pagesCommonCode(){
 	}
 
 	//Πρόσβαση στο Παρουσιολόγιο
-	if (+loginData.user.roles[cRole].privilege){
-		const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
-		document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
-	}
+	//if (+loginData.user.roles[cRole].privilege){
+		//const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
+		//document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
+	//}
+
 	//const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
 	//document.querySelector("#userRoles").innerHTML = basicBtns;
 	document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
@@ -376,16 +399,17 @@ function pagesCommonCode(){
 	
 
 	document.querySelector("#syncRecords").addEventListener("click", async ()=>  { 
-		
+		let res = null;
 		switch (getPage()){
+			
 			case Pages.SIGNATURE :
-				const res = await getToSignRecordsAndFill();
+				res = await getToSignRecordsAndFill();
 				break;
 			case Pages.SIGNED :
 				res = await getSignedRecordsAndFill();
 				break;
 			case Pages.CHARGES :
-				await getChargesAndFill();
+				res = await getChargesAndFill();
 				document.querySelector("#syncRecords>i").classList.remove('faa-circle');
 				break;
 			case Pages.PROTOCOL :
@@ -420,7 +444,7 @@ function removeIntervals(){
 
 async function createChargesUIstartUp(){
 	removeIntervals();
-	console.log("charges");
+	//console.log("charges");
 	page = Pages.CHARGES;
 	pagesCommonCode();
 	document.querySelector('#showEmployeesBtn').style.display = "none"; 
@@ -454,20 +478,20 @@ async function createChargesUIstartUp(){
 		</div>
 
 		
-		${
-			+loginData.user.roles[cRole].protocolAccessLevel?
-			`<div id="topMenuProtocolAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch; padding: 5px;">
-				<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αιτήματα Πρόσβασης</div>
-					<div class="flexHorizontal" style="padding:0px 5px;">
-						<button class="isButton extraSmall" style="background-color: var(--bs-orange);"> 
-							<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
-						</button>
-						<div>
-							<button id="refreshPeddingAccessReqsBtn" title="Ανανέωση Αιτημάτων Πρόσβασης" type="button" class="isButton extraSmall"><i class="fas fa-sync"></i></button>
-						</div>
-				</div>
-			</div>`:``
-		}
+			${
+				+loginData.user.roles[cRole].protocolAccessLevel?
+				`<div id="topMenuProtocolAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch; padding: 5px;">
+					<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αιτήματα Πρόσβασης</div>
+						<div class="flexHorizontal" style="padding:0px 5px;">
+							<button class="isButton extraSmall" style="background-color: var(--bs-orange);"> 
+								<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
+							</button>
+							<div>
+								<button id="refreshPeddingAccessReqsBtn" title="Ανανέωση Αιτημάτων Πρόσβασης" type="button" class="isButton extraSmall"><i class="fas fa-sync"></i></button>
+							</div>
+					</div>
+				</div>`:``
+			}
 
 		
 			${
@@ -475,11 +499,11 @@ async function createChargesUIstartUp(){
 			`<div id="topMenuAdminBtnsDiv" class="flexVertical" style="align-items: center;align-self: stretch;padding: 5px;">	
 				<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Άλλες εφαρμογές</div>
 				<div class="flexHorizontal">
-					<div><a rel="opener"  title="Άνοιγμα αλληλογραφίας" rel="referer" target="_blank" href="/nocc-1.9.8/mich_login.php"><span style="font-weight: bold;
+					<div><a rel="opener"  title="Άνοιγμα αλληλογραφίας" rel="referer" target="_blank" href="/mail/mich_login.html"><span style="font-weight: bold;
 						border-radius: 5px; border-style: solid; 
 						border-width: 1px;padding: 2px 6px;color: white; background-color:lightseagreen;border-color:lightseagreen;"><i style="color:white" class="fas fa-mail-bulk  fa-lg"></i></span></a>
 					</div>
-					<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="/nocc-1.9.8/kside/index.php"><span style="font-size: 0.7rem;font-weight: bold;
+					<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="/kside/index.php"><span style="font-size: 0.7rem;font-weight: bold;
 															border-radius: 5px; border-style: solid; 
 															border-width: 1px;padding: 0px 2px;color: white; background-color:lightseagreen;border-color:lightseagreen;">ΚΣΗΔΕ</span></a>
 					</div>
@@ -598,9 +622,16 @@ async function createChargesUIstartUp(){
 			document.querySelector('#addProtocolRequestDialog').showModal();
 		});
 	}
+
+	if (document.querySelector("record-add")){
+		document.querySelector("record-add").addEventListener("RefreshProtocolFilesEvent", async ()=>{
+			const chargesRes = await getChargesAndFill(); 
+		})
+	}
 	
 	if (document.querySelector('#addProtocolBtn')){
 		document.querySelector('#addProtocolBtn').addEventListener("click", ()=>{
+			document.querySelector("record-add").dataset.timestamp = Date.now();
 			document.querySelector('#addRecordModal').showModal();
 		});
 	}
@@ -692,7 +723,7 @@ async function createChargesUIstartUp(){
 				btn.classList.remove("active");	
 			});
 			item.classList.add("active");
-			console.log(item.dataset.dates);
+			//console.log(item.dataset.dates);
 			//console.log("Type :", typeof item.dataset.dates);
 			printChangedRecords(+ item.dataset.days); 
 		})
@@ -738,7 +769,7 @@ async function createChargesUIstartUp(){
 
 async function createProtocolUIstartUp(){
 	removeIntervals();
-	console.log("protocol");
+	//console.log("protocol");
 	page = Pages.PROTOCOL;
 	pagesCommonCode();
 	document.querySelector('#showEmployeesBtn').style.display = "none"; 
@@ -821,9 +852,6 @@ async function createProtocolUIstartUp(){
 
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
-
-
-	
 	
 	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
 	document.querySelector("role-selector").insertAdjacentHTML("afterend", `<year-selector id="yearSelectorDiv"></year-selector>`);
@@ -879,7 +907,7 @@ async function createProtocolUIstartUp(){
 
 export async function createUIstartUp(){
 	removeIntervals();
-	console.log("signature");
+	//console.log("signature");
     page = Pages.SIGNATURE;
 	pagesCommonCode();
 
@@ -921,7 +949,7 @@ export async function createUIstartUp(){
 
 export async function createSignedUIstartUp(){
 	removeIntervals();
-    console.log("signed");
+    //console.log("signed");
     page = Pages.SIGNED;
 	pagesCommonCode();
 
@@ -1017,11 +1045,11 @@ async function fixRole(){
 	}
 	else{
 		if (res.role ==  localStorage.getItem("currentRole")){
-			console.log("ο ρόλος δεν έχει αλλάξει");
+			//console.log("ο ρόλος δεν έχει αλλάξει");
 		}
 		else {
 			window.location.reload();
-			console.log("επιτυχής αλλαγή ιδιότητας στο SESSION. Θα καταργηθεί σύντομα!");	
+			//console.log("επιτυχής αλλαγή ιδιότητας στο SESSION. Θα καταργηθεί σύντομα!");	
 		}
 		return  res.result;
 	}
@@ -1066,7 +1094,7 @@ async function roleChanged(){
 			document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
 		}
 		if (+loginData.user.roles[cRole].privilege){
-			document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
+			//document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
 		}
 		else{
 			if(document.querySelector("#leaveBtn") !==null){
@@ -1119,7 +1147,7 @@ export async function getChargesAndFill(){
 
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
-		console.log("page to render:", event.currentPage);
+		//console.log("page to render:", event.currentPage);
 		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize, signals.charges, getControllers());
 	})		
 }
@@ -1148,9 +1176,16 @@ export async function getProtocolAndFill(){
 
 
 
-function logout(){
-	localStorage.clear();
-	location.href = "/api/logout.php";
+async function logout(){
+	const res = await runFetch("/api/logout.php", "POST", null);
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		localStorage.clear();
+		window.location.href ="/directorSign";
+	}
+	
 }
 
 async function getPeddingProtocolReqs(){	
@@ -1167,6 +1202,7 @@ async function getPeddingProtocolReqs(){
 		if(resdec.requests.length == 0){
 			document.querySelector("#peddingRequestsNo").parentElement.style.backgroundColor = "gray";
 			document.querySelector("#peddingRequestsNo").style.backgroundColor = "gray";
+			document.querySelector("#peddingRequestsNo").innerText = 0;
 		}
 		else{
 			let countActive = 0;
@@ -1330,6 +1366,7 @@ async function acceptPeddingReq(aa){
 	}
 	else{
 		const chargesRes = await getChargesAndFill(); 
+		const req =  await getPeddingProtocolReqs();
 	}
 }
 

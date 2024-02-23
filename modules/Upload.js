@@ -1,6 +1,7 @@
 import refreshToken from "./RefreshToken.js"
 import getFromLocalStorage from "./LocalStorage.js"
-import { getSigRecords, createSearch} from "./Records.js";
+import { getSigRecords} from "./Records_test.js";
+import { createSearch} from "./Filter.js";
 
 export const uploadComponents = `<div class="col-md-12 d-flex flex-column p-2" >
 		<input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/>

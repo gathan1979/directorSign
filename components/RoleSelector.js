@@ -135,7 +135,7 @@ class RoleSelector extends HTMLElement {
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = roleSelectorDiv;
         const {currentRole, roles} = this.getRoles();
-        console.log(roles);
+        //console.log(roles);
         if (Array.isArray(roles)){
                 if (currentRole == null || (roles.at(currentRole) == undefined)){
                     currentRole = 0;
@@ -153,7 +153,7 @@ class RoleSelector extends HTMLElement {
                 }
                 //this.shadow.querySelector("#selectedRole").innerHTML = roles.at(currentRole).roleName;
                 const btn1 = `<button class="isButton extraSmall active" style="width: 60ch" data-role='${currentRole}'> ${roles.at(currentRole).roleName}</button>`;
-                console.log(btn1);
+                //console.log(btn1);
                 this.shadow.querySelector("#allRoles").innerHTML += btn1;
         }
         this.shadow.querySelector("#allRoles>button").addEventListener("click", (elem)=>{
@@ -194,7 +194,7 @@ class RoleSelector extends HTMLElement {
                     localStorage.setItem("currentRole", index+1);
                     const roleChangeEvent = new CustomEvent("roleChangeEvent",  { bubbles: true, cancelable: false });
                     this.dispatchEvent(roleChangeEvent);
-                    console.log(index+1);
+                    //console.log(index+1);
                     if (+index+1 == roles.length-1){
                         this.shadow.querySelector('#downRoleBtn').setAttribute("disabled", "disabled"); 
                     }

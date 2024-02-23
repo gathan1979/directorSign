@@ -1,5 +1,4 @@
-import refreshToken from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const editContent = `
     <style>
@@ -152,48 +151,48 @@ const editContent = `
         <form id="editRecordForm">
             <div id="editFormDiv">
                 <div class="formRow">
-                    <label class="formItem" for="aaField" class="col-sm-2 col-form-label">AA*</label>
+                    <label class="formItem" for="aaField" >AA*</label>
                     <input class="formInput" required=""  type="number" step="1"  id="aaField" disabled="">
                 </div>
                 <div class="formRow">   
-                    <label class="formItem" for="fromField" class="col-sm-2 col-form-label">ΑΠΟΣΤΟΛΕΑΣ*</label>
+                    <label class="formItem" for="fromField" >ΑΠΟΣΤΟΛΕΑΣ*</label>
                     <input class="formInput" required=""  type="text"  id="fromField" disabled="">
                 </div>
                 <div class="formRow">    
-                    <label class="formItem" for="subjectField" class="col-sm-2 col-form-label">ΘΕΜΑ*</label>
+                    <label class="formItem" for="subjectField" >ΘΕΜΑ*</label>
                     <textarea class="formInput" required=""  type="text"  id="subjectField" disabled=""></textarea>
                 </div>
                 <div class="formRow">
-                    <label class="formItem" for="docDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΠΑΡΑΛ.*</label>
+                    <label class="formItem" for="docDate" >ΗΜΕΡ. ΠΑΡΑΛ.*</label>
                     <input class="formInput" required=""  type="text"  id="docDate" disabled="">
                 </div>
                 <div class="formRow">    
-                    <label class="formItem" for="docNumber" class="col-sm-2 col-form-label">ΑΡΙΘΜ. ΕΙΣ.*</label>
+                    <label class="formItem" for="docNumber" >ΑΡΙΘΜ. ΕΙΣ.*</label>
                     <input class="formInput" required=""  type="text"  id="docNumber">
                 </div>
                 <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
                 <div class="formRow">    
-                    <label class="formItem" for="toField" class="col-sm-2 col-form-label">ΠΡΟΣ*</label>
+                    <label class="formItem" for="toField" >ΠΡΟΣ*</label>
                     <input class="formInput" required=""  type="text"  id="toField">
                 </div>
                 <div class="formRow">   
-                    <label class="formItem" for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.*</label>
+                    <label class="formItem" for="outSubjectField" >ΘΕΜΑ ΕΞΕΡΧ.*</label>
                     <input class="formInput" required=""  type="text"  id="outSubjectField">
                 </div>
                 <div class="formRow">
-                    <label class="formItem" for="outDocDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΞΕΡΧ.*</label>
+                    <label class="formItem" for="outDocDate" >ΗΜΕΡ. ΕΞΕΡΧ.*</label>
                     <input class="formInput" required="" type="date"  id="outDocDate">
                 </div>
                 <div class="formRow">    
-                    <label class="formItem" for="statusField" class="col-sm-2 col-form-label">ΚΑΤΑΣΤ.*</label>
+                    <label class="formItem" for="statusField" >ΚΑΤΑΣΤ.*</label>
                     <input class="formInput" required="" type="number" step="1"  id="statusField" disabled="">
                 </div>
                 <div class="formRow">
-                    <label class="formItem" for="linkField" class="col-sm-2 col-form-label">ΣΤΟΙΧΕΙΑ EMAIL*</label>
+                    <label class="formItem" for="linkField" >ΣΤΟΙΧΕΙΑ EMAIL*</label>
                     <input class="formInput" required="" type="text"  id="linkField" disabled="">
                 </div>
                 <div class="formRow">
-                    <label class="formItem" for="insertDateField" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ*</label>
+                    <label class="formItem" for="insertDateField" >ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ*</label>
                     <input class="formInput" required="" type="date"  id="insertDateField" disabled="">
                 </div>
             </div>
@@ -225,7 +224,7 @@ class EditRecord extends HTMLElement {
         //this.shadow.querySelector("#assignments").innerHTML = employeesTree;
 
         this.protocolProperties = await this.getRecord(this.protocolNo, this.protocolYear);
-        console.log(this.protocolProperties);
+        //console.log(this.protocolProperties);
         this.changedProperties = {...this.protocolProperties};
         //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
 
@@ -233,7 +232,7 @@ class EditRecord extends HTMLElement {
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
            element.value = this.protocolProperties[element.id];
            if (currentRoleObject.protocolAccessLevel == 1){
-                element.removeAttribute("disabled");
+                //element.removeAttribute("disabled");
            }
            if (element.type == "date"){
                 element.addEventListener("change", (event) => this.updateChangedProperties(event)); 
@@ -243,17 +242,7 @@ class EditRecord extends HTMLElement {
            }
         });
  
-        // Προσθήκη κουμπιών ενεργειών με βάση την ιδιότητα .
-        let tempFooterBtns = this.shadow.querySelector(".topButtons");
-        if (currentRoleObject.protocolAccessLevel == 1){
-            tempFooterBtns.innerHTML = '<button id="archiveButtonModal" title="Αρχειοθέτηση" type="button" class="isButton warning" ><i class="fas fa-archive"></i></button>' + tempFooterBtns.innerHTML;	
-            if (+this.protocolProperties.statusField !== 0){
-                tempFooterBtns.innerHTML = '<button id="restoreButtonModal" title="Επαναφορά" type="button" class="isButton" ><i class="fas fa-trash-restore"></i>ς</button>' + tempFooterBtns.innerHTML;
-            }	
-        }
-        else{
-            tempFooterBtns += '<button id="finishButtonModal" type="button" class="btn btn-warning trn" >Close Record</button>';
-        }
+       
         this.shadow.querySelector("#closeEditModalBtn").addEventListener("click", ()=>this.parentElement.close());
 
         //Listeners πάνω κουμπιών
@@ -303,94 +292,37 @@ class EditRecord extends HTMLElement {
     }
 
     async getRecord(protocolNo){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
         let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getRecord.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.getCharges(protocolNo);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        const res = await runFetch("/api/getRecord.php", "GET", urlparams);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
-            return resdec;
-        }    
+            return res.result;
+        }
     }
 
 
     async editRecord(){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-
         const formdata = new FormData();
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             element.value = this.changedProperties[element.id];
             formdata.append(element.id, element.value);
          });
-  
         formdata.append('protocolNo',this.protocolNo);
         formdata.append('protocolYear',this.protocolYear);
-        formdata.append('currentRole',role);
 
-        let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/editRecord.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  400){
-                alert(resdec['message']);
-            }
-            else if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.editRecord();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        const res = await runFetch("/api/editRecord.php", "POST", formdata);
+        if (!res.success){
+            alert(res.msg);
+            return false;
         }
-        else{
-            const resdec = await res.json();
-            console.log(resdec['message']);
-            if (resdec['success']){
-                alert("επιτυχής ανανέωση φακέλων αρχειοθέτησης");
-                this.shadow.getElementById('saveRecordButton').classList.remove('active');
-                this.shadow.querySelector("#saveRecordButton  i").classList.remove('faa-shake');
-                this.shadow.querySelector("#saveRecordButton  i").classList.remove('animated');
-            }
+        else{  
+            alert(res.msg);
+            this.shadow.getElementById('saveRecordBtn').classList.remove('active');
+            this.shadow.querySelector("#saveRecordBtn  i").classList.remove('faa-shake');
+            this.shadow.querySelector("#saveRecordBtn  i").classList.remove('animated');
+            return true;
         }
     } 
 }

@@ -27,19 +27,10 @@ select.trano{
 .table > thead > tr > th {
     vertical-align: middle;
 }
-@font-face { font-family: byz ; src: url('byz.ttf'); } 
-@font-face { font-family: Bradley ; src: url('BRADHITC.TTF'); } 
-@font-face { font-family: arcade ; src: url('ka1.ttf'); } 
-@font-face { font-family: robot ; src: url('joystix.ttf'); } 
-@font-face { font-family: electron ; 
-			src: url('Game-Over.woff2') format('woff2'),
-			src: url('Game-Over.woff') format('woff'),
-			src: url('game_over.ttf') format('truetype');
-			} 
 
 label.titlos{
 	font-size : 50px;
-	padding-left : 40px;
+	padding : 40px;
 	font-family : electron,"Mistal","Verdana";
 	color : black;
 }
@@ -91,8 +82,8 @@ td .fa-amilia{
 
 .btn-mybutton {
   color: #ffffff;
-  background-color: #green;
-  border-color: #green;
+  background-color: green;
+  border-color: green;
 }
 
 #loading{
@@ -141,14 +132,6 @@ td .fa-amilia{
 
 #showToSignOnly{
 	width : 15%;
-}
-
-#emailButton{
-	
-}
-
-#mindigitalButton{
-	
 }
 
 #uploadFileDiv{

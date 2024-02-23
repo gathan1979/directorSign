@@ -134,6 +134,8 @@ const assignmentsContent = `
 
 
 class Assignments extends HTMLElement {
+    static observedAttributes = ["timestamp"];
+
     protocolNo;   
     protocolYear;
     shadow;
@@ -144,9 +146,14 @@ class Assignments extends HTMLElement {
         super();
     }
 
+    attributeChangedCallback(name, oldValue, newValue){
+        //console.log("attribute changed");
+        this.getChargesAndFill();
+    }
+
     // Ο πίνακας assignments δουλεύει με το ΑΑ του STAFF
     async connectedCallback(){
-        let isRead = 0;
+       
         const loginData = JSON.parse(localStorage.getItem("loginData"));
 	    const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
         //console.log(currentRoleObject);
@@ -162,55 +169,8 @@ class Assignments extends HTMLElement {
             employeesTree = await this.getEmployeesTree();
         }
         this.shadow.querySelector("#assignments").innerHTML = employeesTree;
-        const chargesArrFromDb = await this.getCharges(this.protocolNo, this.protocolYear);
-        if (chargesArrFromDb === null){
-            return;
-        }
-        
-        this.protocolCharges = chargesArrFromDb.map((item)=>{
-            const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment)};
-            if ((item.assignedToUser == loginData.user.aa_staff) && (item.isRead == 1)){
-                isRead = 1;        
-            }
-            return charge;
-        });
-        if (!isRead){
-            const formdata = new FormData();
-            formdata.append('protocolNo',this.protocolNo);
-            formdata.append('currentYear',this.protocolYear);
-            const res = await runFetch("/api/makeMessageRead.php", "POST", formdata);
-            if (!res.success){
-                console.log(res.msg);
-            }
-            else{
-                //const resdec = res.result;
-                document.querySelector(`div [data-record="${this.protocolNo}"]`).dataset.isread = 1;
-            }  
-        }
-        //console.log(this.protocolCharges);
-        this.selectedCharges = [...this.protocolCharges];
-        //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
-        this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-            //console.log(element);
-            const found = this.protocolCharges.find(el => el.assignedTo == element.dataset.user);    
-            if (found !== undefined){
-                element.dataset.charge = 1;
-                element.dataset.chargeType = found.type;
-                if (found.type == "0"){
-                    element.classList.add("notification");
-                }
-                else{
-                    element.classList.add("active");
-                }
-            }
-            else{
-                element.classList.remove("active");
-                element.classList.remove("notification");
-            }
-            element.addEventListener("click",(event)=>{this.changeAssignmentStatus(element.dataset.user)})
-            //this.shadow.querySelector(".customDialogContent").innerHTML += '<div><b>'+element.innerText+"</b> : "+element.title+'</div>';
-        });
-
+        //Φόρτωση χρεώσεων και εμφάνιση
+        await this.getChargesAndFill();
         //Πτυσσόμενα μενού τμημάτων
         this.shadow.querySelectorAll(".departmentTitle").forEach(element => {
             if (element.dataset.opened == 0){
@@ -382,6 +342,60 @@ class Assignments extends HTMLElement {
         }    
     }
 
+
+    async getChargesAndFill(){
+        const loginData = JSON.parse(localStorage.getItem("loginData"));
+        let isRead = 0;
+        const chargesArrFromDb = await this.getCharges(this.protocolNo, this.protocolYear);
+        if (chargesArrFromDb === null){
+            return;
+        }
+        
+        this.protocolCharges = chargesArrFromDb.map((item)=>{
+            const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment)};
+            if ((item.assignedToUser == loginData.user.aa_staff) && (item.isRead == 1)){
+                isRead = 1;        
+            }
+            return charge;
+        });
+        if (!isRead){
+            const formdata = new FormData();
+            formdata.append('protocolNo',this.protocolNo);
+            formdata.append('currentYear',this.protocolYear);
+            const res = await runFetch("/api/makeMessageRead.php", "POST", formdata);
+            if (!res.success){
+                console.log(res.msg);
+            }
+            else{
+                //const resdec = res.result;
+                document.querySelector(`div [data-record="${this.protocolNo}"]`).dataset.isread = 1;
+            }  
+        }
+        //console.log(this.protocolCharges);
+        this.selectedCharges = [...this.protocolCharges];
+        //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
+        this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
+            //console.log(element);
+            const found = this.protocolCharges.find(el => el.assignedTo == element.dataset.user);    
+            if (found !== undefined){
+                element.dataset.charge = 1;
+                element.dataset.chargeType = found.type;
+                if (found.type == "0"){
+                    element.classList.add("notification");
+                }
+                else{
+                    element.classList.add("active");
+                }
+            }
+            else{
+                element.classList.remove("active");
+                element.classList.remove("notification");
+            }
+            element.addEventListener("click",(event)=>{this.changeAssignmentStatus(element.dataset.user)})
+            //this.shadow.querySelector(".customDialogContent").innerHTML += '<div><b>'+element.innerText+"</b> : "+element.title+'</div>';
+        });
+    }
+
     async getCharges(protocolNo){
         let urlparams = new URLSearchParams({protocolNo, currentYear : this.protocolYear});
         const res = await runFetch("/api/getCharges.php", "GET", urlparams);
@@ -412,6 +426,17 @@ class Assignments extends HTMLElement {
                 this.shadow.getElementById('saveAssignmentButton').classList.remove('active');
                 this.shadow.querySelector("#saveAssignmentButton  i").classList.remove('faa-shake');
                 this.shadow.querySelector("#saveAssignmentButton  i").classList.remove('animated');
+                const historyRefreshEvent = new CustomEvent("historyRefreshEvent",  { bubbles: true, cancelable: false, composed: true });
+                this.dispatchEvent(historyRefreshEvent);
+
+                const chargesArrFromDb = await this.getCharges(this.protocolNo, this.protocolYear);
+                if (chargesArrFromDb === null){
+                    return;
+                }
+                this.protocolCharges = chargesArrFromDb.map((item)=>{
+                    const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment)};
+                    return charge;
+                });
             }
         }
     } 

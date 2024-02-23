@@ -1,5 +1,6 @@
 import refreshToken from "../modules/RefreshToken.js";
 import getFromLocalStorage from "../modules/LocalStorage.js";
+import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const addContent = `
     <style>
@@ -147,7 +148,7 @@ const addContent = `
         <span style="font-weight:bold;">Νέα Εγγραφή</span>
         <div class="topButtons" style="display:flex;gap: 7px;">
             <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
-            <button id="undoBtn" title="Αναίρεση αλλαγών" type="button" class="isButton"><i class="fas fa-undo"></i></button>
+            <button id="undoBtn" title="Εκκαθάριση πεδίων" type="button" class="isButton"><i class="fas fa-undo"></i></button>
             <button class="isButton " name="closeAddModalBtn" id="closeAddModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
     </div>
@@ -164,7 +165,7 @@ const addContent = `
                 </div>
                 <div class="formRow">
                     <label class="formItem" for="docDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΠΑΡΑΛ.*</label>
-                    <input class="formInput" required=""  type="text"  id="docDate" disabled="">
+                    <input class="formInput" required=""  type="datetime-local"  id="docDate" disabled="">
                 </div>
                 <div class="formRow">    
                     <label class="formItem" for="docNumber" class="col-sm-2 col-form-label">ΑΡΙΘΜ. ΕΙΣ.*</label>
@@ -191,6 +192,9 @@ const addContent = `
 
 
 class AddRecord extends HTMLElement {
+
+    static observedAttributes = ["timestamp"];
+
     protocolNo;   
     protocolYear;
     shadow;
@@ -208,13 +212,11 @@ class AddRecord extends HTMLElement {
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = addContent;
         this.protocolProperties ={};
+        this.clearInputs();
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             this.protocolProperties[element.id] = element.value;
-            if (element.type == "date" && element.value == ""){
-                this.protocolProperties[element.id] = "0000-00-00";
-            }
         });
-
+        console.log(this.protocolProperties);
         this.changedProperties = {...this.protocolProperties};
         //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
 
@@ -230,14 +232,42 @@ class AddRecord extends HTMLElement {
                 element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); 
            }
         });
+
+        this.setDocDate();
  
-        this.shadow.querySelector("#closeAddModalBtn").addEventListener("click", ()=>this.parentElement.close());
+        this.shadow.querySelector("#closeAddModalBtn").addEventListener("click", ()=>{
+            this.clearInputs();
+            this.parentElement.close();
+        });
 
         //Listeners πάνω κουμπιών
         //this.shadow.querySelector("#archiveButtonModal").addEventListener("click",()=>this.saveAssignments());
         //this.shadow.querySelector("#restoreButtonModal").addEventListener("click",()=>this.saveAssignments());
         this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>this.addRecord());
-        this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.undoChanges());
+        this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.clearFields());
+    }
+
+    clearInputs(){
+        this.shadow.getElementById('saveRecordBtn').classList.remove('active');
+        this.shadow.querySelector("#saveRecordBtn  i").classList.remove('faa-shake');
+        this.shadow.querySelector("#saveRecordBtn  i").classList.remove('animated');
+        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
+            if (element.type == "date"){
+                element.value = "0000-00-00";
+                return;
+            }
+            if (element.type == "datetime-local"){
+                this.setDocDate();
+                return;
+            }
+            element.value = "";
+        });
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name=="timestamp"){
+            this.clearInputs();
+        }
     }
 
     disconnectedCallback() {
@@ -273,102 +303,83 @@ class AddRecord extends HTMLElement {
     }
 
 
-    undoChanges(){
-        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
-            element.value = this.protocolProperties[element.id];
-        });
+    clearFields(){
+        this.clearInputs();
         this.updateChangedProperties();
     }
 
-    async getRecord(protocolNo){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
-        let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        
-        let init = {method: 'GET', headers : myHeaders};
-        const res = await fetch("/api/getRecord.php?"+urlparams,init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.getCharges(protocolNo);
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
-        }
-        else{
-            const resdec = await res.json();
-            return resdec;
-        }    
+    setDocDate(){
+        var now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        this.shadow.getElementById('docDate').value = now.toISOString().slice(0,16);
     }
+
+    // async getRecord(protocolNo){
+    //     const {jwt,role} = getFromLocalStorage();
+    //     const myHeaders = new Headers();
+    //     myHeaders.append('Authorization', jwt);
+    //     let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
+        
+    //     let init = {method: 'GET', headers : myHeaders};
+    //     const res = await fetch("/api/getRecord.php?"+urlparams,init);
+    //     if (!res.ok){
+    //         const resdec = res.json();
+    //         if (res.status ==  401){
+    //             const resRef = await refreshToken();
+    //             if (resRef ==1){
+    //                 this.getCharges(protocolNo);
+    //             }
+    //             else{
+    //                 alert("σφάλμα εξουσιοδότησης");
+    //             }
+    //         }
+    //         else if (res.status==403){
+    //             alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
+    //         }
+    //         else if (res.status==404){
+    //             alert("το αρχείο δε βρέθηκε");
+    //         }
+    //         else{
+    //             alert("Σφάλμα!!!");
+    //         }
+    //     }
+    //     else{
+    //         const resdec = await res.json();
+    //         return resdec;
+    //     }    
+    // }
 
 
     async addRecord(){
-        const {jwt,role} = getFromLocalStorage();
-        const myHeaders = new Headers();
-        myHeaders.append('Authorization', jwt);
+        //const {jwt,role} = getFromLocalStorage();
+        // myHeaders = new Headers();
+        //myHeaders.append('Authorization', jwt);
 
         const formdata = new FormData();
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             element.value = this.changedProperties[element.id];
             formdata.append(element.id, element.value);
          });
-  
-        formdata.append('protocolNo',this.protocolNo);
-        formdata.append('protocolYear',this.protocolYear);
-        formdata.append('currentRole',role);
+        //formdata.append('protocolNo',this.protocolNo);
+        //formdata.append('protocolYear',this.protocolYear);
+        //formdata.append('currentRole',role);
 
-        let init = {method: 'POST', headers : myHeaders, body :formdata};
-        const res = await fetch("/api/addProtocolRecord.php",init);
-        if (!res.ok){
-            const resdec = res.json();
-            if (res.status ==  400){
-                alert(resdec['message']);
-            }
-            else if (res.status ==  401){
-                const resRef = await refreshToken();
-                if (resRef ==1){
-                    this.addRecord();
-                }
-                else{
-                    alert("σφάλμα εξουσιοδότησης");
-                }
-            }
-            else if (res.status==403){
-                alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-            }
-            else if (res.status==404){
-                alert("το αρχείο δε βρέθηκε");
-            }
-            else if (res.status==500){
-                alert("Εσωτερικό σφάλμα. Επικοινωνήστε με το διαχειριστή");
-            }
-            else{
-                alert("Σφάλμα!!!");
-            }
+        //let init = {method: 'POST', headers : myHeaders, body :formdata};
+        //const res = await fetch("/api/addProtocolRecord.php",init);
+        const res = await runFetch("/api/addProtocolRecord.php","POST",formdata);
+        if (!res.success){
+            alert(res.msg);
         }
         else{
-            const resdec = await res.json();
+            //const resdec = await res.json();
+            const resdec = res.result;
             console.log(resdec['message']);
-            if (resdec['success']){
-                alert("επιτυχής εισαγωγή εγγραφής");
-                this.shadow.getElementById('saveRecordButton').classList.remove('active');
-                this.shadow.querySelector("#saveRecordButton  i").classList.remove('faa-shake');
-                this.shadow.querySelector("#saveRecordButton  i").classList.remove('animated');
-            }
+           
+            alert("επιτυχής εισαγωγή εγγραφής");
+            this.clearInputs();
+            const RefreshProtocolFilesEvent = new CustomEvent("RefreshProtocolFilesEvent",  { bubbles: true, cancelable: false, composed: true });
+            this.dispatchEvent(RefreshProtocolFilesEvent);
+            this.parentElement.close();
         }
     } 
 }

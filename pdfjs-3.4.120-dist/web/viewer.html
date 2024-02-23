@@ -9,7 +9,7 @@
 	<script src="../build/pdf.js"></script>
 
 	<script type="module">
-		import refreshToken from "../../modules/refreshToken.js" 
+		import refreshToken from "../../modules/RefreshToken.js" 
 		pdfjsLib.GlobalWorkerOptions.workerSrc = '../build/pdf.worker.js';
 		
 		let pdf = null;
@@ -24,7 +24,7 @@
 		
 		
 		let Xabs = null, Yabs = null, Xpercent = null, Ypercent = null;
-		let sigPage = null, sigXabs = null, sigYabs =null,  sigXpercent = null, sigYpercent = null;;
+		let sigPage = null, sigXabs = null, sigYabs =null,  sigXpercent = null, sigYpercent = null;
 		let lastPage =1;
 		let viewerWidth = null;
 		let viewerHeight = null;

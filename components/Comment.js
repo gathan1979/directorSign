@@ -46,6 +46,8 @@ const commentContent = `
 
 
 class Comment extends HTMLElement {
+    static observedAttributes = ["timestamp"];
+
     protocolNo;
     protocolYear;
     shadow;
@@ -67,6 +69,11 @@ class Comment extends HTMLElement {
 
     disconnectedCallback() {
     
+    }
+
+    attributeChangedCallback(name, oldValue, newValue){
+        //console.log("attribute changed");
+        this.loadComments(this.protocolNo,1);
     }
     
     async loadComments(protocolNo, active){
@@ -100,7 +107,7 @@ class Comment extends HTMLElement {
             this.shadow.querySelector("#commentsTable tbody").innerHTML = html;
             //onclick="removeComment('+resdec[key1]['aaField']+')"
             for (let key1=0;key1<resdec.length;key1++) {
-                   this.shadow.querySelector("#removeCommentBtn-"+resdec[key1]['aaField']).addEventListener("click", ()=>{this.removeComment(this.protocolNo,resdec[key1]['aaField'])}); 
+                   this.shadow.querySelector("#removeCommentBtn-"+resdec[key1]['aaField']).addEventListener("click", ()=>{this.removeComment(this.protocolNo, this.protocolYear, resdec[key1]['aaField'])}); 
             }
         }
     }

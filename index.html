@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<html lang="el" style="height:100%">
+	<head>
+
+			<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<title>Ηλεκτρονικές Υπηρεσίες Εγγράφων</title>
+		
+				<!-- Bootstrap core CSS 
+			<link rel="stylesheet" type="text/css" href="/libraries/fontawesome-free-5.15.4-web/css/all.css" />-->
+			
+			
+			<link rel="stylesheet" type="text/css" href="css/custom.css" />
+			
+			<script type="module">
+					import runFetch from "./modules/CustomFetch.js";
+					var capsLockEnabled = null;
+			
+					//$( document ).ready(function(){
+						//$('.game').blockrain();
+					//});
+
+					// function setUsername(){
+						// var d = document.getElementById("fullname");
+						// var name = d.options[d.selectedIndex].value;
+						// document.getElementById("name").value = name;
+					// }
+
+
+					function getChar(e) {
+						if (e.which == null) {
+							return String.fromCharCode(e.keyCode); // IE
+						}
+						if (e.which != 0 && e.charCode != 0) {
+							return String.fromCharCode(e.which); // rest
+						}
+						return null;
+					}
+
+					document.onkeydown = function(e) {
+						e = e || event;
+
+						if (e.keyCode == 20 && capsLockEnabled !== null) {
+							capsLockEnabled = !capsLockEnabled;
+						}
+					}
+
+					document.onkeypress = function(e) {
+						e = e || event;
+						var chr = getChar(e);
+						if (!chr) return; // special key
+
+						if (chr.toLowerCase() == chr.toUpperCase()) {
+							// caseless symbol, like whitespace 
+							// can't use it to detect Caps Lock
+							return;
+						}
+						capsLockEnabled = (chr.toLowerCase() == chr && e.shiftKey) || (chr.toUpperCase() == chr && !e.shiftKey);
+					}
+					
+					document.addEventListener('keypress',function(e){
+						if ((e.charCode >= 97 && e.charCode <= 122) || (e.charCode>=65 && e.charCode<=90)|| (e.charCode>=33 && e.charCode<=57) || e.charCode==13){
+						document.getElementById('lang').style.display =  'none';
+						}
+						else{
+						document.getElementById('lang').style.display =  'block';
+						}
+					});
+					
+
+					/**
+					 * Check caps lock 
+					 */
+					function checkCapsWarning() {
+						document.getElementById('caps').style.display = capsLockEnabled ? 'block' : 'none';
+					}
+
+					function removeCapsWarning() {
+						document.getElementById('caps').style.display = 'none';
+					}
+						
+					
+					// async function login(){  // login με session, jwt. Θα αφαιρεθεί το session
+					// 	let formData = new FormData();
+					// 	formData.append('name',document.getElementById("name").value);
+					// 	formData.append('pass',document.getElementById("pass").value);
+					// 	let init = {method: 'POST', body: formData};
+					// 	//console.log(init);
+					// 	const res = await runFetch("/api/login1.php","POST", formData); 
+					// 	if (!res.success){
+					// 		alert(res.msg);
+					// 	}
+					// 	else{
+					// 		const res2 = await fetch("/api/login2JWT.php",init); 
+					// 		if (res2.status >= 200 && res2.status <= 299) {
+					// 			const loginData = await res2.json();
+					// 			localStorage.setItem("loginData",JSON.stringify(loginData));
+					// 			console.log(JSON.parse(localStorage.getItem("loginData")));
+					// 			localStorage.setItem("currentRole",0);
+					// 		}
+					// 		else{
+					// 			alert("Σφάλμα στην αυθεντικοποίηση");
+					// 		}
+					// 		location.href= "signatures_test.html";
+					// 		localStorage.removeItem('filter');
+					// 	}	
+					// }
+						
+					async function login(){ // login με jwt
+						let formData = new FormData();
+						formData.append('name',document.getElementById("name").value);
+						formData.append('pass',document.getElementById("pass").value);
+						let init = {method: 'POST', body: formData};
+						const res = await fetch("/api/login2JWT.php",init); 
+						if (!res.ok){
+							alert("πρόβλημα σύνδεσης");
+							return;
+						}
+						if (res.status ==200){
+							localStorage.clear();
+							const loginData = await res.json();
+							localStorage.setItem("loginData", JSON.stringify(loginData));
+							//console.log(JSON.parse(localStorage.getItem("loginData")));
+							localStorage.setItem("currentRole",0);
+							location.href= "signatures_test.html";
+							localStorage.removeItem('filter');
+						}
+						else if (res.status ==403){
+							alert("Λάθος κωδικοί πρόσβασης");
+							return;
+						}
+					}
+
+					async function showUsers(){ 
+						let urlpar = new URLSearchParams({});
+						urlpar.append("type",1);
+						const res = await fetch("/api/getUsers.php?"+urlpar); 
+						if (res.status >= 200 && res.status <= 299) {
+							const users = await res.json();
+							//console.log(users);
+							let temp = "";
+							for (let j=0;j<users.length;j++){
+								//console.log(users[j]['aa']);
+								temp += '<div style="padding:2px;"><button class="users isButton primary" style="padding:10px; width:280px; font-size:0.8em; letter-spacing: 1.5px;"  id="user'+users[j]['aa']+'">'+users[j]['fullName']+'</button></div>';
+							}
+							document.querySelector("#nameList").innerHTML = temp;
+							for (let j=0;j<users.length;j++){
+								//console.log(users[j]['aa']);
+								[...document.querySelectorAll('.users')].forEach(user => {
+									user.addEventListener("click", (event) =>{
+										document.querySelector("#name").value = event.currentTarget.textContent;
+									})
+								})
+							}
+						}
+						else{
+							alert("Σφάλμα στην αυθεντικοποίηση");
+						}
+					}
+
+					showUsers();
+					document.querySelector("#pass").addEventListener("keyUp", (event)=> {checkCapsWarning(event);});
+					document.querySelector("#pass").addEventListener("focus", (event)=> {checkCapsWarning(event);});
+					document.querySelector("#pass").addEventListener("blur", (event)=> {removeCapsWarning()});	
+					document.querySelector("#submit_form1").addEventListener("click", (event)=> login());	
+
+			</script>
+
+
+		
+	</head>
+	
+	<body style="font-family: roboto;">
+		<div id="containerDiv" style="display:flex; flex-direction: column;align-items: center;padding-top: 3em;">
+			<div id="loginDiv" style="box-shadow: 0.5em 0.5em rgba(255,215,0,0.5); border-style:solid; background-color: white; display:flex; flex-direction: column; gap: 10px; width: 450px;padding: 2em; border-radius : 10px; color: black">
+				<div id="logoContainer"  style="display:flex; justify-content: center; margin-bottom:60px;margin-top:20px;">
+					<div><img src="css/images/aianiHorseEdge3.png" alt="logimage" style="width:60px;"></div>
+					<div><label class="titlos">Αιανός</label></div>
+				</div >
+				<div  style="display:flex; flex-direction: column; gap: 10px; ">
+						<div  style="display: flex; flex-direction: row; justify-content: space-between;">
+							<label for="name" >ΟΝΟΜΑ ΧΡΗΣΤΗ</label>
+							<input  id="name" name="name" value="" placeholder="ΕΠΙΛΕΞΤΕ ΑΠΟ ΤΗ ΛΙΣΤΑ"/>
+						</div>
+						<div  style="display: flex; flex-direction: row; justify-content: space-between;">
+							<label for="pass" >ΚΩΔΙΚΟΣ</label>
+							<input type="password"  id="pass" name="pass" placeholder="ΚΩΔΙΚΟΣ ΠΡΟΣΒΑΣΗΣ" />
+						</div>
+						<div style="display:none;color:red" id="caps">Προσοχή! Το πλήκτρο CapsLock είναι ενεργοποιημένο</div>
+						<div style="display:none;color:red" id="lang">Προσοχή! Δε γράφετε στην Αγγλική Γλώσσα</div>
+						<button class="isButton active" style="margin-top : 0.5em;height:40px;" type="button"  id="submit_form1">Σύνδεση</button>
+				</div>
+
+			</div>
+			<div  style="display:flex; flex-wrap: wrap; margin-top : 3em; width: 80%; justify-content: center;" id="nameList"></div>
+			<div id="bottomSection" style="margin-top:4em;"></div>
+		</div>
+	</body>
+</html>

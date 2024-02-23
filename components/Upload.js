@@ -164,6 +164,8 @@ const uploadDiv = `
 
 class Upload extends HTMLElement {
     shadow;
+    static observedAttributes = ["forrecord"];
+    reuploadNo = null;
 
     constructor() {
         super();
@@ -171,6 +173,9 @@ class Upload extends HTMLElement {
 
     async connectedCallback(){
         this.shadow = this.attachShadow({mode: 'open'});
+        if (this.attributes.forrecord){
+            this.reuploadNo = this.attributes.forrecord.value;
+        }
         this.shadow.innerHTML = uploadDiv;
         this.shadow.getElementById("uploadFileButton").setAttribute("disabled","disabled");
         this.shadow.querySelector("#uploadFileButton").addEventListener("click", (elem)=>{
@@ -187,6 +192,13 @@ class Upload extends HTMLElement {
     disconnectedCallback() {    
     }
 
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === "forrecord"){
+            this.reuploadNo = newValue;
+        }
+    }
+
     undoChanges(){
         this.shadow.getElementById('uploadFileButton').classList.remove('active');
         this.shadow.querySelector("#uploadFileButton  i").classList.remove('faa-shake');
@@ -199,17 +211,17 @@ class Upload extends HTMLElement {
 
     }
 
-    async uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadNo = 0){
+    async uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadNo = this.reuploadNo){
         const files = this.shadow.getElementById('selectedFile').files;
         let numFiles = files.length;
         let data = new FormData();
         let numFilesToSign=0;
     
-        if (reloadNo){			// είναι επαναφόρτωση αρχείου για διόρθωση				
+        if (reloadNo !== null){			// είναι επαναφόρτωση αρχείου για διόρθωση				
             data.append('aa', reloadNo);
             numFiles = 1;
             data.append('authorComment', "επαναφόρτωση αρχείου από συντάκτη");
-            data.append('selectedFile0', this.shadow.getElementById('reuploadFileBtn'+reloadNo).files[0]);
+            data.append('selectedFile0', this.shadow.getElementById('selectedFile').files[0]);
             data.append('tobeSigned',0);
         }
         else{

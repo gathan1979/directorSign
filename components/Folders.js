@@ -161,7 +161,7 @@ class Folders extends HTMLElement {
             return;
         }
         this.protocolFolders = foldersArrFromDb.map((item)=>{return item.folderField;})
-        console.log(this.protocolFolders);
+       // console.log(this.protocolFolders);
         this.selectedFolders = [...this.protocolFolders];
 
         this.shadow.querySelector("#folderList").innerHTML = folderList.join("");
@@ -234,7 +234,7 @@ class Folders extends HTMLElement {
         // });
         this.showFolders(this.protocolFolders);
         if (this.protocolFolders.sort().toString() == this.selectedFolders.sort().toString()){
-            console.log("no change to folders");
+            //console.log("no change to folders");
             this.shadow.getElementById('saveFoldersButton').classList.remove('active');
             this.shadow.querySelector("#saveFoldersButton  i").classList.remove('faa-shake');
             this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');
@@ -304,7 +304,7 @@ class Folders extends HTMLElement {
     
     selectSearchFolder(folderAa){
         let tempUserElement= this.shadow.querySelector('#searchFoldersRes_'+folderAa);
-        console.log(tempUserElement);
+        //console.log(tempUserElement);
         const active = tempUserElement.dataset.active;
         //console.log(this.selectedFolders);
         if (active == "1"){
@@ -322,7 +322,7 @@ class Folders extends HTMLElement {
     changeFolderStatus(folderAa){
         let tempUserElement= this.shadow.querySelector('#folderList [data-folder-aa="'+folderAa+'"]');
         const active = tempUserElement.dataset.active;
-        console.log(this.selectedFolders);
+        //console.log(this.selectedFolders);
         if (active == "1"){
             //tempUserElement.style.backgroundColor = "lightGray";
             tempUserElement.classList.remove('active')
@@ -342,9 +342,9 @@ class Folders extends HTMLElement {
         this.selectedFolders = Array.from(this.shadow.querySelectorAll("#folderList > button")).map((element,index)=>{ 
             if (element.dataset.active == "1"){return element.dataset.folderAa;}else{return null;}
                 }).filter(item=>{if (item == null){return 0;}else{return 1;}});
-        console.log(this.selectedFolders);
+        //console.log(this.selectedFolders);
         if (this.protocolFolders.sort().toString() == this.selectedFolders.sort().toString()){
-            console.log("no change to folders");
+            //console.log("no change to folders");
             this.shadow.getElementById('saveFoldersButton').classList.remove('active');
             this.shadow.querySelector("#saveFoldersButton  i").classList.remove('faa-shake');
             this.shadow.querySelector("#saveFoldersButton  i").classList.remove('animated');

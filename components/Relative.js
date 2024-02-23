@@ -1,4 +1,5 @@
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
+import {getPage,Pages} from "../modules/UI_test.js"
 
 const relativeContent = `
     <div id="relativeModule" style="display:flex;gap:10px;flex-direction:column;background: rgba(122, 160, 126, 0.2)!important;padding:10px;height:100%;">
@@ -65,10 +66,15 @@ class Relative extends HTMLElement {
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         //this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>this.loadRelativeFull(this.protocolNo,1,1));
         this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>this.saveRelative(this.protocolNo,this.protocolYear));
-        this.loadRelativeFull(this.protocolNo,1, true);
-        this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
+        if (getPage() === Pages.CHARGES){
+            this.loadRelativeFull(this.protocolNo,1, true);
+            this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
+        }
+        else{
+            this.loadRelativeFull(this.protocolNo,0, true);
+            this.shadow.querySelector("#showRelativeModalBtn").style.display = "none";
+        }
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
-        
         this.shadow.querySelector("#insertRelativeYearField").value = localStorage.getItem("currentYear")!==null?localStorage.getItem("currentYear"):"";
     }
 
@@ -110,10 +116,12 @@ class Relative extends HTMLElement {
                 }
                 this.shadow.getElementById("relativeTableBody").innerHTML += temp;
             }
-            for (let key1=0;key1<resdec.length;key1++) {
-                this.shadow.querySelector("#removeRelative_"+resdec[key1]['aaField']).addEventListener("click", ()=>{
-                        this.removeRelative(resdec[key1]['aaField']);
-                });
+            if (active){
+                for (let key1=0;key1<resdec.length;key1++) {
+                    this.shadow.querySelector("#removeRelative_"+resdec[key1]['aaField']).addEventListener("click", ()=>{
+                            this.removeRelative(resdec[key1]['aaField']);
+                    });
+                }
             }
         }    
     }
@@ -126,12 +134,13 @@ class Relative extends HTMLElement {
             formdata.append('relativeAAField', aaField);
             formdata.append('currentYear', this.protocolYear);
 
-            const res = await runFetch("/api/removeRelative.php", "POST",urlparams);
+            const res = await runFetch("/api/removeRelative.php", "POST",formdata);
             if (!res.success){
                 this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
             }
             else{
                 const resdec = res.result;
+                this.loadRelativeFull(this.protocolNo,1, true);
             }
         }
     }
@@ -157,8 +166,11 @@ class Relative extends HTMLElement {
         const res = await runFetch("/api/saveRelative.php", "POST", formdata);
         if (!res.success){
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
+            this.shadow.querySelector("#addRelativeModal").close();
         }
         else{
+            this.loadRelativeFull(this.protocolNo,1, true);
+            this.shadow.querySelector("#addRelativeModal").close();
         }
     }
 

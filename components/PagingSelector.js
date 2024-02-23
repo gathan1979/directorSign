@@ -111,7 +111,9 @@ const paggingSelectorDiv = `
                 pointer-events: none;
             }
         </style>
-        <link href="css/all.css" rel="stylesheet">    
+
+        <link rel="stylesheet" type="text/css" href="/libraries/fontawesome-free-5.15.4-web/css/all.css" >
+
         <div id="paggingDiv" class="flexHorizontal" style="gap:2em; margin: 1em;padding: 0.2em 1em 0.2em 1em; justify-content : center;">
 			<span id="previousPaggingBtn" style="cursor:pointer;"><i class="fas fa-chevron-left"></i></span>
 			<div id="currentPageDiv" ><input type="number" style="width:5ch;" id="currentPageSelector"></input></div>	
@@ -127,6 +129,7 @@ class PagingSelector extends HTMLElement {
     paggingStart;
     paggingSize;
     timer = null;
+    static observedAttributes = ["paggingstart"];
 
     constructor() {
         super();
@@ -158,7 +161,7 @@ class PagingSelector extends HTMLElement {
     
         if (this.shadow.querySelector('#nextPaggingBtn')){
             this.shadow.querySelector('#nextPaggingBtn').addEventListener("click", ()=>{
-                console.log("++"+this.shadow.querySelector('#currentPageSelector').value+" "+maxPages)
+                //console.log("++"+this.shadow.querySelector('#currentPageSelector').value+" "+maxPages)
                 if (this.shadow.querySelector('#currentPageSelector').value != maxPages){
                     this.shadow.querySelector('#currentPageSelector').value= + this.shadow.querySelector('#currentPageSelector').value + 1;
                     const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
@@ -183,6 +186,15 @@ class PagingSelector extends HTMLElement {
                 this.dispatchEvent(pageChangeEvent);
                 this.checkDisabledArrows();
             })
+        }
+    }
+
+    attributeChangedCallback(name, oldValue, newValue){
+        if (name == "paggingstart"){ 
+            //console.log(name)
+            if (this.shadow){
+                this.shadow.querySelector("#currentPageSelector").value = newValue+1;     
+            }  
         }
     }
 
