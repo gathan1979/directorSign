@@ -55,7 +55,8 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 		customPagingStart,
 		customPagingSize,
 		allRecords: true,
-		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
+		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear()),
+		searchText : document.querySelector("#tableSearchInput").value
 	}
 	const urlpar = new URLSearchParams(completeOblect);
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal);
@@ -81,13 +82,13 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	let tableContent = "";
 	for (const record of result){
 		if(record["statusField"]=="1"){ //Προς αρχείο
-			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, DarkOrange);" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, DarkOrange); padding:10px;" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}
 		else if(record["statusField"]=="2"){ // Αρχείο
-			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, Gray); " data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, Gray); padding:10px; " data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}
 		else if(record["statusField"]=="0"){ //Εκκρεμ.
-			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, lightGray); " data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
+			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(-90deg, white, #B6EACB); padding:10px;" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 		}	
 		
 
@@ -114,7 +115,7 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 					case 2 : value= "Αρχ.";break;
 				}
 			}
-			tableContent +=`<span style="width:${customWidth};"`;
+			tableContent +=`<span style="width:${customWidth};${key=='aaField'?'font-weight:bold;':''}"`;
 			tableContent +=`" data-colname="`+key+'">'+value+"</span>"	
 		}
 		tableContent +="</div>"

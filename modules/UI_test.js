@@ -111,7 +111,7 @@ const signTable = `<table id="dataToSignTable" class="table" style="font-size:0.
 const chargesTable = `<div id="chargesTable" style="font-size:0.9em;">
 						<div id="chargesTableHeader">
 							<div class="flexHorizontal" style="background: linear-gradient(90deg, white, lightgray);font-weight: bold;">
-								<span id="chargesTableAA"  style="width:5%;text-align:center;">AA</span>
+								<span id="chargesTableAA"  style="width:5%;text-align:center; ">AA</span>
 								<span style="width:20%; text-align:center;" id="chargesTableApostoleas" >Αποστολέας</span>
 								<span style="width:20%;text-align:center;" id="chargesTableThema">Θέμα</span>
 								<span style="width:10%text-align:center;" id="chargesTableImParal" >Ημ.Παραλ.</span>
@@ -122,7 +122,7 @@ const chargesTable = `<div id="chargesTable" style="font-size:0.9em;">
 								<span style="width:5%;text-align:center;" id="chargesTableKatast" >Κατάστ.</span>
 							</div>
 						</div>
-						<div id="chargesTableContent" class="flexVertical" style="background-color:white;margin-top:2em;overflow-y:scroll; max-height: 60vh;">
+						<div id="chargesTableContent" class="flexVertical" style="background-color:white;margin-top:2em;overflow-y:scroll; max-height: 60vh; gap:10px;">
 						</div>
 					</div>`;
 
@@ -223,7 +223,7 @@ function pagesCommonCode(){
 		cRole = localStorage.getItem("currentRole");
 	}
 	
-	//--------- Μεταφέρθηκαν στο starUp()
+	//--------- Μεταφέρθηκαν στο starτUp()
 
 	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
 		<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton primary"><i class="fas fa-sync"></i></button>
@@ -373,21 +373,7 @@ function pagesCommonCode(){
 
 	document.querySelector("#setPwd").addEventListener("click",changePassword);	
 
-	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
-		if (page == Pages.CHARGES || page == Pages.PROTOCOL){
-			if(+localStorage.getItem("globalSearch") === 1){
-				let debounceFunc = debounce( async () =>  {
-					const chargesRes = await getChargesAndFill(); 
-				});
-				debounceFunc();
-			}
-			else{
-				createSearch();
-			}
-		}
-		createSearch();
-	});
-	//console.log("keyup listener added");
+
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
 		if (document.querySelector('#showEmployeesBtn')){
 			document.querySelector('#showEmployeesBtn').addEventListener("click", createSearch);
@@ -616,6 +602,20 @@ async function createChargesUIstartUp(){
 		document.querySelector("#generalFilterDiv").insertAdjacentHTML("afterend",chargesFilterMenuDiv);	
 	}
 
+
+	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
+		if(+localStorage.getItem("globalSearch") === 1){
+			let debounceFunc = debounce( async () =>  {
+				const chargesRes = await getChargesAndFill(); 
+			});
+			debounceFunc();
+		}
+		else{
+			createSearch();
+		}
+		createSearch();
+	});
+	//console.log("keyup listener added");
 
 	if (document.querySelector('#reqProtocolBtn')){
 		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
@@ -877,6 +877,15 @@ async function createProtocolUIstartUp(){
 			document.querySelector("#requestProtocolAccessDialog").showModal();
 		})
 	}
+
+	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
+	
+		let debounceFunc = debounce( async () =>  {
+			const chargesRes = await getProtocolAndFill(); 
+		});
+		debounceFunc();
+		createSearch();
+	});
 
 	if (document.querySelector('#peddingAccessRequestsNo')){
 		document.querySelector('#peddingAccessRequestsNo').parentElement.addEventListener("click", ()=>{
