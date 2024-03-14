@@ -49,49 +49,30 @@ const content =
 <dialog id="gdprModal" class="customDialog" style="width:70%;"> 
     <div class="customDialogContentTitle">
         <span style="font-weight:bold;"></span>
-        <button class="btn btn-secondary" name="closeGdprModalBtn" id="closeGdprModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        <div id="customDialogContentTitleBtns">
+            <button class="btn btn-secondary" name="closeGdprModalBtn" id="closeGdprModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        </div>
     </div>
     <div class="customDialogContent">
-       
-    </div>
-</dialog>`;
-
-const gdprContent = 
-` 
-<div class="gdprContent" style="display:flex;gap:10px;">
-    <div id="gdprSelectedUsers" style="flex-basis:30%;">
-        <span id="gdprSelectedUsersTitle">Επιλεγμένοι υπάλληλοι</span>
-        <div id="gdprSelectedUsersContent"></div>
-    </div>
-    <div id="gdprUsersSelectionDiv" style="flex-basis:1">
-        <div class="gdprUsers">Επιλέξτε Υπάλληλο:
-            
-            <div style="padding:2px;"><span style="margin-top :5px;padding:5px;letter-spacing: 1.5px;" class="gdprName badge badge-info" 
-                                            id="gdprUser'.$row1['attendanceNumber'].'" onclick="changeGdprAssignmentStatus(\'gdprUser'.$row1['attendanceNumber'].'\')" >'.$row1['fullname'].'</span></div>';
-                    <input hidden type="text"  class="form-control" name="gdprEmployees" id="gdprEmployees" ></input>
-                    <input hidden type="text"  class="form-control" name="fileId" id="fileId" ></input>
+        <div class="gdprContent" style="display:flex;gap:10px;">
+            <div id="gdprSelectedUsers" style="flex-basis: 100px; flex-shrink:0;flex-grow:1; padding: 5px; border-right: 5px solid orange; background-color:palegoldenrod;">
+                <span id="gdprSelectedUsersTitle" style="margin-bottom:10px;">Επιλεγμένοι υπάλληλοι</span>
+                <div id="gdprSelectedUsersContent" style="display:flex; flex-direction: column; gap:5px; wrap: no-wrap;"></div>
             </div>
-        </div>   
-        <div id="gdprPageSelectionDiv">	
-            <div class="karteles"><b>Σελίδες Πρόσβασης</b>
-                <label for="allowPages" class="col-sm-2 col-form-label">Σελίδες</label>
-                <div class="col-sm-10" >
-                    <div class="form-group row" >
-                        <div class="col-sm-11">
-                            <input type="text" oninput="this.className = ''" class="form-control" name="pages" id="pages" placeholder="π.χ. 2,4,5 ή #6,#8 (άρνηση πρόσβασης) ή κενό για πλήρη πρόσβαση ">
-                        </div >
-                    </div>
+            <div id="gdprUsersSelectionDiv" style="flex-basis:250px;flex-shrink:0;flex-grow:1;">
+                <span class="gdprUsers" style="margin-bottom:10px;">Επιλέξτε Υπάλληλο:</span> 
+                <div id="selectGdprUserDiv" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+            </div>  
+            <div id="gdprPageSelectionDiv" style="flex-basis:150px;flex-shrink:0;flex-grow:1;">	
+                <div class="karteles">
+                    <b>Σελίδες Πρόσβασης</b>
+                     <input type="text" oninput="this.className = ''" class="form-control" name="pages" id="pages" placeholder="π.χ. 2,4,5 ή #6,#8 (άρνηση πρόσβασης) ή κενό για πλήρη πρόσβαση ">
                 </div>
-            </div>
-            <div id="secondPageBtnDiv" style="display:flex;justify-content:space-between;margin:1em;">
-                <button id="gdprPrvsBtnDiv" class="btn btn-warning" onclick="showGdprFirstPage(event);">Προηγούμενο</button>
                 <button id="addToGdprBtn" class="btn btn-success" onclick="addToGdpr(event);">Προσθήκη</button>
             </div>
         </div>
-        <div id="fileGdpr">
-        </div>  
     </div>
-</div>`;
+</dialog>`;
 
 
 class Attachments extends HTMLElement {
@@ -136,7 +117,10 @@ class Attachments extends HTMLElement {
         this.shadow.querySelector("#closeAttModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#attachmentModal").close());
         this.shadow.querySelector("#closeGdprModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#gdprModal").close());
        
-        // ??????this.users = await this.getUsers(1);  // get all active protocol users
+        this.users = await this.getUsers(1);  // get all active protocol users
+        
+       
+
     }
 
     disconnectedCallback() {
@@ -282,7 +266,8 @@ class Attachments extends HTMLElement {
                         this.shadow.querySelector("#openAttGDPRModal_"+result[key1]['aa']).addEventListener("click",()=> {
                             this.shadow.querySelector("#gdprModal").showModal();
                             this.shadow.querySelector("#gdprModal .customDialogContentTitle>span").innerText = `Ορισμός Δικαιωμάτων του ${result[key1]['filename']}`;
-                            this.shadow.querySelector("#gdprModal .customDialogContent").innerHTML = gdprContent;
+                            //this.shadow.querySelector("#gdprModal .customDialogContent").innerHTML = gdprContent;
+                            this.getGdprAndFill(result[key1]['aa']);
                         });
                     }
                 }
@@ -439,8 +424,83 @@ class Attachments extends HTMLElement {
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else{
-            this.users = res.result; 
-            //console.log(this.users);
+            return res.result; 
+        }
+    }
+
+    changeAssignmentStatus(user){
+        let tempUserElement= this.shadow.querySelector('.departmentEmployees [data-user="'+user+'"]');
+        const charged = tempUserElement.dataset.charge;
+        const chargedType = tempUserElement.dataset.chargeType;
+        if (charged == 0){ 
+            //tempUserElement.style.backgroundColor = "lightGray";
+            tempUserElement.classList.remove('notification')
+            tempUserElement.classList.add('active')
+            tempUserElement.dataset.charge = 1;
+            tempUserElement.dataset.chargeType = 1;
+        }
+        else if (charged == 1 && chargedType == 1){
+            tempUserElement.classList.add('notification');
+            tempUserElement.classList.remove('active');
+            tempUserElement.dataset.charge = 1;
+            tempUserElement.dataset.chargeType = 0;
+        }
+        else if (charged == 1 && chargedType == 0){
+            tempUserElement.classList.remove('notification');
+            tempUserElement.classList.remove('active');
+            tempUserElement.dataset.charge = 0;
+            tempUserElement.dataset.chargeType = 0;
+        }
+        this.updateSelectedCharges();
+    }
+
+    async getGdprAndFill(attNo){
+       
+        let urlParams = new URLSearchParams();
+        urlParams.append('attNo', attNo);
+        urlParams.append('currentYear',this.protocolYear);
+        const res = await runFetch("/api/getGdprData.php", "GET", urlParams);
+        if (!res.success){
+            console.log(res.msg);
+        }
+        else{
+            this.users.forEach( user => {
+                this.shadow.querySelector("#selectGdprUserDiv").innerHTML += `<button data-selected="0" data-user="${user['aa']}" class="isButton warning gdprUser">${user['fullName']}</button>`
+            });
+            if (Array.isArray(res.result.gdprUserData)){
+                res.result.gdprUserData.forEach( selectedUser =>{
+                    //this.shadow.querySelector(`.gdprUser[data-user="${selectedUser['userId']}"]`).classList.remove("warning")
+                    const userName = this.shadow.querySelector(`.gdprUser[data-user="${selectedUser['userId']}"]`).innerText;
+                    this.shadow.querySelector(`.gdprUser[data-user="${selectedUser['userId']}"]`).remove();
+                    const removeBtn = `<button id="removeGdprUser_${selectedUser['userId']}" data-aa="${selectedUser['aa']}" title="Διαγραφή χρήστη" class="isButton danger removeGdprBtn" ><i class="far fa-minus-square"></i></button>`
+                    this.shadow.querySelector("#gdprSelectedUsersContent").innerHTML += `<div class="addedGdprUserDiv" style="display:flex; justify-content: space-between;"> <button class="isButton active small" id="addedGdprUser_${selectedUser['userId']}">${userName}</button><div><span>Σελίδες ${selectedUser['pages']}</span>${removeBtn}</div></div> `
+                })
+                this.shadow.querySelectorAll(".removeGdprBtn").forEach( btn =>{
+                    btn.addEventListener("click", async () =>{
+                        if (confirm("Διαγραφή χρήστη;")){
+                            await this.deleteGdprRecord(btn.dataset.aa);
+                        }
+                    })
+                })
+                this.shadow.querySelectorAll(".gdprUser").forEach( elem =>{
+                    elem.addEventListener("click", () =>{
+                        console.log('change state')
+                    })
+                })
+            }
+
+        }  
+    }
+
+    async deleteGdprRecord(aa){
+        let formData = new FormData();
+        formData.append('aa', aa);
+        const res = await runFetch("/api/deleteGdprRecord.php", "POST", formData);
+        if (!res.success){
+            console.log(res.msg);
+        }
+        else{
+
         }
     }
 }

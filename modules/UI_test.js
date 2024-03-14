@@ -1360,11 +1360,11 @@ async function rejectPeddingReq(aa){
 }
 
 async function acceptPeddingReq(aa){
-	if (!confirm("Εισαγωγή στο βιβλίο πρωτοκόλλο;")){
+	if (!confirm("Εισαγωγή στο βιβλίο πρωτοκόλλου;")){
 		return;
 	}
 
-	const name = document.querySelector(('[data-name="subjectField"][data-req="'+aa+'"]')).innerText;
+	const name = document.querySelector(('[data-name="requestFromNameField"][data-req="'+aa+'"]')).innerText;
 	const formData = new FormData();
 	formData.append("aa", aa);
 	formData.append("name", name);

@@ -121,8 +121,8 @@ const assignmentsContent = `
             <button id="addNotificationButton" style="background-color:chocolate;" title="Κοινοποίηση σε όλους" type="button" class="isButton"><i class="far fa-bell"></i></button>
             <button id="deselectUsersButton"  style="background-color:chocolate;" title="Αποεπιλογή όλων" type="button" class="isButton"><i class="fas fa-user-slash"></i></button>
             <button id="undoUsersButton" title="Αναίρεση αλλαγών" type="button" class="isButton undo"><i class="fas fa-undo"></i></button>
-            <div style="background-color: var(--bs-blue);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Χρέωση</div>
-            <div style="background-color: var(--bs-success);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Κοιν.</div>
+            <div style="background-color: var(--bs-success);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Χρέωση</div>
+            <div style="background-color: var(--bs-blue);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Κοιν.</div>
         </div>
         <div id="assignmentsTitle" style="color: DarkRed;font-size: 12px;">Χρεώσεις</div>
         <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
@@ -197,6 +197,8 @@ class Assignments extends HTMLElement {
         this.shadow.querySelector("#deselectUsersButton").addEventListener("click",()=>this.deselectAllAssignments());
         this.shadow.querySelector("#undoUsersButton").addEventListener("click",()=>this.undoUserChanges());
 
+        let departmentChildren = await this.getDepartmentChildren();
+        departmentChildren.push(currentRoleObject.department);
         //Απενεργοποίηση εργαζομένων ανάλογα με δικαιώματα επεξεργασίας χρεώσεων currentRoleObject
         if (currentRoleObject.protocolAccessLevel == 1){
             // Προς το παρόν δεν κάνει κάτι
@@ -204,7 +206,7 @@ class Assignments extends HTMLElement {
         else if (currentRoleObject.accessLevel == 1){
             // ενεργοποίηση μόνο για τμήμα
             this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-                if (element.parentNode.parentNode.dataset.dep == currentRoleObject.department){
+                if (departmentChildren.includes(element.parentNode.parentNode.dataset.dep)){
                     element.removeAttribute("disabled");
                 }
                 else{
@@ -405,6 +407,17 @@ class Assignments extends HTMLElement {
         }
         else{
             return res.result;
+        }    
+    }
+
+    async getDepartmentChildren(){
+        const res = await runFetch("/api/getDepsDown.php", "GET");
+        if (!res.success){
+            this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
+            return null;
+        }
+        else{
+            return res.result['result'];
         }    
     }
 
