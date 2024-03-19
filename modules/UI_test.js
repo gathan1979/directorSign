@@ -179,33 +179,41 @@ export function startUp(){
 		if(!document.startViewTransition){
 			createUIstartUp();
 		}
-		document.startViewTransition(()=>{
-			createUIstartUp();
-		})
+		else{
+			document.startViewTransition(()=>{
+				createUIstartUp();
+			})
+		}
 	});
 	document.querySelector("#ipogegrammena>a").addEventListener("click",()=>{
 		if(!document.startViewTransition){
 			createSignedUIstartUp();
 		}
-		document.startViewTransition(()=>{
-			createSignedUIstartUp();
-		})	
+		else{
+			document.startViewTransition(()=>{
+				createSignedUIstartUp();
+			})
+		}
 	});	
 	document.querySelector("#xreoseis>a").addEventListener("click",()=>{
 		if(!document.startViewTransition){
 			createChargesUIstartUp();
 		}
-		document.startViewTransition(()=>{
-			createChargesUIstartUp();
-		})	
+		else{
+			document.startViewTransition(()=>{
+				createChargesUIstartUp();
+			})
+		}	
 	});	
 	document.querySelector("#protocolBookBtn>a").addEventListener("click",()=>{
 		if(!document.startViewTransition){
 			createProtocolUIstartUp();
 		}
-		document.startViewTransition(()=>{
-			createProtocolUIstartUp();
-		})
+		else{
+			document.startViewTransition(()=>{
+				createProtocolUIstartUp();
+			})
+		}
 	});		
 
 	createUIstartUp();
@@ -747,9 +755,9 @@ async function createChargesUIstartUp(){
 	},25000)
 
 	const chargesRes = await getChargesAndFill(); 
-	interCharges = setInterval(async ()=>{
-		const chargesRes = await getChargesAndFill(); 
-	},60000)
+	//interCharges = setInterval(async ()=>{
+		//const chargesRes = await getChargesAndFill(); 
+	//},60000)
 
 	if (document.querySelector('#peddingAccessRequestsNo')){
 		document.querySelector('#peddingAccessRequestsNo').parentElement.addEventListener("click", ()=>{
@@ -908,9 +916,9 @@ async function createProtocolUIstartUp(){
 	}
 
 	const chargesRes = await getProtocolAndFill(); 
-	interCharges = setInterval(async ()=>{
-		const chargesRes = await getProtocolAndFill(); 
-	},60000)
+	//interCharges = setInterval(async ()=>{
+		//const chargesRes = await getProtocolAndFill(); 
+	//},60000)
 }
 
 
@@ -950,9 +958,9 @@ export async function createUIstartUp(){
 	//Γέμισμα πίνακα με εγγραφές χρήστη
    
 	const toSignRes = await getToSignRecordsAndFill(); 
-	interToSign = setInterval(async ()=>{
-		const toSignRes = await getToSignRecordsAndFill(); 
-	},60000)
+	//interToSign = setInterval(async ()=>{
+		//const toSignRes = await getToSignRecordsAndFill(); 
+	//},60000)
 
 }
 
@@ -967,9 +975,9 @@ export async function createSignedUIstartUp(){
 
 	//Γέμισμα πίνακα με εγγραφές χρήστη
 	const signedRes = await getSignedRecordsAndFill();
-	interSigned = setInterval(async ()=>{
-		const signedRes = await getSignedRecordsAndFill();
-	},60000)
+	//interSigned = setInterval(async ()=>{
+		//const signedRes = await getSignedRecordsAndFill();
+	//},60000)
 
 }
 
@@ -1189,6 +1197,8 @@ async function logout(){
 	const res = await runFetch("/api/logout.php", "POST", null);
 	if (!res.success){
 		alert(res.msg);
+		localStorage.clear();
+		window.location.href ="/directorSign";
 	}
 	else{
 		localStorage.clear();
@@ -1277,8 +1287,12 @@ async function getPeddingAccessProtocolReqs(){
 		//return res;
 		const resdec =  res.result;
 		if(resdec.requests.length == 0){
-			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "gray";
-			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "gray";
+			if(document.querySelector("#peddingAccessRequestsNo")){
+				document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "gray";
+			}
+			if(document.querySelector("#peddingAccessRequestsNo")){
+				document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "gray";
+			}
 		}
 		else{
 			let countActive = 0;

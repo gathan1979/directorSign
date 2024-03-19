@@ -59,16 +59,16 @@ const content =
                 <span id="gdprSelectedUsersTitle" style="margin-bottom:10px;">Επιλεγμένοι υπάλληλοι</span>
                 <div id="gdprSelectedUsersContent" style="display:flex; flex-direction: column; gap:5px; wrap: no-wrap;"></div>
             </div>
-            <div id="gdprUsersSelectionDiv" style="flex-basis:250px;flex-shrink:0;flex-grow:1;">
+            <div id="gdprUsersSelectionDiv" style="flex-basis:250px;flex-shrink:0;flex-grow:1;background-color:aliceblue;">
                 <span class="gdprUsers" style="margin-bottom:10px;">Επιλέξτε Υπάλληλο:</span> 
                 <div id="selectGdprUserDiv" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
             </div>  
-            <div id="gdprPageSelectionDiv" style="flex-basis:150px;flex-shrink:0;flex-grow:1;">	
+            <div id="gdprPageSelectionDiv" style="flex-basis:150px;flex-shrink:0;flex-grow:1;background-color:aliceblue;">	
                 <div class="karteles">
                     <b>Σελίδες Πρόσβασης</b>
-                     <input type="text" oninput="this.className = ''" class="form-control" name="pages" id="pages" placeholder="π.χ. 2,4,5 ή #6,#8 (άρνηση πρόσβασης) ή κενό για πλήρη πρόσβαση ">
+                     <input type="text"  name="pages" id="pages" placeholder="π.χ. 2,4,5 ή #6,#8 (άρνηση πρόσβασης) ή κενό για πλήρη πρόσβαση ">
                 </div>
-                <button id="addToGdprBtn" class="btn btn-success" onclick="addToGdpr(event);">Προσθήκη</button>
+                <button id="addToGdprBtn" data-att="0" class="isButton active">Προσθήκη</button>
             </div>
         </div>
     </div>
@@ -118,7 +118,7 @@ class Attachments extends HTMLElement {
         this.shadow.querySelector("#closeGdprModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#gdprModal").close());
        
         this.users = await this.getUsers(1);  // get all active protocol users
-        
+        this.shadow.querySelector("#addToGdprBtn").addEventListener("click", (event)=> this.addGdprRecords(event));
        
 
     }
@@ -478,24 +478,62 @@ class Attachments extends HTMLElement {
                 this.shadow.querySelectorAll(".removeGdprBtn").forEach( btn =>{
                     btn.addEventListener("click", async () =>{
                         if (confirm("Διαγραφή χρήστη;")){
-                            await this.deleteGdprRecord(btn.dataset.aa);
+                            await this.deleteGdprRecord(btn.dataset.aa, attNo);
                         }
                     })
                 })
                 this.shadow.querySelectorAll(".gdprUser").forEach( elem =>{
                     elem.addEventListener("click", () =>{
-                        console.log('change state')
+                        if (elem.dataset.selected == 0){
+                            elem.dataset.selected =1;
+                            elem.classList.remove('warning');
+                            elem.classList.add('active');
+                        }
+                        else{
+                            elem.dataset.selected =0;
+                            elem.classList.add('warning');
+                            elem.classList.remove('active');
+                        }
                     })
                 })
             }
-
+            this.shadow.querySelector('#addToGdprBtn').dataset.att = attNo
         }  
     }
 
-    async deleteGdprRecord(aa){
+    async deleteGdprRecord(aa, attNo){
         let formData = new FormData();
         formData.append('aa', aa);
-        const res = await runFetch("/api/deleteGdprRecord.php", "POST", formData);
+        const res = await runFetch("/api/removeGdprUser.php", "POST", formData);
+        if (!res.success){
+            console.log(res.msg);
+        }
+        else{
+            await this.getGdprAndFill(attNo);
+        }
+    }
+
+    async addGdprRecords(event){
+        let formData = new FormData();
+        const selectedUsers = Array.from(this.shadow.querySelectorAll(`.gdprUser[data-selected="1"]`)).reduce( (acc, current, index) =>{
+            if (index === 0){
+                acc += "" + current.dataset.user;
+            }
+            else{
+                acc += "," + current.dataset.user;
+            }
+            return acc;
+        }, "")
+        
+        if (selectedUsers == ""){
+            alert('Δεν έχετε επιλέξει χρήστες');
+            return;
+        }
+
+        formData.append('users', selectedUsers);
+        formData.append('pages', this.shadow.querySelector("#pages").value);
+        formData.append('att', event.currentTarget.dataset.att);
+        const res = await runFetch("/api/addGdprUsers.php", "POST", formData);
         if (!res.success){
             console.log(res.msg);
         }

@@ -49,7 +49,7 @@ export async function refreshTokenTest(){
 				else{
 					res.json().then((val)=>{
 						console.log(val['message']);
-						resolve(0);;
+						resolve(0);
 					})
 				}
 				isRunning = false;

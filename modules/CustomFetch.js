@@ -106,7 +106,7 @@ export default async function runFetch(url, method, params, responseType = Fetch
                         else{
                             if (url.split("/")[1]){
                                 msg = ("Σφάλμα εξουσιοδότησης");
-                                window.location = `/${url.split("/")[1]}/`;	
+                                window.location = `/${url.split("/")[0]}/`;	
                                 return;
                             }
                             else{
