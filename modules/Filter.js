@@ -131,16 +131,17 @@ export function createSearch(event) {
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
 		const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
 		const showEmployeesBtn = document.getElementById('showEmployeesBtn');
-
+		console.log(event);
 		if (event !== undefined){
+			console.log("in")
 			if(event.target.dataset.active == "0"){
-				event.target.classList.remove('btn-danger');
-				event.target.classList.add('btn-success');
+				event.target.classList.remove('dismiss');
+				event.target.classList.add('active');
 				event.target.dataset.active = "1";
 			}
 			else if(event.target.dataset.active == "1"){
-				event.target.classList.remove('btn-success');
-				event.target.classList.add('btn-danger');
+				event.target.classList.remove('active');
+				event.target.classList.add('dismiss');
 				event.target.dataset.active = "0";
 			}
 		}

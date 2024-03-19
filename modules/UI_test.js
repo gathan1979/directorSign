@@ -1132,7 +1132,6 @@ export function getControllers(){
 export async function getToSignRecordsAndFill(){
 	abortControllers.toSign = new AbortController();
 	signals.toSign = abortControllers.toSign.signal;
-	
 	const records = getSigRecords(signals.toSign, getControllers()).then( res => {
 		//createSearch();
 	}, rej => {});		
@@ -1390,6 +1389,7 @@ async function acceptPeddingReq(aa){
 	else{
 		const chargesRes = await getChargesAndFill(); 
 		const req =  await getPeddingProtocolReqs();
+		document.querySelector("#peddingRequestsModal").close();
 	}
 }
 

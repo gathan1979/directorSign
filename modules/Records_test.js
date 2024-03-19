@@ -889,10 +889,18 @@ export async function signExactCopy(aa){
 			document.querySelector("#otpText").value = "";
 		}
 		document.querySelector("#signModal").close();
-		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
-		const records = getSigRecords().then( res => {
-			createSearch();
-		}, rej => {});
+
+		abortControllers.toSign = new AbortController();
+		signals.toSign = abortControllers.toSign.signal;
+		const records = getSigRecords(signals.toSign, getControllers()).then( res => {
+			//createSearch();
+			alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
+		}, rej => {});	
+
+		// alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
+		// const records = getSigRecords().then( res => {
+		// 	createSearch();
+		// }, rej => {});
 	}
 	console.log(signatureController);
 }
@@ -1006,10 +1014,16 @@ export async function signDocument(aa, isLast=0, objection=0){
 			document.querySelector("#otpText").value = "";
 		}
 		document.querySelector("#signModal").close();
-		alert("Το έγγραφο έχει υπογραφεί! Μάλλον...");
-		const records = getSigRecords().then( res => {
+		// const records = getSigRecords().then( res => {
+		// 	createSearch();
+		// }, rej => {});
+		// alert(res.msg);
+		abortControllers.toSign = new AbortController();
+		signals.toSign = abortControllers.toSign.signal;
+		const records = getSigRecords(signals.toSign, getControllers()).then( res => {
 			createSearch();
-		}, rej => {});
+			alert("Το έγγραφο έχει υπογραφεί. Μάλλον ...");
+		}, rej => {});	
 	}
 }
 
