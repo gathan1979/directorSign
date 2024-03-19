@@ -227,12 +227,24 @@ class Assignments extends HTMLElement {
     }
 
     selectAllforNotification(){
-        this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-            element.dataset.charge = 1;
-            element.dataset.chargeType = 0;
-            element.classList.remove("active");
-            element.classList.add("notification");
-        })
+        const loginData = JSON.parse(localStorage.getItem("loginData"));
+	    const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];    
+        if (currentRoleObject.protocolAccessLevel == 1){
+            this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
+                element.dataset.charge = 1;
+                element.dataset.chargeType = 0;
+                element.classList.remove("active");
+                element.classList.add("notification");
+            })
+        }
+        else if (currentRoleObject.accessLevel == 1){
+            this.shadow.querySelectorAll(".departmentDiv[data-dep='"+currentRoleObject.department+"'] .departmentEmployees>button").forEach((element,index)=> {
+                element.dataset.charge = 1;
+                element.dataset.chargeType = 0;
+                element.classList.remove("active");
+                element.classList.add("notification");
+            })
+        }
         this.updateSelectedCharges();
     };
 
