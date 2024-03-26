@@ -16,7 +16,7 @@ const relativeContent = `
                 </div>
             </div>
             <div>
-                <!--<button id="fullRelativeTree" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-sitemap"></i></button>-->
+                <button id="fullRelativeTree" type="button" data-full="0" class="btn btn-sm btn-outline-success"><i class="fas fa-sitemap"></i></button>
                 <button id="showRelativeModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
             </div>
         </div>
@@ -67,15 +67,29 @@ class Relative extends HTMLElement {
         //this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>this.loadRelativeFull(this.protocolNo,1,1));
         this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>this.saveRelative(this.protocolNo,this.protocolYear));
         if (getPage() === Pages.CHARGES){
-            this.loadRelativeFull(this.protocolNo,1, true);
+            this.loadRelativeFull(this.protocolNo,1, false);
             this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
         }
         else{
-            this.loadRelativeFull(this.protocolNo,0, true);
+            this.loadRelativeFull(this.protocolNo,0, false);
             this.shadow.querySelector("#showRelativeModalBtn").style.display = "none";
         }
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
         this.shadow.querySelector("#insertRelativeYearField").value = localStorage.getItem("currentYear")!==null?localStorage.getItem("currentYear"):"";
+        this.shadow.querySelector("#fullRelativeTree").addEventListener("click", (event) =>{
+            if (+this.shadow.querySelector("#fullRelativeTree").dataset.full === 0){
+                this.loadRelativeFull(this.protocolNo,1, 1);
+                this.shadow.querySelector("#fullRelativeTree").dataset.full = "1";
+                this.shadow.querySelector("#fullRelativeTree").classList.remove("btn-outline-success");
+                this.shadow.querySelector("#fullRelativeTree").classList.add("btn-success");
+            }
+            else{
+                this.loadRelativeFull(this.protocolNo,1, 0);
+                this.shadow.querySelector("#fullRelativeTree").dataset.full = "0";
+                this.shadow.querySelector("#fullRelativeTree").classList.remove("btn-success");
+                this.shadow.querySelector("#fullRelativeTree").classList.add("btn-outline-success");
+            }
+        })
     }
 
     disconnectedCallback() {    
@@ -169,7 +183,7 @@ class Relative extends HTMLElement {
             this.shadow.querySelector("#addRelativeModal").close();
         }
         else{
-            this.loadRelativeFull(this.protocolNo,1, true);
+            this.loadRelativeFull(this.protocolNo,1, false);
             this.shadow.querySelector("#addRelativeModal").close();
         }
     }
