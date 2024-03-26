@@ -156,6 +156,21 @@ async function getProtocolYears(){
 	}
 }
 
+function getRoles(){
+	let loginData = localStorage.getItem("loginData");
+	let cRole = null;
+	if (loginData === null){
+		alert("Δεν υπάρχουν στοιχεία χρήστη");
+		return;
+	}
+	else{
+		loginData = JSON.parse(loginData);
+		cRole = localStorage.getItem("currentRole");
+		const roles = loginData.user.roles;
+		return {currentRole : cRole, roles};
+	}
+}
+
 
 
 export  function startUp(){
@@ -169,6 +184,11 @@ export  function startUp(){
 			if (event.key === "currentYear"){
 				if (document.querySelector("year-selector")){
 					document.querySelector("year-selector").setAttribute("year", event.newValue);
+				}
+			}
+			if (event.key === "currentRole"){
+				if (document.querySelector("role-selector")){
+					document.querySelector("role-selector").setAttribute("role", event.newValue);
 				}
 			}
 		}
@@ -195,6 +215,24 @@ export  function startUp(){
 					//Το έτος δεν ανήκει στα διαθέσιμα
 					console.log("resetting year")
 					localStorage.setItem("currentYear", event.oldValue);
+					return;
+				}
+			}
+			if (event.key === "currentRole"){
+				console.log("currentRole changed from storage data")
+				//Έλεγχος αν το έτος είναι στα διαθέσιμα της βάσης
+				const {currentRole, roles} =  getRoles();
+				console.log(roles)
+				if ( (event.newValue >=0) && (event.newValue <= (roles.length-1))){
+					console.log("role is included in database roles")
+					if (document.querySelector("role-selector")){
+						document.querySelector("role-selector").setAttribute("role", event.newValue);
+					}
+				}
+				else {
+					//Το έτος δεν ανήκει στα διαθέσιμα
+					console.log("resetting role")
+					localStorage.setItem("currentRole", event.oldValue);
 					return;
 				}
 			}
@@ -514,7 +552,7 @@ async function createChargesUIstartUp(){
 	const protocolExtraBtns = 
 		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;padding: 5px;">	
 			${
-				+loginData.user.roles[cRole].protocolAccessLevel?
+				+loginData.user.roles[cRole].protocolAccessLevel==1?
 				`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Νέα Πρωτόκολλα</div>
 				<div class="flexHorizontal" style="padding:0px 5px;">
 					<div><button id="addProtocolBtn" title="Νέο πρωτόκολλο" class="isButton extraSmall primary" > <i class="fas fa-plus-square"></i></button></div>
@@ -537,7 +575,7 @@ async function createChargesUIstartUp(){
 
 		
 			${
-				+loginData.user.roles[cRole].protocolAccessLevel?
+				+loginData.user.roles[cRole].protocolAccessLevel==1?
 				`<div id="topMenuProtocolAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch; padding: 5px;">
 					<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αιτήματα Πρόσβασης</div>
 						<div class="flexHorizontal" style="padding:0px 5px;">
@@ -553,7 +591,7 @@ async function createChargesUIstartUp(){
 
 		
 			${
-				+loginData.user.roles[cRole].protocolAccessLevel?
+				+loginData.user.roles[cRole].protocolAccessLevel==1?
 			`<div id="topMenuAdminBtnsDiv" class="flexVertical" style="align-items: center;align-self: stretch;padding: 5px;">	
 				<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Άλλες εφαρμογές</div>
 				<div class="flexHorizontal">
@@ -1267,7 +1305,6 @@ async function logout(){
 		localStorage.clear();
 		window.location.href ="/directorSign";
 	}
-	
 }
 
 async function getPeddingProtocolReqs(){	

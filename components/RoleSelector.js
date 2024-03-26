@@ -126,6 +126,8 @@ const roleSelectorDiv = `
 class RoleSelector extends HTMLElement {
     shadow;
     timer = null;
+    static observedAttributes = ["role"];
+    allRoles;
 
     constructor() {
         super();
@@ -135,6 +137,7 @@ class RoleSelector extends HTMLElement {
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = roleSelectorDiv;
         const {currentRole, roles} = this.getRoles();
+        this.allRoles = roles;
         //console.log(roles);
         if (Array.isArray(roles)){
                 if (currentRole == null || (roles.at(currentRole) == undefined)){
@@ -206,6 +209,38 @@ class RoleSelector extends HTMLElement {
                     }
                 }
             });
+        }
+    }
+
+    attributeChangedCallback(name, oldValue, newValue){
+        if (name == "role"){
+            if(newValue !== this.shadow.querySelector("#allRoles>button").dataset.role){
+                console.log("Ο ρόλος στην μνήμη είναι διαφορετικός από τον επιλεγμένο ρόλο της καρτέλας")
+                if (this.shadow){
+                    //Να γίνει έλεγχος αν το newValue υπάρχει στους ρόλους
+                    if ( (newValue <0) || (newValue > (this.allRoles.length-1))){
+                        console.log('ο ρόλος βρίσκεται εκτός επιλογής');
+                        const logoutEvent = new CustomEvent("logoutEvent",  { bubbles: true, cancelable: false });
+                        this.dispatchEvent(logoutEvent);
+                        return;
+                    }
+                
+                    this.shadow.querySelector("#allRoles>button").dataset.role = newValue;
+                    this.shadow.querySelector("#allRoles>button").textContent = this.allRoles.at(newValue).roleName;
+                    //localStorage.setItem("currentYear", newValue);
+                    const roleChangeEvent = new CustomEvent("roleChangeEvent",  { bubbles: true, cancelable: false });
+                    this.dispatchEvent(roleChangeEvent);
+                    if (+newValue == 0){
+                        this.shadow.querySelector('#upRoleBtn').setAttribute("disabled", "disabled"); 
+                    }
+                    else{
+                        this.shadow.querySelector('#upRoleBtn').removeAttribute("disabled");  
+                    }
+                    if (+newValue == (this.allRoles.length-1)){
+                        this.shadow.querySelector('#downRoleBtn').removeAttribute("disabled");  
+                    }
+                }  
+            }
         }
     }
 
