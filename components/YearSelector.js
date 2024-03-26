@@ -125,6 +125,8 @@ const yearSelectorDiv = `
 
 class YearSelector extends HTMLElement {
     shadow;
+    static observedAttributes = ["year"];
+    protocolYears;
 
     constructor() {
         super();
@@ -135,17 +137,26 @@ class YearSelector extends HTMLElement {
         this.shadow.innerHTML = yearSelectorDiv;
         
         const protocolYearsRes = await this.getProtocolYears();
-        if (Array.isArray(protocolYearsRes.result.sort())){
+        if (protocolYearsRes == false){
+            return;
+        }
+        this.protocolYears = protocolYearsRes.result;
+
+        if (Array.isArray(this.protocolYears.sort())){
                 let currentYear = localStorage.getItem('currentYear');
-                if (currentYear == null || (protocolYearsRes.result.indexOf(currentYear) == -1)){
-                    currentYear = protocolYearsRes.result.at(-1);
+                let currentYearIndex = this.protocolYears.indexOf(currentYear);
+                console.log(currentYear, currentYearIndex)
+                if (currentYear == null || (this.protocolYears.indexOf(currentYear) == -1)){
+                    currentYear = this.protocolYears.at(-1);
+                    localStorage.setItem("currentYear", currentYear);
+                    currentYearIndex = this.protocolYears.length-1;
                 }
-                localStorage.setItem("currentYear", currentYear);
-                const currentYearIndex = protocolYearsRes.result.length-1;
+                
+                console.log(currentYear, currentYearIndex)
                 if (currentYearIndex == 0){
                     this.shadow.querySelector('#downYearsBtn').setAttribute("disabled","disabled");  
                 }
-                else if (currentYearIndex == protocolYearsRes.result.length-1){
+                else if (currentYearIndex == this.protocolYears.length-1){
                     this.shadow.querySelector('#upYearsBtn').setAttribute("disabled","disabled"); 
                 }
                 else{
@@ -153,21 +164,24 @@ class YearSelector extends HTMLElement {
                     this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled"); 
                 }
                
-                const btn1 = `<button class="isButton extraSmall" style="background-color: var(--bs-success);" data-year="${protocolYearsRes.result.at(-1)}">${protocolYearsRes.result.at(-1)}</button>`;
+                const btn1 = `<button class="isButton extraSmall" style="background-color: var(--bs-success);" data-year="${this.protocolYears.at(currentYearIndex)}">${this.protocolYears.at(currentYearIndex)}</button>`;
                 this.shadow.querySelector("#protocolYears").innerHTML += btn1;
         }
         this.shadow.querySelector("#protocolYears>button").addEventListener("click", (elem)=>{
-           
+            const index = this.protocolYears.indexOf(elem.target.dataset.year);
+            localStorage.setItem("currentYear", this.protocolYears[index]);
+            const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
+            this.dispatchEvent(yearChangeEvent);
         })
 
         if (this.shadow.querySelector('#downYearsBtn')){
             this.shadow.querySelector('#downYearsBtn').addEventListener("click", ()=>{
                     const elem = this.shadow.querySelector('#protocolYears>button');
-                    const index = protocolYearsRes.result.indexOf(elem.dataset.year);
+                    const index = this.protocolYears.indexOf(elem.dataset.year);
                     if (+index !== 0){
-                        this.shadow.querySelector("#protocolYears>button").dataset.year = protocolYearsRes.result.at(index-1);
-                        this.shadow.querySelector("#protocolYears>button").textContent = protocolYearsRes.result.at(index-1);
-                        localStorage.setItem("currentYear", protocolYearsRes.result[index-1]);
+                        this.shadow.querySelector("#protocolYears>button").dataset.year = this.protocolYears.at(index-1);
+                        this.shadow.querySelector("#protocolYears>button").textContent = this.protocolYears.at(index-1);
+                        localStorage.setItem("currentYear", this.protocolYears[index-1]);
                         const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
                         this.dispatchEvent(yearChangeEvent);
                         if (index-1 == 0){
@@ -176,7 +190,7 @@ class YearSelector extends HTMLElement {
                         else{
                             this.shadow.querySelector('#downYearsBtn').removeAttribute("disabled");  
                         }
-                        if (+index == protocolYearsRes.result.length-1){
+                        if (+index == this.protocolYears.length-1){
                             this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled"); 
                         }
                     }
@@ -186,24 +200,56 @@ class YearSelector extends HTMLElement {
         if (this.shadow.querySelector('#upYearsBtn')){
             this.shadow.querySelector('#upYearsBtn').addEventListener("click", ()=>{
                 const elem = this.shadow.querySelector('#protocolYears>button');
-                    const index = protocolYearsRes.result.indexOf(elem.dataset.year);
-                    if (index !== (protocolYearsRes.result.length-1)){
-                        this.shadow.querySelector("#protocolYears>button").dataset.year = protocolYearsRes.result.at(index+1);
-                        this.shadow.querySelector("#protocolYears>button").textContent = protocolYearsRes.result.at(index+1);
-                        localStorage.setItem("currentYear", protocolYearsRes.result[index+1]);
-                        const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
-                        this.dispatchEvent(yearChangeEvent);
-                        if (+index+1 == protocolYearsRes.result.length-1){
-                            this.shadow.querySelector('#upYearsBtn').setAttribute("disabled", "disabled"); 
-                        }
-                        else{
-                            this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled");  
-                        }
-                        if (index == 0){
-                            this.shadow.querySelector('#downYearsBtn').removeAttribute("disabled");  
-                        }
+                const index = this.protocolYears.indexOf(elem.dataset.year);
+                if (index !== (this.protocolYears.length-1)){
+                    this.shadow.querySelector("#protocolYears>button").dataset.year = this.protocolYears.at(index+1);
+                    this.shadow.querySelector("#protocolYears>button").textContent =this.protocolYears.at(index+1);
+                    localStorage.setItem("currentYear", this.protocolYears[index+1]);
+                    const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
+                    this.dispatchEvent(yearChangeEvent);
+                    if (+index+1 == this.protocolYears.length-1){
+                        this.shadow.querySelector('#upYearsBtn').setAttribute("disabled", "disabled"); 
                     }
+                    else{
+                        this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled");  
+                    }
+                    if (index == 0){
+                        this.shadow.querySelector('#downYearsBtn').removeAttribute("disabled");  
+                    }
+                }
             });
+        }
+    }
+
+    attributeChangedCallback(name, oldValue, newValue){
+        if (name == "year"){ 
+            if(newValue !== this.shadow.querySelector("#protocolYears>button").dataset.year){
+                console.log("Το έτος στην μνήμη είναι διαφορετικό από το επιλεγμένο έτος της καρτέλας")
+                if (this.shadow){
+                    //Να γίνει έλεγχος αν το newValue υπάρχει στα έτη
+                    if (this.protocolYears.includes(newValue) === false){
+                        console.log('το έτος επιλογής βρίσκεται εκτός επιλογής');
+                        const logoutEvent = new CustomEvent("logoutEvent",  { bubbles: true, cancelable: false });
+                        this.dispatchEvent(logoutEvent);
+                        return;
+                    }
+                
+                    this.shadow.querySelector("#protocolYears>button").dataset.year = newValue;
+                    this.shadow.querySelector("#protocolYears>button").textContent = newValue;
+                    //localStorage.setItem("currentYear", newValue);
+                    const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
+                    this.dispatchEvent(yearChangeEvent);
+                    if (+newValue == this.protocolYears.length-1){
+                        this.shadow.querySelector('#upYearsBtn').setAttribute("disabled", "disabled"); 
+                    }
+                    else{
+                        this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled");  
+                    }
+                    if (+newValue == 0){
+                        this.shadow.querySelector('#downYearsBtn').removeAttribute("disabled");  
+                    }
+                }  
+            }
         }
     }
 
@@ -218,6 +264,7 @@ class YearSelector extends HTMLElement {
         const res = await runFetch("/api/getProtocolYears.php", "GET", null);
         if (!res.success){
             console.log(res.msg);
+            return false;
         }
         else{
             return  res.result;

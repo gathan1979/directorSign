@@ -134,8 +134,72 @@ export function getPage(){
 	return page;
 }
 
-export function startUp(){
+function generateHash(length) {
+	const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	let result = ' ';
+	const charactersLength = characters.length;
+	for ( let i = 0; i < length; i++ ) {
+		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	result = "#"+result;	
+	return result;
+}
+
+async function getProtocolYears(){
+	const res = await runFetch("/api/getProtocolYears.php", "GET", null);
+	if (!res.success){
+		console.log(res.msg);
+		return false;
+	}
+	else{
+		return  res.result;
+	}
+}
+
+
+
+export  function startUp(){
 	
+	window.location.hash = generateHash(8);
+	window.addEventListener("storage", async (event) => {
+		console.log("storage changed");
+		const changeUrl = new URL(event.url);
+		if (changeUrl.hash != location.hash){
+			//console.log(event.key, changeUrl.hash);
+			if (event.key === "currentYear"){
+				if (document.querySelector("year-selector")){
+					document.querySelector("year-selector").setAttribute("year", event.newValue);
+				}
+			}
+		}
+		else{
+			console.log("storage changed from this tab");
+			if (event.key === "currentYear"){
+				console.log("currentYear changed from storage data")
+				//Έλεγχος αν το έτος είναι στα διαθέσιμα της βάσης
+				const protocolYearsRes = await getProtocolYears();
+				if (protocolYearsRes == false){
+					//Σφάλμα λήψης διαθέσιμων ετών
+					console.log("fetch error")
+					localStorage.setItem("currentYear", event.oldValue);
+					return;
+				}
+				const protocolYears = protocolYearsRes.result;
+				if (protocolYears.includes(event.newValue)){
+					console.log("year is included in database years table")
+					if (document.querySelector("year-selector")){
+						document.querySelector("year-selector").setAttribute("year", event.newValue);
+					}
+				}
+				else {
+					//Το έτος δεν ανήκει στα διαθέσιμα
+					console.log("resetting year")
+					localStorage.setItem("currentYear", event.oldValue);
+					return;
+				}
+			}
+		}
+	});
 
 	
 	//console.log("common page code executing...");

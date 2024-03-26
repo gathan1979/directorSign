@@ -4,7 +4,7 @@ import { Pages, getPage } from "./UI_test.js";
 
 export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers){   		//εγγραφές χρεώσεων
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
-
+	document.querySelector("#chargesTableContent").innerHTML = "";
 	//updateFilterStorage();
 
 	const currentFilter = JSON.parse(localStorage.getItem("filter"));
@@ -219,7 +219,7 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 	
 	 bottomTitleDiv.innerHTML += `<span style="font-weight:bold;">${record}/${currentYear} | ${subject}</span>`;
 
-	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="isButton secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
+	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="isButton danger" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
 	
 	document.querySelector("#closeModalBtn").addEventListener("click", ()=> document.querySelector("#protocolRecordDialog").close());
 	
