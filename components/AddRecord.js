@@ -156,32 +156,32 @@ const addContent = `
         <form id="addRecordForm">
             <div id="addFormDiv">
                 <div class="formRow">   
-                    <label class="formItem" for="fromField" class="col-sm-2 col-form-label">ΑΠΟΣΤΟΛΕΑΣ*</label>
+                    <label class="formItem" for="fromField" class="col-sm-2 col-form-label">ΑΠΟΣΤΟΛΕΑΣ</label>
                     <input class="formInput" required=""  type="text"  id="fromField" disabled="">
                 </div>
                 <div class="formRow">    
-                    <label class="formItem" for="subjectField" class="col-sm-2 col-form-label">ΘΕΜΑ*</label>
+                    <label class="formItem" for="subjectField" class="col-sm-2 col-form-label">ΘΕΜΑ</label>
                     <textarea class="formInput" required=""  type="text"  id="subjectField" disabled=""></textarea>
                 </div>
                 <div class="formRow">
-                    <label class="formItem" for="docDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΠΑΡΑΛ.*</label>
+                    <label class="formItem" for="docDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΠΑΡΑΛ.</label>
                     <input class="formInput" required=""  type="datetime-local"  id="docDate" disabled="">
                 </div>
                 <div class="formRow">    
-                    <label class="formItem" for="docNumber" class="col-sm-2 col-form-label">ΑΡΙΘΜ. ΕΙΣ.*</label>
+                    <label class="formItem" for="docNumber" class="col-sm-2 col-form-label">ΑΡΙΘΜ. ΕΙΣ.</label>
                     <input class="formInput" required=""  type="text"  id="docNumber">
                 </div>
                 <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
                 <div class="formRow">    
-                    <label class="formItem" for="toField" class="col-sm-2 col-form-label">ΠΡΟΣ*</label>
+                    <label class="formItem" for="toField" class="col-sm-2 col-form-label">ΠΡΟΣ</label>
                     <input class="formInput" required=""  type="text"  id="toField">
                 </div>
                 <div class="formRow">   
-                    <label class="formItem" for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.*</label>
+                    <label class="formItem" for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.</label>
                     <input class="formInput" required=""  type="text"  id="outSubjectField">
                 </div>
                 <div class="formRow">
-                    <label class="formItem" for="outDocDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΞΕΡΧ.*</label>
+                    <label class="formItem" for="outDocDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΞΕΡΧ.</label>
                     <input class="formInput" required="" type="date"  id="outDocDate">
                 </div>
             </div>
