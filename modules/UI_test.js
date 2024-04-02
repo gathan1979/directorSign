@@ -978,6 +978,19 @@ async function createProtocolUIstartUp(){
 		const filterDiv  = document.querySelector("#filterDiv").close();
 	});
 
+	let folderList = null;
+	if (localStorage.getItem("folders") !== null){
+		try{
+			folderList = JSON.parse(localStorage.getItem("folders"));
+		}
+		catch(e){
+			folderList = await getFoldersList();
+		}
+	}
+	else{
+		folderList = await getFoldersList();
+	}
+	
 	createFilter(document.querySelector("#filterContent"));
 	updateBtnsFromFilter();
 
@@ -1018,9 +1031,19 @@ async function createProtocolUIstartUp(){
 	}
 
 	const chargesRes = await getProtocolAndFill(); 
-	//interCharges = setInterval(async ()=>{
-		//const chargesRes = await getProtocolAndFill(); 
-	//},60000)
+	
+}
+
+async function getFoldersList(){
+	const res = await runFetch("/api/getFoldersList.php", "GET", null);
+	if (!res.success){
+		console.log(res.msg);
+	}
+	else{
+		const resdec = res.result;
+		localStorage.setItem("folders",JSON.stringify(resdec));
+		return resdec;
+	}    
 }
 
 

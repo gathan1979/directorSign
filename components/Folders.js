@@ -151,7 +151,12 @@ class Folders extends HTMLElement {
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; 
         let folderList = null;
         if (localStorage.getItem("folders") !== null){
-            folderList = JSON.parse(localStorage.getItem("folders"));
+            try{
+                folderList = JSON.parse(localStorage.getItem("folders"));
+            }
+            catch(e){
+                folderList = await this.getFoldersList(this.protocolNo, this.protocolYear);
+            }
         }
         else{
             folderList = await this.getFoldersList(this.protocolNo, this.protocolYear);

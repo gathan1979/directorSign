@@ -123,17 +123,17 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	document.querySelector("#chargesTableContent").innerHTML = tableContent;
 	
 
-	if(!protocol){	
+	//if(!protocol){	
 		for (const record of result){
 			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event));
 		}
-	}
-	else{
-		for (const record of result){
-			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event));
-			//document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => document.querySelector('#requestProtocolAccessDialog').showModal());
-		}
-	}
+	//}
+	//else{
+		//for (const record of result){
+			//document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event));
+			////document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => document.querySelector('#requestProtocolAccessDialog').showModal());
+		//}
+	//}
 	createSearch();
 }
 

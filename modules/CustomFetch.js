@@ -104,16 +104,9 @@ export default async function runFetch(url, method, params, responseType = Fetch
                             return rerunRes;
                         }
                         else{
-                            if (url.split("/")[1]){
-                                msg = ("Σφάλμα εξουσιοδότησης");
-                                window.location = `/${url.split("/")[0]}/`;	
-                                return;
-                            }
-                            else{
-                                msg = ("Σφάλμα εξουσιοδότησης");
-                                window.location = "/";	
-                                return;
-                            }
+                            msg = ("Σφάλμα εξουσιοδότησης");
+                            window.location = "/directorSign/";	
+                            return;
                         }
                     }
                 }
