@@ -1,6 +1,6 @@
 import refreshToken from "./RefreshToken.js";
 import getFromLocalStorage from "./LocalStorage.js";
-import {getPage, Pages, getChargesAndFill} from "./UI_test.js";
+import {getPage, Pages, getChargesAndFill, getProtocolAndFill} from "./UI_test.js";
 import { getFilteredData } from "./ProtocolData.js";
 
 let filter = {};
@@ -8,9 +8,19 @@ export let pagingStart = 0;
 export let pagingSize = 100; 
 
 if (localStorage.getItem("filter") !== null){
-	filter = JSON.parse(localStorage.getItem("filter"));	
+	try{
+		filter = JSON.parse(localStorage.getItem("filter"));	
+	}
+	catch(e){
+		resetFilterStorage();
+	}
 }
 else{
+	resetFilterStorage();
+}
+
+function resetFilterStorage(){
+	console.log("resetting filter")
 	filter = {
 		showForArchive : 0,
 		selectedDate : null,
@@ -19,12 +29,16 @@ else{
 		isAssignedToDep : 0,
 		isAssignedLast :0,
 		noNotifications : 0,
-		hideArchieved : 0
+		hideArchieved : 0,
+		selectedFolder : 0
 	};
+	localStorage.setItem("filter", JSON.stringify(filter));
 }
-
-localStorage.setItem("filter", JSON.stringify(filter));
 //updateFilterStorage();
+export const FILTERS = {
+	PROTOCOL: ["selectedFolder", "selectedDate"],
+	CHARGES: ["hideArchieved", "isAssigned", "isAssignedLast", "isAssignedToDep", "noNotifications", "selectedDate", "selectedDateDep", "showForArchive"]
+}
 	
 	
 export async function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
@@ -197,6 +211,7 @@ function debounce(func, timeout = 500){
 
 
 export default function createFilter(parentElement){
+	console.log("creating filter")
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
 	const currentRole = localStorage.getItem("currentRole");
 	//console.log(userData.roles[currentRole].protocolAccessLevel);
@@ -334,12 +349,25 @@ export default function createFilter(parentElement){
 export function updateBtnsFromFilter(){
 	let filter = null;
 	let userData = null;
-	try{
+	if (localStorage.getItem("filter")){
+		try{
+			filter = JSON.parse(localStorage.getItem("filter"));
+		}
+		catch(e){
+			resetFilterStorage();
+			filter = JSON.parse(localStorage.getItem("filter"));
+		}
+	}
+	else{
+		resetFilterStorage();
 		filter = JSON.parse(localStorage.getItem("filter"));
+	}
+	
+	try{
 		userData = JSON.parse(localStorage.getItem("loginData")).user;
 	}
 	catch(e){
-		alert("Αποτυχία ενημέρωσης κατάστασης φίλτρου")
+		alert("Αποτυχία ενημέρωσης κατάστασης υπαλλήλου")
 		return;
 	}
 	const currentRole = localStorage.getItem("currentRole");
@@ -393,24 +421,27 @@ export function updateBtnsFromFilter(){
 
 	const filterBtn = document.querySelector('#openFilterBtn');
 
-	const page = getPage();
-	if (page == Pages.CHARGES){	
-		// Να προστεθούν τα φίλτρα των χρεώσεων
-	}
-	if (page == Pages.PROTOCOL){	
-		// Να προστεθούν τα φίλτρα του πρωτοκόλλου
-	}
-
 	//Να γίνει έλεγχος ανάλογα με τα φίλτρα της σελίδας που είμαστε, ώστε να εμφανίζεται αν υπάρχει ενεργό φίλτρο που αφορά τη σελίδα και όχι γενικά
 
-	const vals = Object.values(filter);
-	let filterActive = 0;
-	vals.forEach( val => {
-		if (val!==0	&& val!==null && val!==""){
-			filterActive = 1;
-		}
-	});
-	if (filterActive){
+
+	//ΜΕΤΑΤΡΟΠΗ ΣΕ ΠΙΝΑΚΑ  filter as array
+	const CFAA = Object.entries(filter);
+
+	//ΦΙΛΤΡΑΡΙΣΜΑ ΑΝΕΝΕΡΓΩΝ ΦΙΛΤΡΩΝ current filter as array filter emptry
+	const CFAAFE = CFAA.filter(([key, value]) => !(value==0 || value=="" || value==null));
+
+	let CFAAFEFC = null;
+	const page = getPage();
+	if (page == Pages.CHARGES){	
+		//ΦΙΛΤΡΑΡΙΣΜΑ - ΦΙΛΤΡΑ ΧΡΕΩΣΕΩΝ ΜΟΝΟ current filter as array filter emptry filter charges filters
+		CFAAFEFC = CFAAFE.filter( ([key, value]) => (FILTERS.CHARGES.includes(key)?1:0) );
+	}
+	if (page == Pages.PROTOCOL){	
+		//ΦΙΛΤΡΑΡΙΣΜΑ - ΦΙΛΤΡΑ ΧΡΕΩΣΕΩΝ ΜΟΝΟ current filter as array filter emptry filter charges filters
+		CFAAFEFC = CFAAFE.filter( ([key, value]) => (FILTERS.PROTOCOL.includes(key)?1:0) );
+	}
+
+	if (CFAAFEFC.length > 0){
 		filterBtn.classList.remove('primary');
 		filterBtn.classList.add('active');	
 	}
@@ -520,7 +551,7 @@ function addListeners(){
 	document.getElementById("lastAssignedFilter")?document.getElementById("lastAssignedFilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 	document.getElementById("hideNotificationsFilter")?document.getElementById("hideNotificationsFilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 
-	document.querySelector("#filterFolderSelection")?document.querySelector("#filterFolderSelection").addEventListener("change", ()=>{updateFilterStorage(); getChargesAndFill();}):null;
+	document.querySelector("#filterFolderSelection")?document.querySelector("#filterFolderSelection").addEventListener("change", ()=>{updateFilterStorage(); getProtocolAndFill();}):null;
 }
 
 

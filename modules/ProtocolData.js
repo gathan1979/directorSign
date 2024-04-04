@@ -1,4 +1,4 @@
-import {updateFilterStorage,createSearch, pagingSize, pagingStart} from "./Filter.js"
+import {updateFilterStorage,createSearch, pagingSize, pagingStart, FILTERS} from "./Filter.js"
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 import { Pages, getPage } from "./UI_test.js";
 
@@ -7,14 +7,23 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	document.querySelector("#chargesTableContent").innerHTML = "";
 	//updateFilterStorage();
 
+	//ΛΗΨΗ ΦΙΛΤΡΩΝ
 	const currentFilter = JSON.parse(localStorage.getItem("filter"));
-	const currentFilterAsArray = Object.entries(currentFilter);
-	const filtered = currentFilterAsArray.filter(([key, value]) => !(value==0 || value=="" || value==null));
-	//console.log("a");
-	//console.log(filtered); // Εύρεση ενεργών φίλτρων
-	const filteredObject = Object.fromEntries(filtered);
-	//console.log("b");
-	//console.log(filteredObject);
+	//ΜΕΤΑΤΡΟΠΗ ΣΕ ΠΙΝΑΚΑ  current filter as array
+	const CFAA = Object.entries(currentFilter);
+	//console.log("CFAA", CFAA);
+
+	//ΦΙΛΤΡΑΡΙΣΜΑ ΑΝΕΝΕΡΓΩΝ ΦΙΛΤΡΩΝ current filter as array filter emptry
+	const CFAAFE = CFAA.filter(([key, value]) => !(value==0 || value=="" || value==null));
+	//console.log("CFAAFE",CFAAFE);
+
+	//ΦΙΛΤΡΑΡΙΣΜΑ - ΦΙΛΤΡΑ ΧΡΕΩΣΕΩΝ ΜΟΝΟ current filter as array filter emptry filter charges filters
+	const CFAAFEFC = CFAAFE.filter( ([key, value]) => (FILTERS.CHARGES.includes(key)?1:0) );
+	//console.log("CFAAFEFC", CFAAFEFC);
+
+	//ΜΕΤΑΤΡΟΠΗ ΠΙΝΑΚΑ ΣΕ ΑΝΤΙΚΕΙΜΕΝΟ
+	const filteredObject = Object.fromEntries(CFAAFEFC);
+	console.log("filteredObject", filteredObject);
 
 	let customObject ={
 		customPagingStart,
@@ -28,10 +37,9 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	} 
 
 	const  completeOblect= Object.assign(filteredObject, customObject);
-	//console.log("c");
 	//console.log(completeOblect);
+
 	const urlpar = new URLSearchParams(completeOblect);
-	//console.log(urlpar)
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal);
 	if (!res.success){
 		console.log(res.msg);
@@ -49,15 +57,34 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers){   		//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 
-	//updateFilterStorage();
+	//ΛΗΨΗ ΦΙΛΤΡΩΝ
+	const currentFilter = JSON.parse(localStorage.getItem("filter"));
+	//ΜΕΤΑΤΡΟΠΗ ΣΕ ΠΙΝΑΚΑ  current filter as array
+	const CFAA = Object.entries(currentFilter);
+	//console.log("CFAA", CFAA);
+
+	//ΦΙΛΤΡΑΡΙΣΜΑ ΑΝΕΝΕΡΓΩΝ ΦΙΛΤΡΩΝ current filter as array filter emptry
+	const CFAAFE = CFAA.filter(([key, value]) => !(value==0 || value=="" || value==null));
+	console.log("CFAAFE",CFAAFE);
+
+	//ΦΙΛΤΡΑΡΙΣΜΑ - ΦΙΛΤΡΑ ΧΡΕΩΣΕΩΝ ΜΟΝΟ current filter as array filter emptry filter charges filters
+	const CFAAFEFC = CFAAFE.filter( ([key, value]) => (FILTERS.PROTOCOL.includes(key)?1:0) );
+	//console.log("CFAAFEFC", CFAAFEFC);
+
+	//ΜΕΤΑΤΡΟΠΗ ΠΙΝΑΚΑ ΣΕ ΑΝΤΙΚΕΙΜΕΝΟ
+	const filteredObject = Object.fromEntries(CFAAFEFC);
+	console.log("filteredObject", filteredObject);
 	
-	const completeOblect ={
+	const customObject ={
 		customPagingStart,
 		customPagingSize,
 		allRecords: true,
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear()),
 		searchText : document.querySelector("#tableSearchInput").value
 	}
+
+	const  completeOblect= Object.assign(filteredObject, customObject);
+
 	const urlpar = new URLSearchParams(completeOblect);
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal);
 	if (!res.success){
@@ -68,7 +95,6 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 		const response = res.result;
 		//console.log("εκτέλεση λήψης χρεώσεων 1");
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
-
 		fillChargesTable(response, true);
 		return response.totalRecords;
 	}

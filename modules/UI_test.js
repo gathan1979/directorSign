@@ -451,9 +451,7 @@ function pagesCommonCode(){
 		document.querySelector("#passwordModal").close();
 	});	
 		
-		
-
-
+	//localStorage.setItem("filter", JSON.stringify({}));
 	//create Roles UI	
 
 	// document.querySelector("#userRoles").innerHTML = "";
@@ -540,7 +538,7 @@ function removeIntervals(){
 
 async function createChargesUIstartUp(){
 	removeIntervals();
-	//console.log("charges");
+//	console.log("charges");
 	page = Pages.CHARGES;
 	pagesCommonCode();
 	document.querySelector('#showEmployeesBtn').style.display = "none"; 
@@ -798,7 +796,7 @@ async function createChargesUIstartUp(){
 	});
 
 	filterButton.addEventListener("click", () => {
-		const filterDiv  = document.querySelector("#filterDiv").show();
+		const filterDiv  = document.querySelector("#filterDiv").showModal();
 	});
 
 	changesCloseButton.addEventListener("click", () => {
@@ -971,7 +969,7 @@ async function createProtocolUIstartUp(){
 	const filterCloseButton  = document.querySelector("#filterCloseButton");	
 
 	filterButton.addEventListener("click", () => {
-		const filterDiv  = document.querySelector("#filterDiv").show();
+		const filterDiv  = document.querySelector("#filterDiv").showModal();
 	});
 
 	filterCloseButton.addEventListener("click", () => {

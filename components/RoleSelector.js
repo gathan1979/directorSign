@@ -183,6 +183,8 @@ class RoleSelector extends HTMLElement {
                             this.shadow.querySelector('#downRoleBtn').removeAttribute("disabled"); 
                         }
                     }
+                    const filter = {};
+                    localStorage.setItem("filter", JSON.stringify(filter));
                    
             });
         }
@@ -208,6 +210,8 @@ class RoleSelector extends HTMLElement {
                         this.shadow.querySelector('#upRoleBtn').removeAttribute("disabled");  
                     }
                 }
+                const filter = {};
+                localStorage.setItem("filter", JSON.stringify(filter));
             });
         }
     }
