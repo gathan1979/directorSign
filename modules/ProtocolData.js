@@ -108,7 +108,10 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	let recordColor = "#B6EACB";
 	let tableContent="";
 	for (const record of result){
-		if(record["statusField"]=="1"){ //Προς αρχείο
+		if (protocol){
+			recordColor = "#e9f1d4";
+		}
+		else if(record["statusField"]=="1"){ //Προς αρχείο
 			recordColor = "DarkOrange";		
 		}
 		else if(record["statusField"]=="2"){ // Αρχείο
@@ -196,8 +199,8 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 				</div>
 			</div>	
 
-			<record-folders style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
-			<record-assignments data-locked=${protocol===true?1:0}  style="flex-basis: 30%;" protocolDate="${recordDate}" protocolNo="${record}"></record-assignments>
+			<record-folders data-locked="${protocol===true?1:0}" style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
+			<record-assignments data-locked="${protocol===true?1:0}"  style="flex-basis: 30%;" protocolDate="${recordDate}" protocolNo="${record}"></record-assignments>
 
 		</div>
 	</div>

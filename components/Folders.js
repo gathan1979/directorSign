@@ -94,6 +94,11 @@ const foldersContent = `
             background-color : cadetblue;
         }
 
+        [disabled]{
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
     </style>
     <div id="foldersDiv" class="secondBottomSectionColumn" style="background: rgba(86, 86, 136, 0.2)!important;">	
         <link href="css/all.css" rel="stylesheet">
@@ -139,6 +144,7 @@ class Folders extends HTMLElement {
     shadow;
     protocolFolders;            // example [{aaField: '8294', recordField: '4884', folderField: '71'}]
     selectedFolders;
+    locked;
 
     constructor() {
         super();
@@ -149,6 +155,7 @@ class Folders extends HTMLElement {
         this.shadow.innerHTML = foldersContent;
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; 
+        this.locked = this.dataset.locked;
         let folderList = null;
         if (localStorage.getItem("folders") !== null){
             try{
@@ -178,9 +185,23 @@ class Folders extends HTMLElement {
             this.shadow.querySelector(".customDialogContent").innerHTML += '<div><b>'+element.innerText+"</b> : "+element.title+'</div>';
         });
         this.showFolders(this.protocolFolders);
-        this.shadow.querySelector("#saveFoldersButton").addEventListener("click",()=>this.saveFolders());
-        this.shadow.querySelector("#closeModalBtn").addEventListener("click",()=>this.shadow.querySelector("#foldersDetailsModal").close());
-        this.shadow.querySelector("#closeModalBtn2").addEventListener("click",()=>this.shadow.querySelector("#seachfoldersModal").close());
+
+        if (!+this.locked){
+            this.shadow.querySelector("#saveFoldersButton").addEventListener("click",()=>this.saveFolders());
+            this.shadow.querySelector("#undoButton").addEventListener("click",()=>this.undoChanges());
+        }
+        else{
+            this.shadow.querySelector("#saveFoldersButton").setAttribute("disabled","true");
+            this.shadow.querySelector("#undoButton").setAttribute("disabled","true");
+        }
+
+        if (+this.locked){
+            console.log("disable all locked")
+            this.shadow.querySelectorAll("#folderList > button").forEach((element,index)=> {
+                element.setAttribute("disabled","true");
+            });
+        }
+       
         this.shadow.querySelector("#showFoldersButton").addEventListener("click",()=>{
                 this.shadow.querySelector("#foldersDetailsModal").showModal();
             });
@@ -189,8 +210,12 @@ class Folders extends HTMLElement {
                 this.shadow.querySelector("#searchResults").innerHTML = "";
                 this.shadow.querySelector("#seachfoldersModal").showModal();
             });
+
         this.shadow.querySelector("#folderSearchText").addEventListener("keyup",()=>{this.searchFolders()});
-        this.shadow.querySelector("#undoButton").addEventListener("click",()=>this.undoChanges());
+        
+
+        this.shadow.querySelector("#closeModalBtn").addEventListener("click",()=>this.shadow.querySelector("#foldersDetailsModal").close());
+        this.shadow.querySelector("#closeModalBtn2").addEventListener("click",()=>this.shadow.querySelector("#seachfoldersModal").close());
         //this.loadRelativeFull(this.protocolNo,1, true);
         //this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
         //this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addRelativeModal").close());
@@ -300,9 +325,11 @@ class Folders extends HTMLElement {
                 newButtonText +="Φ"+element.innerText+" "+element.title+'</button>';
                 //console.log(newButtonText);
                 this.shadow.querySelector("#searchResults").innerHTML += newButtonText;
-                this.shadow.querySelector('#searchFoldersRes_'+element.dataset.folderAa).addEventListener("click",(event)=>{
-                    this.selectSearchFolder(event.currentTarget.dataset.folderSearchAa);
-                })
+                if(!+this.locked){
+                    this.shadow.querySelector('#searchFoldersRes_'+element.dataset.folderAa).addEventListener("click",(event)=>{
+                        this.selectSearchFolder(event.currentTarget.dataset.folderSearchAa);
+                    })
+                }
             }
         });
     }

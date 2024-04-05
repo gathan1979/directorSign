@@ -194,7 +194,7 @@ class Assignments extends HTMLElement {
         });
 
         //Listeners πάνω κουμπιών
-        console.log(this.locked)
+        //console.log(this.locked)
         if (!+this.locked){
             console.log("unlocked")
             this.shadow.querySelector("#saveAssignmentButton").addEventListener("click",()=>this.saveAssignments());
