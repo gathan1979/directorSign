@@ -105,18 +105,17 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	//const table = document.querySelector("#chargesTableHeader");
 	//table.innerHTML=
 	const result = response.data;
-	let tableContent = "";
+	let recordColor = "#B6EACB";
+	let tableContent="";
 	for (const record of result){
 		if(record["statusField"]=="1"){ //Προς αρχείο
-			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, DarkOrange); padding:10px;" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
+			recordColor = "DarkOrange";		
 		}
 		else if(record["statusField"]=="2"){ // Αρχείο
-			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(90deg, white, Gray); padding:10px; " data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
+			recordColor = "Gray";				
 		}
-		else if(record["statusField"]=="0"){ //Εκκρεμ.
-			tableContent +=`<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(-90deg, white, #B6EACB); padding:10px;" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
-		}	
 		
+		tableContent += `<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(-90deg, white, ${recordColor}); padding:10px;" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 
 		for (let [key, value] of Object.entries(record)){
 			let customWidth = 0;
@@ -150,9 +149,9 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	
 
 	//if(!protocol){	
-		for (const record of result){
-			document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event));
-		}
+	for (const record of result){
+		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event, protocol));
+	}
 	//}
 	//else{
 		//for (const record of result){
@@ -163,7 +162,7 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	createSearch();
 }
 
-export async function openProtocolRecord(subject,record,recordDate, status, event){
+export async function openProtocolRecord(subject,record,recordDate, status, event, protocol){
 	console.log("record no ..."+record)
 	const protocolWindowContent = 
 	`<div id="bottomSection">
@@ -198,7 +197,7 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 			</div>	
 
 			<record-folders style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
-			<record-assignments style="flex-basis: 30%;" protocolDate="${recordDate}" protocolNo="${record}"></record-assignments>
+			<record-assignments data-locked=${protocol===true?1:0}  style="flex-basis: 30%;" protocolDate="${recordDate}" protocolNo="${record}"></record-assignments>
 
 		</div>
 	</div>

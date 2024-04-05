@@ -141,6 +141,7 @@ class Assignments extends HTMLElement {
     shadow;
     protocolCharges;  //{assignedTo : null, type: null}
     selectedCharges;
+    locked;
 
     constructor() {
         super();
@@ -160,6 +161,7 @@ class Assignments extends HTMLElement {
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = assignmentsContent;
         this.protocolNo = this.attributes.protocolNo.value;
+        this.locked = this.dataset.locked;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; 
         let employeesTree = null;
         if (localStorage.getItem("employeesTree") !== null){
@@ -192,15 +194,31 @@ class Assignments extends HTMLElement {
         });
 
         //Listeners πάνω κουμπιών
-        this.shadow.querySelector("#saveAssignmentButton").addEventListener("click",()=>this.saveAssignments());
-        this.shadow.querySelector("#addNotificationButton").addEventListener("click",()=>this.selectAllforNotification());
-        this.shadow.querySelector("#deselectUsersButton").addEventListener("click",()=>this.deselectAllAssignments());
-        this.shadow.querySelector("#undoUsersButton").addEventListener("click",()=>this.undoUserChanges());
+        console.log(this.locked)
+        if (!+this.locked){
+            console.log("unlocked")
+            this.shadow.querySelector("#saveAssignmentButton").addEventListener("click",()=>this.saveAssignments());
+            this.shadow.querySelector("#addNotificationButton").addEventListener("click",()=>this.selectAllforNotification());
+            this.shadow.querySelector("#deselectUsersButton").addEventListener("click",()=>this.deselectAllAssignments());
+            this.shadow.querySelector("#undoUsersButton").addEventListener("click",()=>this.undoUserChanges());
+        }else{
+            console.log("locked")
+            this.shadow.querySelector("#saveAssignmentButton").setAttribute("disabled","true");
+            this.shadow.querySelector("#addNotificationButton").setAttribute("disabled","true");
+            this.shadow.querySelector("#deselectUsersButton").setAttribute("disabled","true");
+            this.shadow.querySelector("#undoUsersButton").setAttribute("disabled","true");
+        }
+
 
         let departmentChildren = await this.getDepartmentChildren();
         departmentChildren.push(currentRoleObject.department);
         //Απενεργοποίηση εργαζομένων ανάλογα με δικαιώματα επεξεργασίας χρεώσεων currentRoleObject
-        if (currentRoleObject.protocolAccessLevel == 1){
+        if (+this.locked){
+            this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
+                element.setAttribute("disabled","disabled");
+            });
+        }
+        else if(currentRoleObject.protocolAccessLevel == 1){
             // Προς το παρόν δεν κάνει κάτι
         }
         else if (currentRoleObject.accessLevel == 1){
