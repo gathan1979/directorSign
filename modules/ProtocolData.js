@@ -105,9 +105,9 @@ export function fillChargesTable(response, protocol = false){   //Να αφαι�
 	//const table = document.querySelector("#chargesTableHeader");
 	//table.innerHTML=
 	const result = response.data;
-	let recordColor = "#B6EACB";
 	let tableContent="";
 	for (const record of result){
+		let recordColor = "#B6EACB";
 		if (protocol){
 			recordColor = "#e9f1d4";
 		}
