@@ -42,6 +42,7 @@ const addContent = `
             68%{transform:rotate(24deg)}
             75%,100%{transform:rotate(0deg)}
         }
+       
 
         .isButton{
             background-color: var(--bs-secondary);
@@ -124,10 +125,6 @@ const addContent = `
             gap: 10px;
         }    
 
-        .formItem{
-            flex-basis:100px;
-            flex-grow:1;
-        }
 
         .formInput{
             flex-basis:300px;
@@ -143,6 +140,8 @@ const addContent = `
 
     </style>
     <link href="css/all.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/directorSign/css/custom.css" />
+
 
     <div class="customDialogContentTitle">
         <span style="font-weight:bold;">Νέα Εγγραφή</span>
@@ -155,35 +154,41 @@ const addContent = `
     <div class="customDialogContent" style="margin-top:10px;">
         <form id="addRecordForm">
             <div id="addFormDiv">
-                <div class="formRow">   
-                    <label class="formItem" for="fromField" class="col-sm-2 col-form-label">ΑΠΟΣΤΟΛΕΑΣ</label>
+                <div class="flexHorizontal" style="background-color:white;">   
+                    <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΑΠΟΣΤΟΛΕΑΣ</label>
                     <input class="formInput" required=""  type="text"  id="fromField" disabled="">
                 </div>
-                <div class="formRow">    
-                    <label class="formItem" for="subjectField" class="col-sm-2 col-form-label">ΘΕΜΑ</label>
+                <div class="flexHorizontal" style="background-color:white;">    
+                    <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΘΕΜΑ</label>
                     <textarea class="formInput" required=""  type="text"  id="subjectField" disabled=""></textarea>
                 </div>
-                <div class="formRow">
-                    <label class="formItem" for="docDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΠΑΡΑΛ.</label>
+                <div class="flexHorizontal" style="background-color:white;">
+                    <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΗΜΕΡ. ΠΑΡΑΛ.</label>
                     <input class="formInput" required=""  type="datetime-local"  id="docDate" disabled="">
                 </div>
-                <div class="formRow">    
-                    <label class="formItem" for="docNumber" class="col-sm-2 col-form-label">ΑΡΙΘΜ. ΕΙΣ.</label>
+                <div class="flexHorizontal" style="background-color:white;">    
+                    <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΑΡΙΘΜ. ΕΙΣ.</label>
                     <input class="formInput" required=""  type="text"  id="docNumber">
                 </div>
                 <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
-                <div class="formRow">    
-                    <label class="formItem" for="toField" class="col-sm-2 col-form-label">ΠΡΟΣ</label>
+                <div class="flexHorizontal" style="background-color:white;">    
+                    <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΠΡΟΣ</label>
                     <input class="formInput" required=""  type="text"  id="toField">
                 </div>
-                <div class="formRow">   
-                    <label class="formItem" for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.</label>
+                <div class="flexHorizontal" style="background-color:white;">   
+                    <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΘΕΜΑ ΕΞΕΡΧ.</label>
                     <input class="formInput" required=""  type="text"  id="outSubjectField">
                 </div>
-                <div class="formRow">
-                    <label class="formItem" for="outDocDate" class="col-sm-2 col-form-label">ΗΜΕΡ. ΕΞΕΡΧ.</label>
+                <div class="flexHorizontal" style="background-color:white;">
+                    <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΗΜΕΡ. ΕΞΕΡΧ.</label>
                     <input class="formInput" required="" type="date"  id="outDocDate">
                 </div>
+                <div class="flexHorizontal" style="background-color:white;">
+                    <label style="flex-basis:150px;font-weight:bold;">ΑΠΟΣΤΟΛΗ ΑΠΟΔΕΙΚΤΙΚΟΥ</label>
+                    <input  type="text" id="proofRecipient" style="flex-grow:1;" placeholder="Email για αποστολή αποδεικτικού">
+                    <input  type="checkbox" id="proofSendCheckbox" >
+                </div>
+             </div>
             </div>
         </form>
     </div>
@@ -354,12 +359,20 @@ class AddRecord extends HTMLElement {
         //const {jwt,role} = getFromLocalStorage();
         // myHeaders = new Headers();
         //myHeaders.append('Authorization', jwt);
+        let Procotol_EMAIL_token = null;
+        if (this.shadow.querySelector("#proofSendCheckbox").checked){
+            Procotol_EMAIL_token= localStorage.getItem("Procotol_EMAIL_token");
+            if (Procotol_EMAIL_token == null){
+                alert("Δεν υπάρχουν στοιχεία σύνδεσης στο email");
+                return;
+            }
+        }
 
         const formdata = new FormData();
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             element.value = this.changedProperties[element.id];
             formdata.append(element.id, element.value);
-         });
+        });
         //formdata.append('protocolNo',this.protocolNo);
         //formdata.append('protocolYear',this.protocolYear);
         //formdata.append('currentRole',role);
@@ -371,15 +384,28 @@ class AddRecord extends HTMLElement {
             alert(res.msg);
         }
         else{
-            //const resdec = await res.json();
             const resdec = res.result;
-            console.log(resdec['message']);
-           
-            alert("επιτυχής εισαγωγή εγγραφής");
+            //console.log(resdec['message']);
+            if (this.shadow.querySelector("#proofSendCheckbox").checked){
+                const postData = new FormData();
+                postData.append("record", resdec['newRecordNo']);
+                postData.append("proofRecipient", this.shadow.querySelector('#proofRecipient').value);
+                postData.append("Procotol_EMAIL_token", Procotol_EMAIL_token);
+                const res = await runFetch("/api/sendProof.php","POST",postData);
+                if (!res.success){
+                    alert("Eπιτυχής εισαγωγή εγγραφής. Η αποστολή αποδεικτικού απέτυχε!");
+                }
+                else{
+                    alert("Επιτυχής εισαγωγή εγγραφής και αποστολή αποδεικτικού");
+                }
+            }
+            else{
+                alert("Επιτυχής εισαγωγή εγγραφής");
+            }
             this.clearInputs();
-            const RefreshProtocolFilesEvent = new CustomEvent("RefreshProtocolFilesEvent",  { bubbles: true, cancelable: false, composed: true });
+            const RefreshProtocolFilesEvent = new CustomEvent("RefreshProtocolFilesEvent", { bubbles: true, cancelable: false, composed: true });
             this.dispatchEvent(RefreshProtocolFilesEvent);
-            this.parentElement.close();
+            this.parentElement.close(); 
         }
     } 
 }
