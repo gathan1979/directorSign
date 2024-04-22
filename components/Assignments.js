@@ -222,9 +222,14 @@ class Assignments extends HTMLElement {
             // Προς το παρόν δεν κάνει κάτι
         }
         else if (currentRoleObject.accessLevel == 1){
-            // ενεργοποίηση μόνο για τμήμα
+            // ενεργοποίηση μόνο για τμήμα  -- Απαιτεί διόρθωση για υπαλλήλους εκτός τμήματος
+            const employeesOutOfDep = await this.getEmployeesOutOfDep();
+            console.log(employeesOutOfDep);
             this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
                 if (departmentChildren.includes(element.parentNode.parentNode.dataset.dep)){
+                    element.removeAttribute("disabled");
+                }
+                else if(employeesOutOfDep.includes(element.dataset.user)){
                     element.removeAttribute("disabled");
                 }
                 else{
@@ -374,6 +379,17 @@ class Assignments extends HTMLElement {
         }    
     }
 
+
+    async getEmployeesOutOfDep(){
+        const res = await runFetch("/api/getEmployeesOutOfDep.php", "GET", null);
+        if (!res.success){
+            alert(res.msg);
+        }
+        else{
+            const resdec = res.result.employees;
+            return resdec;
+        }    
+    }
 
     async getChargesAndFill(){
         const loginData = JSON.parse(localStorage.getItem("loginData"));
