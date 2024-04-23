@@ -80,6 +80,7 @@ class Attachments extends HTMLElement {
     protocolYear;
     shadow;
     users;
+    locked;
 
     constructor() {
         super();
@@ -90,11 +91,12 @@ class Attachments extends HTMLElement {
         this.shadow.innerHTML = content;
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
+        this.locked = this.dataset.locked;
         //console.log(this.protocolNo);
         const currentYear = localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):2023;
         this.shadow.querySelector("#actionStatus").innerHTML = "";
         //this.uploadFile(undefined,this.protocolNo,this.currentYear)
-        if (getPage() === Pages.CHARGES){
+        if (!+this.locked){
             this.shadow.querySelector("#showAttachmentModalBtn").addEventListener("click",()=> {
                 this.shadow.querySelector("#attachmentSpinner").style.display = "none";
                 this.shadow.querySelector("#attachmentModal .customDialogContentTitle>span").innerText = "Προσθήκη συνημμένου σε "+this.protocolNo+"/"+this.protocolYear;

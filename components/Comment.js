@@ -51,6 +51,7 @@ class Comment extends HTMLElement {
     protocolNo;
     protocolYear;
     shadow;
+    locked;
 
     constructor() {
         super();
@@ -61,13 +62,21 @@ class Comment extends HTMLElement {
         this.shadow.innerHTML = commentContent;
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
-        this.shadow.querySelector("#showAddCommentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addCommentModal").showModal());
+        this.locked = this.dataset.locked;
+        if (!+this.locked){
+            this.loadComments(this.protocolNo,1);
+            this.shadow.querySelector("#showAddCommentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addCommentModal").showModal());
+        }
+        else{
+            this.loadComments(this.protocolNo,0);
+            this.shadow.querySelector("#showAddCommentModalBtn").style.display = "none";
+        }
         this.shadow.querySelector("#saveCommentBtn").addEventListener("click",()=>{ 
             const comment = this.shadow.getElementById("insertCommentField").value; 
             this.saveComment(this.protocolNo, this.protocolYear, comment);
         });
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addCommentModal").close());
-        this.loadComments(this.protocolNo,1);
+       
     }
 
     disconnectedCallback() {

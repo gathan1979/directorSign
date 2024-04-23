@@ -54,6 +54,7 @@ class Relative extends HTMLElement {
     protocolNo;
     protocolYear;
     shadow;
+    locked;
 
     constructor() {
         super();
@@ -64,10 +65,13 @@ class Relative extends HTMLElement {
         this.shadow.innerHTML = relativeContent;
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
+        this.locked = this.dataset.locked;
         //this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>this.loadRelativeFull(this.protocolNo,1,1));
         this.shadow.querySelector("#insertRelativeBtn").addEventListener("click",()=>this.saveRelative(this.protocolNo,this.protocolYear));
-        if (getPage() === Pages.CHARGES){
+        //if (getPage() === Pages.CHARGES){
+        if (!+this.locked){
             this.loadRelativeFull(this.protocolNo,1, false);
+            //showRelativeModalBtn είναι το modal για εισαγωγή νέου σχετικού
             this.shadow.querySelector("#showRelativeModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addRelativeModal").showModal());
         }
         else{
