@@ -297,6 +297,12 @@ export default function createFilter(parentElement){
 							<option value="1">ΝΑΙ</option>
 						</select>
 					</div>
+				</div>
+				<div class="flexHorizontal" style="padding-top:0.3em;">
+					<div ><i  class="fas fa-filter" ></i><b> Εμφάνιση σε/προς αρχείο : </b></div>
+					<div >
+						<input  type="checkbox"  id="hideArchieved" />
+					</div>
 				</div>`;	
 	}	
 	else{ 
@@ -317,6 +323,12 @@ export default function createFilter(parentElement){
 							<option value="0"></option>
 							<option value="1">ΝΑΙ</option>
 						</select>
+					</div>
+				</div>
+				<div class="flexHorizontal" style="padding-top:0.3em;">
+					<div ><i  class="fas fa-filter" ></i><b> Εμφάνιση σε/προς αρχείο : </b></div>
+					<div >
+						<input  type="checkbox"  id="hideArchieved" />
 					</div>
 				</div>`;	
 	}  

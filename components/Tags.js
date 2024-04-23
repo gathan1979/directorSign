@@ -136,6 +136,7 @@ class Tags extends HTMLElement {
     protocolNo;
     protocolYear;
     shadow;
+    locked;
 
     constructor() {
         super();
@@ -146,10 +147,17 @@ class Tags extends HTMLElement {
         this.shadow.innerHTML = tagsContent;
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
+        this.locked = this.dataset.locked;
+        if (!+this.locked){
+            this.shadow.querySelector("#showAddTagModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addTagsModal").showModal());
+        }
+        else{
+            this.shadow.querySelector("#showAddTagModalBtn").style.display = "none";
+        }
         //this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>this.loadRelativeFull(this.protocolNo,1,1));
         this.shadow.querySelector("#insertTagsBtn").addEventListener("click",()=>this.saveTags(this.protocolNo, this.protocolYear));
         this.getTags(this.protocolNo, this.protocolYear);
-        this.shadow.querySelector("#showAddTagModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addTagsModal").showModal());
+        
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> {
             this.shadow.querySelector("#addTagsModal").close();
             this.shadow.querySelector("#insertTagsField").value= "";   

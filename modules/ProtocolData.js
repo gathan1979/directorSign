@@ -100,7 +100,7 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 	}
 }
 
-export function fillChargesTable(response, protocol = false){   //Να αφαιρεθεί το protocol. Άλλαξε η λογική ανοίγματος εγγραφών πρωτοκόλλου
+export function fillChargesTable(response, protocol = false){  
 	
 	//const table = document.querySelector("#chargesTableHeader");
 	//table.innerHTML=
@@ -179,11 +179,11 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 		
 		<div id="bottomSectionBody">
 			<div style="flex-basis: 50%;" class="firstBottomSectionColumn">
-				<record-attachments style="max-height:40%;" protocolDate="${recordDate}" protocolNo="${record}"></record-attachments>
-				<record-relative style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-relative>
-				<record-comment style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-comment>
+				<record-attachments data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:40%;" protocolDate="${recordDate}" protocolNo="${record}"></record-attachments>
+				<record-relative data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-relative>
+				<record-comment data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-comment>
 				<record-history style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-history>
-				<record-tags style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-tags>
+				<record-tags data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-tags>
 
 				<div class="table-responsive mt-2 pt-2" id="kshde" style="background: rgba(122, 160, 126, 0.2)!important;">
 					<table class="table" id="kshdeTableInProtocol">
@@ -199,8 +199,8 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 				</div>
 			</div>	
 
-			<record-folders data-locked="${protocol===true?1:0}" style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
-			<record-assignments data-locked="${protocol===true?1:0}"  style="flex-basis: 30%;" protocolDate="${recordDate}" protocolNo="${record}"></record-assignments>
+			<record-folders data-locked="${(status>0 || protocol===true)?1:0}" style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
+			<record-assignments data-locked="${(status>0 || protocol===true)?1:0}"  style="flex-basis: 30%;" protocolDate="${recordDate}" protocolNo="${record}"></record-assignments>
 
 		</div>
 	</div>
