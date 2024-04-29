@@ -123,7 +123,7 @@ const foldersContent = `
             
         </div>
     </dialog>
-    <dialog id="seachfoldersModal" class="customDialog" >
+    <dialog id="seachfoldersModal" class="customDialog" style="width: 80%;">
         <div class="customDialogContentTitle">
             <span style="font-weight:bold;">Αναζήτηση φακέλων αρχειοθέτησης</span>
             <button class="isButton " name="closeModalBtn2" id="closeModalBtn2" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>

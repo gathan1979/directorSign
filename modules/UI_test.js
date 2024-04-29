@@ -587,6 +587,21 @@ async function createChargesUIstartUp(){
 				</div>`:``
 			}
 
+			${
+				+loginData.user.roles[cRole].protocolAccessLevel==1?
+				`<div id="topMenuCopyRecsBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch; padding: 5px;">
+					<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Μεταφορές</div>
+						<div class="flexHorizontal" style="padding:0px 5px;">
+							<button id="openCopyChargesDialog" class="isButton primary extraSmall"> 
+								<i class="fas fa-copy"></i>
+							</button>
+							<div>
+								<button id="copyHistoryBtn" title="Ιστορικό μεταφορών" type="button" class="isButton extraSmall"><i class="fas fa-list"></i></button>
+							</div>
+					</div>
+				</div>`:``
+			}
+
 		
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel==1?
@@ -694,7 +709,12 @@ async function createChargesUIstartUp(){
 		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 	</dialog>`;
 
+	const copyChargesDiv= `<dialog id="copyChargesModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
+		<charges-move  style="display:flex; flex-direction:column; gap: 10px;"></charges-move>
+	</dialog>`;
+
 	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
+	document.body.insertAdjacentHTML("afterend",copyChargesDiv);
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",addRecordDialog);
@@ -739,7 +759,7 @@ async function createChargesUIstartUp(){
 	
 	if (document.querySelector('#addProtocolBtn')){
 		document.querySelector('#addProtocolBtn').addEventListener("click", ()=>{
-			document.querySelector("record-add").dataset.timestamp = Date.now();
+			document.querySelector("record-add").setAttribute("timestamp", Date.now());
 			document.querySelector('#addRecordModal').showModal();
 		});
 	}
@@ -865,6 +885,13 @@ async function createChargesUIstartUp(){
 		});
 		document.querySelector('#peddingAccessReqsCloseBtn').addEventListener("click", ()=>{
 			document.querySelector('#peddingAccessRequestsModal').close();
+		});
+	}
+
+	if (document.querySelector('#openCopyChargesDialog')){
+		document.querySelector('#openCopyChargesDialog').addEventListener("click", ()=>{
+			document.querySelector("charges-move").setAttribute("timestamp", Date.now());
+			document.querySelector('#copyChargesModal').showModal();
 		});
 	}
 

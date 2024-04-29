@@ -141,7 +141,8 @@
 						urlpar.append("type",1);
 						const res = await fetch("/api/getUsers.php?"+urlpar); 
 						if (res.status >= 200 && res.status <= 299) {
-							const users = await res.json();
+							const resDec = await res.json();
+							const users = resDec.users;
 							//console.log(users);
 							let temp = "";
 							for (let j=0;j<users.length;j++){
