@@ -1,6 +1,3 @@
-import refreshToken from "../modules/RefreshToken.js";
-import getFromLocalStorage from "../modules/LocalStorage.js";
-
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 const assignmentsContent = `

@@ -166,7 +166,11 @@ export function fillChargesTable(response, protocol = false){
 }
 
 export async function openProtocolRecord(subject,record,recordDate, status, event, protocol){
-	console.log("record no ..."+record)
+	//console.log("record no ..."+record)
+	const loginData = JSON.parse(localStorage.getItem("loginData"));
+	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
+	const currentYear = (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear());
+	
 	const protocolWindowContent = 
 	`<div id="bottomSection">
 		<div class="" name="bottomSectionTitleBar" id="bottomSectionTitleBar" >
@@ -199,7 +203,7 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 				</div>
 			</div>	
 
-			<record-folders data-locked="${(status>0 || protocol===true)?1:0}" style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
+			<record-folders data-locked="${(protocol===true)?1:0}" style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
 			<record-assignments data-locked="${(status>0 || protocol===true)?1:0}"  style="flex-basis: 30%;" protocolDate="${recordDate}" protocolNo="${record}"></record-assignments>
 
 		</div>
@@ -209,9 +213,7 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 		<record-edit protocolDate="${recordDate}" protocolNo="${record}" style="display:flex; flex-direction:column; gap: 10px;"></record-edit>
     </dialog>`;
 
-	const loginData = JSON.parse(localStorage.getItem("loginData"));
-	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
-	const currentYear = (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear());
+	
 
 	document.querySelector("#protocolRecordDialog").showModal();
 	//event.currentTarget.style.backgroundColor = "green";
