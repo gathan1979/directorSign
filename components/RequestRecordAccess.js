@@ -147,19 +147,27 @@ const addContent = `
         <span style="font-weight:bold;">Νέο αίτημα πρόσβασης</span>
         <div class="topButtons" style="display:flex;gap: 7px;">
             <button id="saveRecordBtn" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
-            <button id="undoBtn" title="Αναίρεση αλλαγών" type="button" class="isButton undo"><i class="fas fa-undo"></i></button>
+            <button id="clearBtn" title="Αναίρεση αλλαγών" type="button" class="isButton undo"><i class="fas fa-undo"></i></button>
             <button class="isButton " name="closeEditModalBtn" id="closeEditModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
     </div>
     <div class="customDialogContent" style="margin-top:10px;">
         <form id="addRecordForm">
             <div id="addFormDiv">
-                 <div class="formRow">    
-                    <label class="formItem" for="protocolField" class="col-sm-2 col-form-label">Αρ.πρωτ.</label>
+                <div class="formRow">    
+                    <label class="formItem" for="protocolField">Αρ.πρωτ.</label>
                     <input class="formInput" required=""  type="number"  id="protocolField" ></input>
                 </div>
                 <div class="formRow">    
-                    <label class="formItem" for="causeField" class="col-sm-2 col-form-label">Αιτιολογία</label>
+                    <label class="formItem" for="folderField">Φάκελος πρόσβασης</label>
+                    <select class="formInput" required=""  id="folderField" ></select>
+                </div>
+                <div class="formRow">    
+                    <label class="formItem" for="yearField">Έτος</label>
+                    <select class="formInput" required=""  id="yearField" ></select>
+                </div>
+                <div class="formRow">    
+                    <label class="formItem" for="causeField">Αιτιολογία</label>
                     <textarea class="formInput" required=""  type="text"  id="causeField" ></textarea>
                 </div>
             </div>
@@ -172,11 +180,6 @@ const addContent = `
 
 class RequestRecordAccess extends HTMLElement {
     shadow;
-    changedProperties;
-    emptyProperties = {
-        protocolField : "",
-        causeField : ""
-    };
     timer = null;
 
     constructor() {
@@ -186,7 +189,6 @@ class RequestRecordAccess extends HTMLElement {
     async connectedCallback(){
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = addContent;
-        this.changedProperties = {};
         
         this.shadow.querySelector("#closeEditModalBtn").addEventListener("click", ()=>{
             this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
@@ -197,40 +199,94 @@ class RequestRecordAccess extends HTMLElement {
             this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated'); 
             this.parentElement.close();
         });
-        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
-                element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); 
-         });
+        
+        //Δημιουργία επιλογών φακέλων
+        this.shadow.querySelector("#folderField").innerHTML = "";
+        this.shadow.querySelector("#folderField").innerHTML += `<option value='0'></option>`;
+        const folderArray = await this.getFolderList();
+
+        folderArray.forEach( elem => {
+            this.shadow.querySelector("#folderField").innerHTML += `<option value='${elem[0]}'>${elem[1]}</option>`;
+        })
+
+        //Δημιουργία επιλογών ετών
+        this.shadow.querySelector("#yearField").innerHTML = "";
+        this.shadow.querySelector("#yearField").innerHTML += `<option value='0'></option>`;
+        const yearArray = await this.getActiveYears();
+
+        yearArray.forEach( elem => {
+            this.shadow.querySelector("#yearField").innerHTML += `<option value='${elem[0]}'>${elem[0]}</option>`;
+        })
+
+        //Listeners πεδίων
+        this.shadow.querySelector("#folderField").addEventListener("change", ()=>{
+            this.checkStatus();
+        })
+        this.shadow.querySelector("#protocolField").addEventListener("keyup", () =>{
+            this.checkStatus();
+        })
+        this.shadow.querySelector("#protocolField").addEventListener("change", () =>{
+            this.checkStatus();
+        })
+ 
 
         //Listeners πάνω κουμπιών
         //this.shadow.querySelector("#archiveButtonModal").addEventListener("click",()=>this.saveAssignments());
         //this.shadow.querySelector("#restoreButtonModal").addEventListener("click",()=>this.saveAssignments());
         this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>{ this.requestRecordAccess(); });
-        this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.undoChanges());
-        this.shadow.querySelector("#protocolField").addEventListener("keyup", ()=>{
-           
-            console.log("hre 1")
-            let debounceFunc = this.debounce( async () =>  {
-                if(this.shadow.querySelector("#protocolField").value == "" ){
-                    this.shadow.querySelector("#searchProtocolRes").innerHTML = "";
-                    console.log("hre")
-                    return;
-                }
-                const res = await this.searchProtocol( this.shadow.querySelector("#protocolField").value);
-                this.shadow.querySelector("#searchProtocolRes").innerHTML = res.subject+" Eξερχ.:"+res.outSubject;
-            });
-            debounceFunc();
-        })
+        this.shadow.querySelector("#clearBtn").addEventListener("click",()=>this.clearChanges());
     }
 
-    debounce(func, timeout = 500){
-        return (...args) => {
-            clearTimeout(this.timer);
-            this.timer = setTimeout(() => { func.apply(this, args); }, timeout);
-        };
-    }
 
     disconnectedCallback() {
     
+    }
+
+    checkStatus(){
+        //console.log(this.shadow.querySelector("#folderField").value,this.shadow.querySelector("#protocolField").value)
+        if (this.shadow.querySelector("#folderField").value==0 && this.shadow.querySelector("#protocolField").value==""){
+            this.resetSaveBtn();
+            return 0;
+        }
+        else{
+            this.setSaveBtn();
+            return 1;
+        }
+    }
+
+    async resetSaveBtn(){
+        this.shadow.querySelector("#saveRecordBtn>i").classList.remove("faa-shake");
+        this.shadow.querySelector("#saveRecordBtn>i").classList.remove("animated");
+        this.shadow.querySelector("#saveRecordBtn").classList.remove("active");
+    }
+
+    async setSaveBtn(){
+        this.shadow.querySelector("#saveRecordBtn>i").classList.add("faa-shake");
+        this.shadow.querySelector("#saveRecordBtn>i").classList.add("animated");
+        this.shadow.querySelector("#saveRecordBtn").classList.add("active");
+    }
+
+    async getFolderList(){
+       
+        const urlpar = new URLSearchParams({asList: 1});
+        const res = await runFetch("/api/getFoldersList.php", "GET", urlpar);
+        if (!res.success){
+            console.log(res.msg);
+        }
+        else{
+            console.log(res);
+            return  res.result;
+        }
+    }
+
+    async getActiveYears(){
+        const res = await runFetch("/api/getActiveYears.php", "GET");
+        if (!res.success){
+            console.log(res.msg);
+        }
+        else{
+            return  res.result.years;
+        }
     }
 
     async searchProtocol(protocolNo, protocolYear = localStorage.getItem("currentYear")){
@@ -246,48 +302,43 @@ class RequestRecordAccess extends HTMLElement {
         }
     }
 
-    updateChangedProperties(event){
-        //Ανανέωση αντικειμένου changedProperties με τιμές πεδίων
-        this.changedProperties = {};
-        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
-            this.changedProperties[element.id] = element.value;
-            if (element.type == "date" && element.value == ""){
-                this.changedProperties[element.id] = "0000-00-00";
-            }
-        });
-        //Έλεγχος ισότητας changedProperties με protocolProperties
-        const shallowCompare = (obj1, obj2) => {
-                return ( (Object.keys(obj1).length === Object.keys(obj2).length) &&
-                Object.keys(obj1).every(key => {console.log(obj1[key], obj2[key]); return obj2.hasOwnProperty(key) && obj1[key] === obj2[key]}))
-            };
-        //Αν υπάρχει τροποποίηση στα δεδομένα από το χρήστη αλλάζει κουμπί αποθήκευσης
-        if (shallowCompare(this.changedProperties, this.emptyProperties)){
-            this.shadow.getElementById('saveRecordBtn').classList.remove('active');
-            this.shadow.querySelector("#saveRecordBtn  i").classList.remove('faa-shake');
-            this.shadow.querySelector("#saveRecordBtn  i").classList.remove('animated');     
-        }
-        else{
-            this.shadow.getElementById('saveRecordBtn').classList.add('active');
-            this.shadow.querySelector("#saveRecordBtn  i").classList.add('faa-shake');
-            this.shadow.querySelector("#saveRecordBtn  i").classList.add('animated');    
-        }
-    }
-
-
-    undoChanges(){
+    clearChanges(){
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             element.value = "";
         });
         this.shadow.querySelector("#searchProtocolRes").innerHTML = "";
-        this.updateChangedProperties();
+        this.resetSaveBtn();
     }
 
     async requestRecordAccess(){
+        //console.log(this.checkStatus());
+        if (this.checkStatus()===0){
+            alert("Συμπληρώστε τουλάχιστον το πρωτόκολλο ή το φάκελο πρόσβασης");
+            return;
+        }
+        let msg = "";
+        if (this.shadow.querySelector("#folderField").value !=0){
+            msg += " Πρόσβαση σε φάκελο "+this.shadow.querySelector("#folderField").value+".";
+        }
+        if (this.shadow.querySelector("#protocolField").value !=""){
+            msg += " Πρόσβαση σε πρωτόκολλο "+ this.shadow.querySelector("#protocolField").value+".";
+        }
+        if (this.shadow.querySelector("#yearField").value !=0){
+            msg += " Η πρόσβαση αφορά το έτος "+ this.shadow.querySelector("#yearField").value+".";
+        }
+        else{
+            msg += " Η πρόσβαση αφορά όλα τα έτη.";
+        }
+       
+        if (!confirm(msg)){
+            return;
+        }
+
         const formdata = new FormData();
-        this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
-            element.value = this.changedProperties[element.id];
-            formdata.append(element.id, element.value);
-        });
+        formdata.append("protocolField", this.shadow.querySelector("#protocolField").value);
+        formdata.append("folderField", this.shadow.querySelector("#folderField").value);
+        formdata.append("yearField", this.shadow.querySelector("#yearField").value);
+        formdata.append("causeField", this.shadow.querySelector("#causeField").value);
         formdata.append("currentYear", localStorage.getItem("currentYear"));
 
         const res = await runFetch("/api/requestRecordAccess.php", "POST", formdata);
@@ -302,7 +353,7 @@ class RequestRecordAccess extends HTMLElement {
                 this.shadow.getElementById('saveRecordBtn').classList.remove('active');
                 this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
                 this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
-                this.undoChanges();
+                this.clearChanges();
                 this.parentElement.close();
             }
         }
