@@ -547,6 +547,24 @@ async function createChargesUIstartUp(){
 	
 	const yearSelector = `<year-selector id="yearSelectorDiv"></year-selector>`;
 
+	const accessExtraBtns = 
+		`<div id="topMenuNewAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;">	
+		${
+			+loginData.user.roles[cRole].protocolAccessLevel==1?
+			``:
+			`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αίτημα Πρόσβασης</div>
+			<div class="flexHorizontal" style="padding:0px 5px;">
+				<button id="reqProtocolAccessBtn" name="reqProtocolAccessBtn" class="isButton small" title="Aίτηση πρόσβασης" style="background-color:lightseagreen"><i class="fas fa-eye"></i></button>
+				<div>
+					<button class="isButton small" style="background-color: var(--bs-orange);"> 
+						<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
+					</button>
+				</div>
+				
+			</div>`
+		}
+		</div>`;
+
 	const protocolExtraBtns = 
 		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;padding: 5px;">	
 			${
@@ -574,7 +592,7 @@ async function createChargesUIstartUp(){
 		
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel==1?
-				`<div id="topMenuProtocolAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch; padding: 5px;">
+				`<div id="topMenuNewAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch; padding: 5px;">
 					<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αιτήματα Πρόσβασης</div>
 						<div class="flexHorizontal" style="padding:0px 5px;">
 							<button class="isButton extraSmall" style="background-color: var(--bs-orange);"> 
@@ -699,7 +717,7 @@ async function createChargesUIstartUp(){
 			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(6, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 		</dialog>`;
 
-	const peddingAccessequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal">
+	const peddingAccessRequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal">
 		<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
 			<span style="font-weight:bold;">Αιτήματα πρόσβασης</span>
 			<div class="topButtons" style="display:flex;gap: 7px;">
@@ -713,7 +731,7 @@ async function createChargesUIstartUp(){
 		<charges-move  style="display:flex; flex-direction:column; gap: 10px;"></charges-move>
 	</dialog>`;
 
-	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
+	document.body.insertAdjacentHTML("afterend",peddingAccessRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",copyChargesDiv);
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
@@ -726,6 +744,11 @@ async function createChargesUIstartUp(){
 	if (document.querySelector("#topMenuNewProtocolBtnsDiv") == null){
 		document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
 	}
+
+	if (document.querySelector("#topMenuNewAccessBtnsDiv") == null){
+		document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend", accessExtraBtns);
+	}
+
 	if (document.querySelector("#chargesFilterMenu") == null){
 		document.querySelector("#generalFilterDiv").insertAdjacentHTML("afterend",chargesFilterMenuDiv);	
 	}
@@ -744,6 +767,12 @@ async function createChargesUIstartUp(){
 		createSearch();
 	});
 	//console.log("keyup listener added");
+
+	if(document.querySelector("#reqProtocolAccessBtn")){
+		document.querySelector("#reqProtocolAccessBtn").addEventListener("click", ()=>{
+			document.querySelector("#requestProtocolAccessDialog").showModal();
+		})
+	}
 
 	if (document.querySelector('#reqProtocolBtn')){
 		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
@@ -895,9 +924,9 @@ async function createChargesUIstartUp(){
 		});
 	}
 
-	if (+loginData.user.roles[cRole].protocolAccessLevel === 1){
+	//if (+loginData.user.roles[cRole].protocolAccessLevel === 1){
 		const peddingAccessReqs = await getPeddingAccessProtocolReqs();
-	}
+	//}
 }
 
 
@@ -911,23 +940,7 @@ async function createProtocolUIstartUp(){
 	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
 	let cRole = localStorage.getItem("currentRole");
 
-	const protocolExtraBtns = 
-		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;">	
-		${
-			+loginData.user.roles[cRole].protocolAccessLevel?
-			``:
-			`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αίτημα Πρόσβασης</div>
-			<div class="flexHorizontal" style="padding:0px 5px;">
-				<button id="reqProtocolAccessBtn" name="reqProtocolAccessBtn" class="isButton small" title="Aίτηση πρόσβασης" style="background-color:lightseagreen"><i class="fas fa-eye"></i></button>
-				<div>
-					<button class="isButton small" style="background-color: var(--bs-orange);"> 
-						<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
-					</button>
-				</div>
-				
-			</div>`
-		}
-		</div>`;
+	
 	
 	const chargesFilterMenuDiv = 
 	`<div id="chargesFilterMenu" class="flexVertical ">
@@ -972,23 +985,10 @@ async function createProtocolUIstartUp(){
 						<div id="filterApplyDiv"></div>
 					</dialog>`;
 
-
-
-	const peddingAccessequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal">
-		<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
-			<span style="font-weight:bold;">Αιτήματα πρόσβασης</span>
-			<div class="topButtons" style="display:flex;gap: 7px;">
-				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
-			</div>
-		</div>
-		<div id="peddingAccessReqsRecords" style="max-height: 80vh;overflow-y: scroll;display:grid;gap:10px; grid-template-columns:repeat(6, 1fr);align-items:center; justify-items:center;font-size: 0.85em;"></div>
-	</dialog>`;
 			
 
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
-	document.body.insertAdjacentHTML("afterend",peddingAccessequestsDiv);
 	
-	document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
 	document.querySelector("role-selector").insertAdjacentHTML("afterend", `<year-selector id="yearSelectorDiv"></year-selector>`);
 	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
 
@@ -1020,11 +1020,7 @@ async function createProtocolUIstartUp(){
 	updateBtnsFromFilter();
 
 
-	if(document.querySelector("#reqProtocolAccessBtn")){
-		document.querySelector("#reqProtocolAccessBtn").addEventListener("click", ()=>{
-			document.querySelector("#requestProtocolAccessDialog").showModal();
-		})
-	}
+	
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
 	
@@ -1035,15 +1031,6 @@ async function createProtocolUIstartUp(){
 		createSearch();
 	});
 
-	if (document.querySelector('#peddingAccessRequestsNo')){
-		document.querySelector('#peddingAccessRequestsNo').parentElement.addEventListener("click", ()=>{
-			document.querySelector('#peddingAccessRequestsModal').showModal();
-		});
-		document.querySelector('#peddingAccessReqsCloseBtn').addEventListener("click", ()=>{
-			document.querySelector('#peddingAccessRequestsModal').close();
-		});
-	}
-
 	document.querySelector("#yearSelectorDiv").addEventListener("yearChangeEvent", async ()=>{
 		let debounceFunc = debounce( async () =>  {
 			const chargesRes = await getProtocolAndFill(); 
@@ -1051,9 +1038,10 @@ async function createProtocolUIstartUp(){
 		debounceFunc();
 	})
 
-	if (+loginData.user.roles[cRole].protocolAccessLevel !== 1){
-		const peddingAccessReqs = await getPeddingAccessProtocolReqs();
-	}
+	document.querySelector("record-request-access").addEventListener("RefreshAccessToProtocol", async ()=>{
+		
+	})
+
 
 	const chargesRes = await getProtocolAndFill(); 
 	
@@ -1443,13 +1431,14 @@ async function getPeddingAccessProtocolReqs(){
 			}
 		}
 		else{
-			let countActive = 0;
 			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "orange";
 			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "orange";
-			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Φάκελος</div><div>Λόγος</div><div>Ημερ.</div><div>Ενέργειες</b></div>`;
+			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Φάκελος</div><div>Αιτιολογία</div><div>Ημερ.</div><div>Ενέργειες</b></div>`;
 			resdec.requests.forEach(elem => {
+					const calendarReqBtn = 'Λήξη: <input data-req="'+elem.aa+'" data-action="calendarReq" type="date"></input>';
 					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" data-protocol="'+elem.protocolField+'" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
 					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-check-square"></i></button>';
+					const removeReqBtn = '<button data-req="'+elem.aa+'" data-action="removeReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="fas fa-trash-alt"></i></button>';
 					document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
 						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
 						<div data-req="${elem.aa}" data-name="protocolField">${elem.protocolField}</div>
@@ -1458,7 +1447,7 @@ async function getPeddingAccessProtocolReqs(){
 						<div data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;
 					let statusText = "";
 					if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
-						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${acceptReqBtn+rejectReqBtn}</div>`;
+						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${calendarReqBtn+acceptReqBtn+rejectReqBtn+removeReqBtn}</div>`;
 					}
 					else{
 						switch(+elem.active){
@@ -1466,9 +1455,9 @@ async function getPeddingAccessProtocolReqs(){
 							case 0 : statusText= `<button class="isButton active" data-req="${elem.aa}" data-access="0" data-protocol="${elem.protocolField}"><i class="fas fa-lock-open"></i></button>`;break;
 							case 1 : statusText= `<button class="isButton warning" disabled="disabled" data-req="${elem.aa}" data-access="1"><i class="fas fa-key"></i></button>`;break;
 						}
-						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${statusText}</div>`;
+						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div disabled data-req="${elem.aa}" data-name="actionsField">${calendarReqBtn}</div>`;
 					}
-					const protDiv=document.querySelector(`[data-name="protocolField"][data-req="${elem.aa}"]`);
+					const protDiv=document.querySelector(`[data-name="requestFromNameField"][data-req="${elem.aa}"]`);
 					protDiv.style.padding = "5px";
 					protDiv.style.color = "black";	
 					if(elem.acceptedField==1){
@@ -1482,7 +1471,7 @@ async function getPeddingAccessProtocolReqs(){
 						protDiv.style.backgroundColor = "orange";		
 						
 					}
-					countActive++;	
+					
 				}
 			);
 			document.querySelectorAll(`#peddingAccessRequestsModal [data-access="0"]`).forEach( elem=>{
@@ -1493,11 +1482,24 @@ async function getPeddingAccessProtocolReqs(){
 
 			if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
 				resdec.requests.forEach(elem => {
-					document.querySelector(`[data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => rejectPeddingAccessReq(event.currentTarget.dataset.req, event.currentTarget.dataset.protocol));	
-					document.querySelector(`[data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => acceptPeddingAccessReq(event.currentTarget.dataset.req, event.currentTarget.dataset.protocol));	
+					if (elem.expiresAtField !== ""){
+						document.querySelector(`[data-action="calendarReq"][data-req="${elem.aa}"]`).value = elem.expiresAtField;
+					}
+					document.querySelector(`[data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, 0));	
+					document.querySelector(`[data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, 1));
+					document.querySelector(`[data-action="removeReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, -1));		
 				})
 			}
-			document.querySelector("#peddingAccessRequestsNo").innerText = countActive;
+			else{
+				resdec.requests.forEach(elem => {
+					if (elem.expiresAtField !== ""){
+						document.querySelector(`[data-action="calendarReq"][data-req="${elem.aa}"]`).value = elem.expiresAtField;
+					}
+					document.querySelector(`[data-action="calendarReq"][data-req="${elem.aa}"]`).setAttribute("disabled","disabled");
+				})
+			}
+			
+			document.querySelector("#peddingAccessRequestsNo").innerText = resdec.pending;
 		}
 	}
 }
@@ -1544,47 +1546,53 @@ async function acceptPeddingReq(aa){
 	}
 }
 
-async function rejectPeddingAccessReq(aa, protocol){
-	if (!confirm(`Πρόκειται να απορριφθεί πρόσβαση στο πρωτόκολλο ${protocol};`)){
-		return;
+async function peddingAccessReq(aa, status){
+	if (status == 1){
+		if (!confirm(`Πρόσβαση σε πρωτόκολλο ή φάκελο;`)){
+			return;
+		}
 	}
+	else if (status == 0){
+		if (!confirm(`Απόρριψη πρόσβασης σε πρωτόκολλο ή φάκελο;`)){
+			return;
+		}
+	}
+	else if (status == -1){
+		if (!confirm(`Διαγραφή αιτήματος;`)){
+			return;
+		}
+	}
+	const expireDate = document.querySelector(`[data-action="calendarReq"][data-req="${aa}"]`).value;
 
 	const formData = new FormData();
 	formData.append("aa", aa);
+	formData.append("status", status);
+	formData.append("expireDate", expireDate);
 
-	const res = await runFetch("/api/rejectPeddingAccessReq.php", "POST", formData);
+	const res = await runFetch("/api/setPeddingAccessReq.php", "POST", formData);
 	if (!res.success){
 		alert(res.msg);
 	}
 	else{
 		//return res;
 		const resdec =  res.result;
-		getPeddingAccessProtocolReqs();
+		await getPeddingAccessProtocolReqs();
 		// const reqItems = document.querySelectorAll('[data-req="'+aa+'"]');
 		// reqItems.forEach((elem) => {
 		// 	elem.remove();
 		// })
-		alert("Το αίτημα πρόσβασης έχει απορριφθεί");
+		if (status == 1){
+			alert("Το αίτημα πρόσβασης έχει εγκριθεί");
+		}
+		else if (status == 0){
+			alert("Το αίτημα πρόσβασης έχει απορριφθεί");
+		}
+		else if (status == -1){
+			alert("Το αίτημα πρόσβασης έχει διαγραφεί");
+		}
 	}
 }
 
-async function acceptPeddingAccessReq(aa, protocol){
-	if (!confirm(`Πρόκειται να δοθεί πρόσβαση στο πρωτόκολλο ${protocol};`)){
-		return;
-	}
-
-	const formData = new FormData();
-	formData.append("aa", aa);
-
-	const res = await runFetch("/api/acceptPeddingAccessReq.php", "POST", formData);
-	if (!res.success){
-		alert(res.msg);
-	}
-	else{
-		//const chargesRes = await getChargesAndFill(); 
-		getPeddingAccessProtocolReqs();
-	}
-}
 
 function debounce(func, timeout = 1000){
 	return (...args) => {

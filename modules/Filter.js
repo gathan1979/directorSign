@@ -30,14 +30,15 @@ function resetFilterStorage(){
 		isAssignedLast :0,
 		noNotifications : 0,
 		hideArchieved : 0,
-		selectedFolder : 0
+		selectedFolder : 0,
+		accessRequests : 0
 	};
 	localStorage.setItem("filter", JSON.stringify(filter));
 }
 //updateFilterStorage();
 export const FILTERS = {
 	PROTOCOL: ["selectedFolder", "selectedDate"],
-	CHARGES: ["hideArchieved", "isAssigned", "isAssignedLast", "isAssignedToDep", "noNotifications", "selectedDate", "selectedDateDep", "showForArchive"]
+	CHARGES: ["hideArchieved", "isAssigned", "isAssignedLast", "isAssignedToDep", "noNotifications", "selectedDate", "selectedDateDep", "showForArchive","accessRequests"]
 }
 	
 	
@@ -211,7 +212,7 @@ function debounce(func, timeout = 500){
 
 
 export default function createFilter(parentElement){
-	console.log("creating filter")
+	//console.log("creating filter")
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
 	const currentRole = localStorage.getItem("currentRole");
 	//console.log(userData.roles[currentRole].protocolAccessLevel);
@@ -303,6 +304,12 @@ export default function createFilter(parentElement){
 					<div >
 						<input  type="checkbox"  id="hideArchieved" />
 					</div>
+				</div>
+				<div class="flexHorizontal" style="padding-top:0.3em;">
+					<div ><i  class="fas fa-filter" ></i><b> Αιτήματα πρόσβασης : </b></div>
+					<div >
+						<input  type="checkbox"  id="accessRequests" />
+					</div>
 				</div>`;	
 	}	
 	else{ 
@@ -329,6 +336,12 @@ export default function createFilter(parentElement){
 					<div ><i  class="fas fa-filter" ></i><b> Εμφάνιση σε/προς αρχείο : </b></div>
 					<div >
 						<input  type="checkbox"  id="hideArchieved" />
+					</div>
+				</div>
+				<div class="flexHorizontal" style="padding-top:0.3em;">
+					<div ><i  class="fas fa-filter" ></i><b> Αιτήματα πρόσβασης : </b></div>
+					<div >
+						<input  type="checkbox"  id="accessRequests" />
 					</div>
 				</div>`;	
 	}  
@@ -386,17 +399,22 @@ export function updateBtnsFromFilter(){
 	//console.log(filter);
 	const archiveBtn = document.querySelector('#showForArchive');
 	const hideArchieved = document.querySelector('#hideArchieved');
+	const accessRequests = document.querySelector('#accessRequests');
 	const dateBtn = document.querySelector('#datefilter');
 	const notAssignedBtn = document.querySelector('#noAssignmentfilter');
 	const lastAssignedBtn = document.querySelector('#lastAssignedFilter');
 	const hideNotificationsBtn = document.querySelector('#hideNotificationsFilter');
-	const filterFolderBtn = document.querySelector("#filterFolderSelection")
+	const filterFolderBtn = document.querySelector("#filterFolderSelection");
+
 	
 	if (archiveBtn !==null){
 		(filter.showForArchive?archiveBtn.checked =true:archiveBtn.checked =false);
 	}
 	if (hideArchieved !==null){
 		(filter.hideArchieved?hideArchieved.checked =true:hideArchieved.checked =false);
+	}
+	if (accessRequests !==null){
+		(filter.accessRequests?accessRequests.checked =true:accessRequests.checked =false);
 	}
 	
 	if (dateBtn!==null){
@@ -474,6 +492,7 @@ export function updateFilterStorage(){
 	}
 	const archiveBtn = document.querySelector('#showForArchive');
 	const hideArchieved = document.querySelector('#hideArchieved');
+	const accessRequests = document.querySelector('#accessRequests');
 	const dateBtn = document.querySelector('#datefilter');
 	const notAssignedBtn = document.querySelector('#noAssignmentfilter');
 	const lastAssignedBtn = document.querySelector('#lastAssignedFilter');
@@ -497,6 +516,9 @@ export function updateFilterStorage(){
 	}
 	if (hideArchieved !==null){
 		(hideArchieved.checked?filter.hideArchieved =1:filter.hideArchieved =0);
+	}
+	if (accessRequests !==null){
+		(accessRequests.checked?filter.accessRequests =1:filter.accessRequests =0);
 	}
 	if (dateBtn!==null){
 		if (userData.roles[currentRole].protocolAccessLevel == 1){
@@ -557,6 +579,7 @@ function addListeners(){
 	//administrator
 	document.getElementById("showForArchive")?document.getElementById("showForArchive").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 	document.getElementById("hideArchieved")?document.getElementById("hideArchieved").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
+	document.getElementById("accessRequests")?document.getElementById("accessRequests").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 
 	document.getElementById("noAssignmentfilter")?document.getElementById("noAssignmentfilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;
 	document.getElementById("datefilter")?document.getElementById("datefilter").addEventListener("change",()=> {updateFilterStorage(); getChargesAndFill();}):null;

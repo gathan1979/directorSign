@@ -202,7 +202,7 @@ class RequestRecordAccess extends HTMLElement {
         
         //Δημιουργία επιλογών φακέλων
         this.shadow.querySelector("#folderField").innerHTML = "";
-        this.shadow.querySelector("#folderField").innerHTML += `<option value='0'></option>`;
+        this.shadow.querySelector("#folderField").innerHTML += `<option selected value='0'></option>`;
         const folderArray = await this.getFolderList();
 
         folderArray.forEach( elem => {
@@ -334,6 +334,7 @@ class RequestRecordAccess extends HTMLElement {
             return;
         }
 
+        const folderFieldValue = this.shadow.querySelector("#folderField").value==""?0:this.shadow.querySelector("#folderField").value;
         const formdata = new FormData();
         formdata.append("protocolField", this.shadow.querySelector("#protocolField").value);
         formdata.append("folderField", this.shadow.querySelector("#folderField").value);
@@ -354,6 +355,8 @@ class RequestRecordAccess extends HTMLElement {
                 this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
                 this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
                 this.clearChanges();
+                const RefreshAccessToProtocol = new CustomEvent("RefreshAccessToProtocol", { bubbles: true, cancelable: false, composed: true });
+                this.dispatchEvent(RefreshAccessToProtocol);
                 this.parentElement.close();
             }
         }
