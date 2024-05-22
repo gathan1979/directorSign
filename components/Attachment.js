@@ -119,7 +119,7 @@ class Attachments extends HTMLElement {
         this.shadow.querySelector("#closeAttModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#attachmentModal").close());
         this.shadow.querySelector("#closeGdprModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#gdprModal").close());
        
-        this.users = await this.getUsers(1);  // get all active protocol users
+        this.users = (await this.getUsers(1)).users;  // get all active protocol users
         this.shadow.querySelector("#addToGdprBtn").addEventListener("click", (event)=> this.addGdprRecords(event));
        
 
@@ -466,6 +466,7 @@ class Attachments extends HTMLElement {
             console.log(res.msg);
         }
         else{
+            console.log(this.users);
             this.users.forEach( user => {
                 this.shadow.querySelector("#selectGdprUserDiv").innerHTML += `<button data-selected="0" data-user="${user['aa']}" class="isButton warning gdprUser">${user['fullName']}</button>`
             });
