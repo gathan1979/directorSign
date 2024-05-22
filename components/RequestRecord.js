@@ -257,15 +257,13 @@ class RequestRecord extends HTMLElement {
             alert(res.msg);
         }
         else{    
-            const resdec =  res;
-            console.log(resdec['message']);
-            if (resdec['success']){
-                alert("επιτυχής αίτηση εγγραφής");
-                this.shadow.getElementById('saveRecordBtn').classList.remove('active');
-                this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
-                this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
-                this.parentElement.close();
-            }
+            alert("επιτυχής αίτηση εγγραφής");
+            this.shadow.getElementById('saveRecordBtn').classList.remove('active');
+            this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
+            this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
+            const RefreshRequestProtocol = new CustomEvent("RefreshRequestProtocol", { bubbles: true, cancelable: false, composed: true });
+            this.dispatchEvent(RefreshRequestProtocol);
+            this.parentElement.close();
         }
     } 
 }

@@ -925,8 +925,13 @@ async function createChargesUIstartUp(){
 	}
 
 	document.querySelector("record-request-access").addEventListener("RefreshAccessToProtocol", async ()=>{
-		console.log("catch event")
+		//console.log("catch event")
 		await getPeddingAccessProtocolReqs();
+	})
+
+	document.querySelector("record-request").addEventListener("RefreshRequestProtocol", async ()=>{
+		console.log("catch event new protocol")
+		await getPeddingProtocolReqs();
 	})
 
 	//if (+loginData.user.roles[cRole].protocolAccessLevel === 1){
@@ -1406,8 +1411,8 @@ async function getPeddingProtocolReqs(){
 			);
 			if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
 				resdec.requests.forEach(elem => {
-					document.querySelector('[data-action="dismissReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => rejectPeddingReq(event.currentTarget.dataset.req));	
-					document.querySelector('[data-action="acceptReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => acceptPeddingReq(event.currentTarget.dataset.req));	
+					document.querySelector('[data-action="dismissReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => setPeddingReq(event.currentTarget.dataset.req, 0));	
+					document.querySelector('[data-action="acceptReq"][data-req="'+elem.aa+'"]').addEventListener("click", (event) => setPeddingReq(event.currentTarget.dataset.req, 1));	
 				})
 			}
 			document.querySelector("#peddingRequestsNo").innerText = countActive;
@@ -1489,9 +1494,9 @@ async function getPeddingAccessProtocolReqs(){
 					else{
 						protDiv.style.backgroundColor = "orange";		
 					}
-					document.querySelector(`[data-field="access"][data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, 0));	
-					document.querySelector(`[data-field="access"][data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, 1));
-					document.querySelector(`[data-field="access"][data-action="removeReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, -1));		
+					document.querySelector(`[data-field="access"][data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => setPeddingAccessReq(event.currentTarget.dataset.req, 0));	
+					document.querySelector(`[data-field="access"][data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => setPeddingAccessReq(event.currentTarget.dataset.req, 1));
+					document.querySelector(`[data-field="access"][data-action="removeReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => setPeddingAccessReq(event.currentTarget.dataset.req, -1));		
 				})
 			}
 			else{
@@ -1521,38 +1526,25 @@ async function getPeddingAccessProtocolReqs(){
 	}
 }
 
-async function rejectPeddingReq(aa){
-	
-	const formData = new FormData();
-	formData.append("aa", aa);
-
-	const res = await runFetch("/api/rejectPeddingReq.php", "POST", formData);
-	if (!res.success){
-		alert(res.msg);
+async function setPeddingReq(aa, status){
+	if (status == 1){
+		if (!confirm("Εισαγωγή στο βιβλίο πρωτοκόλλου;")){
+			return;
+		}
 	}
-	else{
-		//return res;
-		const resdec =  res.result;
-		getPeddingProtocolReqs();
-		const reqItems = document.querySelectorAll('[data-req="'+aa+'"]');
-		reqItems.forEach((elem) => {
-			elem.remove();
-		})
-		alert("Το αίτημα πρωτοκόλου έχει απορριφθεί");
+	else if (status == 0){
+		if (!confirm(`Απόρριψη αιτήματος πρωτοκόλλου;`)){
+			return;
+		}
 	}
-}
-
-async function acceptPeddingReq(aa){
-	if (!confirm("Εισαγωγή στο βιβλίο πρωτοκόλλου;")){
-		return;
-	}
-
 	const name = document.querySelector(('[data-name="requestFromNameField"][data-req="'+aa+'"]')).innerText;
+
 	const formData = new FormData();
 	formData.append("aa", aa);
+	formData.append("status", status);
 	formData.append("name", name);
 
-	const res = await runFetch("/api/acceptPeddingReq.php", "POST", formData);
+	const res = await runFetch("/api/setPeddingReq.php", "POST", formData);
 	if (!res.success){
 		alert(res.msg);
 	}
@@ -1563,7 +1555,7 @@ async function acceptPeddingReq(aa){
 	}
 }
 
-async function peddingAccessReq(aa, status){
+async function setPeddingAccessReq(aa, status){
 	if (status == 1){
 		if (!confirm(`Πρόσβαση σε πρωτόκολλο ή φάκελο;`)){
 			return;
