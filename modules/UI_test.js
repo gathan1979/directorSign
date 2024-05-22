@@ -717,14 +717,14 @@ async function createChargesUIstartUp(){
 			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(6, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 		</dialog>`;
 
-	const peddingAccessRequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal">
+	const peddingAccessRequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal" style="width: 80%;">
 		<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
 			<span style="font-weight:bold;">Αιτήματα πρόσβασης</span>
 			<div class="topButtons" style="display:flex;gap: 7px;">
 				<button class="isButton " name="peddingAccessReqsCloseBtn" id="peddingAccessReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 			</div>
 		</div>
-		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(6, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
+		<div id="peddingAccessReqsRecords" style="display:grid;gap:10px; grid-template-columns: 2fr 1fr 1fr 1fr 2fr 2fr 3fr;align-items:center; justify-items: center; font-size: 0.85em;"></div>
 	</dialog>`;
 
 	const copyChargesDiv= `<dialog id="copyChargesModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
@@ -924,6 +924,11 @@ async function createChargesUIstartUp(){
 		});
 	}
 
+	document.querySelector("record-request-access").addEventListener("RefreshAccessToProtocol", async ()=>{
+		console.log("catch event")
+		await getPeddingAccessProtocolReqs();
+	})
+
 	//if (+loginData.user.roles[cRole].protocolAccessLevel === 1){
 		const peddingAccessReqs = await getPeddingAccessProtocolReqs();
 	//}
@@ -1038,9 +1043,7 @@ async function createProtocolUIstartUp(){
 		debounceFunc();
 	})
 
-	document.querySelector("record-request-access").addEventListener("RefreshAccessToProtocol", async ()=>{
-		
-	})
+	
 
 
 	const chargesRes = await getProtocolAndFill(); 
@@ -1433,18 +1436,19 @@ async function getPeddingAccessProtocolReqs(){
 		else{
 			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "orange";
 			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "orange";
-			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Φάκελος</div><div>Αιτιολογία</div><div>Ημερ.</div><div>Ενέργειες</b></div>`;
+			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Φάκελος</div><div>Έτος</div><div>Αιτιολογία</div><div>Ημερ.</div><div>Ενέργειες</b></div>`;
 			resdec.requests.forEach(elem => {
-					const calendarReqBtn = 'Λήξη: <input data-req="'+elem.aa+'" data-action="calendarReq" type="date"></input>';
-					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" data-protocol="'+elem.protocolField+'" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
-					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-check-square"></i></button>';
-					const removeReqBtn = '<button data-req="'+elem.aa+'" data-action="removeReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="fas fa-trash-alt"></i></button>';
+					const calendarReqBtn = '<input data-field="access" data-req="'+elem.aa+'" data-action="calendarReq" type="date"></input>';
+					const rejectReqBtn = '<button data-field="access" data-req="'+elem.aa+'" data-action="dismissReq" data-protocol="'+elem.protocolField+'" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
+					const acceptReqBtn = '<button data-field="access" data-req="'+elem.aa+'" data-action="acceptReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-check-square"></i></button>';
+					const removeReqBtn = '<button data-field="access" data-req="'+elem.aa+'" data-action="removeReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="fas fa-trash-alt"></i></button>';
 					document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
-						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
-						<div data-req="${elem.aa}" data-name="protocolField">${elem.protocolField}</div>
-						<div data-req="${elem.aa}" data-name="folderlField">${elem.folderField}</div>
-						<div data-req="${elem.aa}" data-name="causeField" >${elem.causeField}</div>
-						<div data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;
+						`<div data-field="access" data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
+						<div data-field="access" data-req="${elem.aa}" data-name="protocolField">${elem.protocolField==0?"":elem.protocolField}</div>
+						<div data-field="access" data-req="${elem.aa}" data-name="folderlField">${elem.folderField==0?"":elem.folderField}</div>
+						<div data-field="access" data-req="${elem.aa}" data-name="causeField" >${elem.yearField==0?"":elem.yearField}</div>
+						<div data-field="access" data-req="${elem.aa}" data-name="causeField" >${elem.causeField}</div>
+						<div data-field="access" data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;
 					let statusText = "";
 					if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
 						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${calendarReqBtn+acceptReqBtn+rejectReqBtn+removeReqBtn}</div>`;
@@ -1457,20 +1461,7 @@ async function getPeddingAccessProtocolReqs(){
 						}
 						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div disabled data-req="${elem.aa}" data-name="actionsField">${calendarReqBtn}</div>`;
 					}
-					const protDiv=document.querySelector(`[data-name="requestFromNameField"][data-req="${elem.aa}"]`);
-					protDiv.style.padding = "5px";
-					protDiv.style.color = "black";	
-					if(elem.acceptedField==1){
-						protDiv.style.backgroundColor = "green";
-						protDiv.style.color = "white";	
-					}
-					else if(elem.acceptedField==0){
-						protDiv.style.backgroundColor = "red";		
-					}
-					else{
-						protDiv.style.backgroundColor = "orange";		
-						
-					}
+					
 					
 				}
 			);
@@ -1483,19 +1474,45 @@ async function getPeddingAccessProtocolReqs(){
 			if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
 				resdec.requests.forEach(elem => {
 					if (elem.expiresAtField !== ""){
-						document.querySelector(`[data-action="calendarReq"][data-req="${elem.aa}"]`).value = elem.expiresAtField;
+						document.querySelector(`[data-field="access"][data-action="calendarReq"][data-req="${elem.aa}"]`).value = elem.expiresAtField;
 					}
-					document.querySelector(`[data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, 0));	
-					document.querySelector(`[data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, 1));
-					document.querySelector(`[data-action="removeReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, -1));		
+					const protDiv=document.querySelector(`[data-field="access"][data-name="requestFromNameField"][data-req="${elem.aa}"]`);
+					protDiv.style.padding = "5px";
+					protDiv.style.color = "black";	
+					if(elem.acceptedField==1){
+						protDiv.style.backgroundColor = "green";
+						protDiv.style.color = "white";	
+					}
+					else if(elem.acceptedField==0){
+						protDiv.style.backgroundColor = "red";		
+					}
+					else{
+						protDiv.style.backgroundColor = "orange";		
+					}
+					document.querySelector(`[data-field="access"][data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, 0));	
+					document.querySelector(`[data-field="access"][data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, 1));
+					document.querySelector(`[data-field="access"][data-action="removeReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => peddingAccessReq(event.currentTarget.dataset.req, -1));		
 				})
 			}
 			else{
 				resdec.requests.forEach(elem => {
 					if (elem.expiresAtField !== ""){
-						document.querySelector(`[data-action="calendarReq"][data-req="${elem.aa}"]`).value = elem.expiresAtField;
+						document.querySelector(`[data-field="access"][data-action="calendarReq"][data-req="${elem.aa}"]`).value = elem.expiresAtField;
 					}
-					document.querySelector(`[data-action="calendarReq"][data-req="${elem.aa}"]`).setAttribute("disabled","disabled");
+					const protDiv=document.querySelector(`[data-field="access"][data-name="requestFromNameField"][data-req="${elem.aa}"]`);
+					protDiv.style.padding = "5px";
+					protDiv.style.color = "black";	
+					if(elem.acceptedField==1){
+						protDiv.style.backgroundColor = "green";
+						protDiv.style.color = "white";	
+					}
+					else if(elem.acceptedField==0){
+						protDiv.style.backgroundColor = "red";		
+					}
+					else{
+						protDiv.style.backgroundColor = "orange";		
+					}
+					document.querySelector(`[data-field="access"][data-action="calendarReq"][data-req="${elem.aa}"]`).setAttribute("disabled","disabled");
 				})
 			}
 			

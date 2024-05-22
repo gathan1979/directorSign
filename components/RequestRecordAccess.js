@@ -211,7 +211,7 @@ class RequestRecordAccess extends HTMLElement {
 
         //Δημιουργία επιλογών ετών
         this.shadow.querySelector("#yearField").innerHTML = "";
-        this.shadow.querySelector("#yearField").innerHTML += `<option value='0'></option>`;
+        this.shadow.querySelector("#yearField").innerHTML += `<option selected value='0'></option>`;
         const yearArray = await this.getActiveYears();
 
         yearArray.forEach( elem => {
@@ -344,21 +344,22 @@ class RequestRecordAccess extends HTMLElement {
 
         const res = await runFetch("/api/requestRecordAccess.php", "POST", formdata);
         if (!res.success){
-            console.log(res.msg);
+            alert(res.msg);
         }
         else{    
-            const resdec =  res;
-            console.log(resdec['message']);
-            if (resdec['success']){
-                alert("επιτυχής αίτηση εγγραφής");
-                this.shadow.getElementById('saveRecordBtn').classList.remove('active');
-                this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
-                this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
-                this.clearChanges();
-                const RefreshAccessToProtocol = new CustomEvent("RefreshAccessToProtocol", { bubbles: true, cancelable: false, composed: true });
-                this.dispatchEvent(RefreshAccessToProtocol);
-                this.parentElement.close();
+            if (res.message !== ""){
+                alert(res.msg);
             }
+            else{
+                alert("επιτυχής αίτηση εγγραφής");
+            }
+            this.shadow.getElementById('saveRecordBtn').classList.remove('active');
+            this.shadow.querySelector("#saveRecordBtn i").classList.remove('faa-shake');
+            this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
+            this.clearChanges();
+            const RefreshAccessToProtocol = new CustomEvent("RefreshAccessToProtocol", { bubbles: true, cancelable: false, composed: true });
+            this.dispatchEvent(RefreshAccessToProtocol);
+            this.parentElement.close();
         }
     } 
 }
