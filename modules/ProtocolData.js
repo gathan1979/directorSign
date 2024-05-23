@@ -133,15 +133,17 @@ export function fillChargesTable(response, protocol = false){
 				case "outDocDate" : customWidth= "10%";break;
 				case "statusField" : customWidth= "5%";break;
 			}		
-			if((key == "linkField") || (key=="insertDateField") || (key== "isRead")){
+			if((key == "linkField") || (key=="insertDateField") || (key== "isRead") || (key== "extended")){
 				continue;
 			}
-			if(key == "statusField"){
+			if( key == "statusField"){
 				switch (+value){
-					case 0 : value= "Εκρ.";break;
-					case 1 : value= "Προς Αρχ.";break;
-					case 2 : value= "Αρχ.";break;
+					case 0 : value= "Εκρ. "+(record['extended']?record['extended']:'');break;
+					case 1 : value= "Προς Αρχ. "+(record['extended']?record['extended']:'');break;
+					case 2 : value= "Αρχ. "+(record['extended']?record['extended']:'');break;
 				}
+				console.log((record['extended']?record['extended']:''))
+				console.log(value)
 			}
 			tableContent +=`<span style="width:${customWidth};${key=='aaField'?'font-weight:bold;':''}"`;
 			tableContent +=`" data-colname="`+key+'">'+value+"</span>"	
