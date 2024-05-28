@@ -546,24 +546,7 @@ async function createChargesUIstartUp(){
 	let cRole = localStorage.getItem("currentRole");
 	
 	const yearSelector = `<year-selector id="yearSelectorDiv"></year-selector>`;
-
-	const accessExtraBtns = 
-		`<div id="topMenuNewAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;">	
-		${
-			+loginData.user.roles[cRole].protocolAccessLevel==1?
-			``:
-			`<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αίτημα Πρόσβασης</div>
-			<div class="flexHorizontal" style="padding:0px 5px;">
-				<button id="reqProtocolAccessBtn" name="reqProtocolAccessBtn" class="isButton small" title="Aίτηση πρόσβασης" style="background-color:lightseagreen"><i class="fas fa-eye"></i></button>
-				<div>
-					<button class="isButton small" style="background-color: var(--bs-orange);"> 
-						<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
-					</button>
-				</div>
-				
-			</div>`
-		}
-		</div>`;
+		
 
 	const protocolExtraBtns = 
 		`<div id="topMenuNewProtocolBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;padding: 5px;">	
@@ -602,7 +585,18 @@ async function createChargesUIstartUp(){
 								<button id="refreshPeddingAccessReqsBtn" title="Ανανέωση Αιτημάτων Πρόσβασης" type="button" class="isButton extraSmall"><i class="fas fa-sync"></i></button>
 							</div>
 					</div>
-				</div>`:``
+				</div>`:
+				`<div id="topMenuNewAccessBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch; padding: 5px;">
+					<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Αίτημα Πρόσβασης</div>
+						<div class="flexHorizontal" style="padding:0px 5px;">
+						<button id="reqProtocolAccessBtn" name="reqProtocolAccessBtn" class="isButton small" title="Aίτηση πρόσβασης" style="background-color:lightseagreen"><i class="fas fa-eye"></i></button>
+						<div>
+							<button class="isButton small" style="background-color: var(--bs-orange);"> 
+								<span id="peddingAccessRequestsNo" name="peddingAccessRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
+							</button>
+						</div>	
+					</div>
+				</div>`
 			}
 
 			${
@@ -618,6 +612,24 @@ async function createChargesUIstartUp(){
 							</div>
 					</div>
 				</div>`:``
+			}
+
+			
+			${
+				+loginData.user.roles[cRole].canPublish==1? // Είναι χρήστης με δικαίωμα ανάρτησης
+				`<div id="topMenuPublishBtnsDiv" class="flexVertical" style="align-items: center; align-self: stretch;padding: 5px;">	
+					<div style="font-size:0.7em;font-weight:bold;padding:0px 5px;" >Ανάρτηση</div>
+					<div class="flexHorizontal" style="padding:0px 5px;">
+						<div>
+							<button class="isButton small" style="background-color: var(--bs-orange);"> 
+								<span id="peddingPublishRequestsNo" name="peddingPublishRequestsNo" style="background-color:orange; color: white; font-weight:bold; border-radius: 10px; padding: 1px 4px;"></span>
+							</button>
+						</div>
+						
+					</div>
+				</div>
+				`
+				:``
 			}
 
 		
@@ -707,7 +719,7 @@ async function createChargesUIstartUp(){
 								<div id="filterApplyDiv"></div>
 							</dialog>`;
 
-	const peddingRequestsDiv= `<dialog id="peddingRequestsModal" class="customModal">
+	const peddingRequestsDiv= `<dialog id="peddingRequestsModal" class="customModal" style="min-width:80%;">
 			<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
 				<span style="font-weight:bold;">Αιτήματα πρωτοκόλλου</span>
 				<div class="topButtons" style="display:flex;gap: 7px;">
@@ -716,6 +728,17 @@ async function createChargesUIstartUp(){
 			</div>
 			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(6, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 		</dialog>`;
+
+	
+	const peddingPublishRequestsDiv= `<dialog id="peddingPublishRequestsModal" class="customModal" style="min-width:80%;">
+		<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white; ">
+			<span style="font-weight:bold;">Αιτήματα ανάρτησης</span>
+			<div class="topButtons" style="display:flex;gap: 7px;">
+				<button class="isButton " name="peddingPublishReqsCloseBtn" id="peddingPublishReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+			</div>
+		</div>
+		<div id="peddingPublishReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(5, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
+	</dialog>`;
 
 	const peddingAccessRequestsDiv= `<dialog id="peddingAccessRequestsModal" class="customModal" style="width: 80%;">
 		<div class="customDialogContentTitle"  style="background:gray;border-radius:0px;padding: 10px;color: white;">
@@ -731,6 +754,7 @@ async function createChargesUIstartUp(){
 		<charges-move  style="display:flex; flex-direction:column; gap: 10px;"></charges-move>
 	</dialog>`;
 
+	document.body.insertAdjacentHTML("afterend",peddingPublishRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",peddingAccessRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",copyChargesDiv);
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
@@ -743,10 +767,6 @@ async function createChargesUIstartUp(){
 
 	if (document.querySelector("#topMenuNewProtocolBtnsDiv") == null){
 		document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend",protocolExtraBtns);
-	}
-
-	if (document.querySelector("#topMenuNewAccessBtnsDiv") == null){
-		document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("beforeend", accessExtraBtns);
 	}
 
 	if (document.querySelector("#chargesFilterMenu") == null){
@@ -812,6 +832,15 @@ async function createChargesUIstartUp(){
 				}	
 			});
 		}
+	}
+
+	if (document.querySelector('#peddingPublishRequestsNo')){
+		document.querySelector('#peddingPublishRequestsNo').parentElement.addEventListener("click", ()=>{
+			document.querySelector('#peddingPublishRequestsModal').showModal();
+		});
+		document.querySelector('#peddingPublishReqsCloseBtn').addEventListener("click", ()=>{
+			document.querySelector('#peddingPublishRequestsModal').close();
+		});
 	}
 
 	createFilter(document.querySelector("#filterContent"));
@@ -937,6 +966,10 @@ async function createChargesUIstartUp(){
 	//if (+loginData.user.roles[cRole].protocolAccessLevel === 1){
 		const peddingAccessReqs = await getPeddingAccessProtocolReqs();
 	//}
+
+	if (+loginData.user.roles[cRole].canPublish === 1){ // Είναι χρήστης με δικαίωμα ανάρτησης
+		const peddingPublishReqs = await getPeddingPublishReqs();
+	}
 }
 
 
@@ -1526,6 +1559,57 @@ async function getPeddingAccessProtocolReqs(){
 	}
 }
 
+
+async function getPeddingPublishReqs(){	
+	let cRole = localStorage.getItem("currentRole");
+
+	const res = await runFetch("/api/getPeddingPublishReqs.php", "GET", null);
+	//console.log(res);
+	if (!res.success){
+		console.log(res.msg);
+	}
+	else{
+		//return res;
+		const resdec =  res.result;
+		if(resdec.requests.length == 0){
+			if(document.querySelector("#peddingPublishRequestsNo")){
+				document.querySelector("#peddingPublishRequestsNo").parentElement.style.backgroundColor = "gray";
+			}
+			if(document.querySelector("#peddingPublishRequestsNo")){
+				document.querySelector("#peddingPublishRequestsNo").style.backgroundColor = "gray";
+			}
+			document.querySelector("#peddingPublishReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Έτος</div><div>Ημερ.</div><div>Ενέργειες</b></div>`;
+		}
+		else{
+			document.querySelector("#peddingPublishRequestsNo").parentElement.style.backgroundColor = "orange";
+			document.querySelector("#peddingPublishRequestsNo").style.backgroundColor = "orange";
+			document.querySelector("#peddingPublishReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Έτος</div><div>Ημερ.</div><div>Ενέργειες</b></div>`;
+			resdec.requests.forEach(elem => {
+					const rejectReqBtn = '<button data-field="publish" data-req="'+elem.aa+'" data-action="dismissReq" data-protocol="'+elem.protocolField+'" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
+					const acceptReqBtn = '<button data-field="publish" data-req="'+elem.aa+'" data-action="acceptReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-check-square"></i></button>';
+					document.querySelector("#peddingPublishReqsRecords").innerHTML+= 
+						`<div data-field="publish" data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
+						<div data-field="publish" data-req="${elem.aa}" data-name="protocolField">${elem.protocolField==0?"":elem.protocolField}</div>
+						<div data-field="publish" data-req="${elem.aa}" data-name="protocolField">${elem.yearField}</div>
+						<div data-field="publish" data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;
+					let statusText = "";
+					if(+loginData.user.roles[cRole].canPublish == 1){
+						document.querySelector("#peddingPublishReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${acceptReqBtn+rejectReqBtn}</div>`;
+					}
+				}
+			);
+
+			if(+loginData.user.roles[cRole].canPublish == 1){
+				resdec.requests.forEach(elem => {
+					document.querySelector(`[data-field="publish"][data-action="dismissReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => setPeddingPublishReq(event.currentTarget.dataset.req, 0));	
+					document.querySelector(`[data-field="publish"][data-action="acceptReq"][data-req="${elem.aa}"]`).addEventListener("click", (event) => setPeddingPublishReq(event.currentTarget.dataset.req, 1));
+				})
+			}
+		}
+		document.querySelector("#peddingPublishRequestsNo").innerText = resdec.requests.length;
+	}
+}
+
 async function setPeddingReq(aa, status){
 	if (status == 1){
 		if (!confirm("Εισαγωγή στο βιβλίο πρωτοκόλλου;")){
@@ -1598,6 +1682,45 @@ async function setPeddingAccessReq(aa, status){
 		}
 		else if (status == -1){
 			alert("Το αίτημα πρόσβασης έχει διαγραφεί");
+		}
+	}
+}
+
+
+async function setPeddingPublishReq(aa, status){
+	if (status == 1){
+		if (!confirm(`Η ανάρτηση ολοκληρώθηκε;`)){
+			return;
+		}
+	}
+	else if (status == 0){
+		if (!confirm(`Η ανάρτηση απορρίφθηκε;`)){
+			return;
+		}
+	}
+
+
+	const formData = new FormData();
+	formData.append("aa", aa);
+	formData.append("status", status);
+
+	const res = await runFetch("/api/setPeddingPublishReq.php", "POST", formData);
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		//return res;
+		const resdec =  res.result;
+		await getPeddingPublishReqs();
+		// const reqItems = document.querySelectorAll('[data-req="'+aa+'"]');
+		// reqItems.forEach((elem) => {
+		// 	elem.remove();
+		// })
+		if (status == 1){
+			alert("Η ανάρτηση έχει ολοκληρωθεί");
+		}
+		else if (status == 0){
+			alert("Το αίτημα ανάρτησης απορρίφθηκε");
 		}
 	}
 }

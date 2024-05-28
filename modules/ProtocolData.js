@@ -142,8 +142,8 @@ export function fillChargesTable(response, protocol = false){
 					case 1 : value= "Προς Αρχ. "+(record['extended']?record['extended']:'');break;
 					case 2 : value= "Αρχ. "+(record['extended']?record['extended']:'');break;
 				}
-				console.log((record['extended']?record['extended']:''))
-				console.log(value)
+				//console.log((record['extended']?record['extended']:''))
+				//console.log(value)
 			}
 			tableContent +=`<span style="width:${customWidth};${key=='aaField'?'font-weight:bold;':''}"`;
 			tableContent +=`" data-colname="`+key+'">'+value+"</span>"	
