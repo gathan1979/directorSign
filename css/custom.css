@@ -616,6 +616,10 @@ td .fa-crosshairs{
 	font-family : 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.customModal::backdrop{
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
 .customDialogContent{
 	display: flex;
 	flex-direction: column;
@@ -680,4 +684,9 @@ span.off{
 	}
 
 
+}
+
+#filterDiv{
+	margin-right:100px;
+	margin-top:100px;
 }
