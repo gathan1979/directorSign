@@ -205,7 +205,6 @@ class Tags extends HTMLElement {
                 alert(res.msg);
             }
             else{
-                const resdec = res.result();
                 await this.getTags(this.protocolNo, this.protocolYear);
             }
         }

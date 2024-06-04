@@ -1483,7 +1483,7 @@ async function getPeddingAccessProtocolReqs(){
 					document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
 						`<div data-field="access" data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
 						<div data-field="access" data-req="${elem.aa}" data-name="protocolField">${elem.protocolField==0?"":elem.protocolField}</div>
-						<div data-field="access" data-req="${elem.aa}" data-name="folderlField">${elem.folderField==0?"":elem.folderField}</div>
+						<div data-field="access" data-req="${elem.aa}" data-name="folderlField">${elem.folderNameField==0?"":elem.folderNameField}</div>
 						<div data-field="access" data-req="${elem.aa}" data-name="causeField" >${elem.yearField==0?"":elem.yearField}</div>
 						<div data-field="access" data-req="${elem.aa}" data-name="causeField" >${elem.causeField}</div>
 						<div data-field="access" data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;

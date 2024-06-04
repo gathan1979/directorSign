@@ -41,7 +41,7 @@ export async function viewFile(filename, folder="", doc = document){  // doc= do
 			return;
 		}
 		else{
-			const aElement = doc.createElement('a');
+			const aElement = document.createElement('a');
 			aElement.addEventListener("click",()=>setTimeout(()=>URL.revokeObjectURL(href),10000));
 			Object.assign(aElement, {
 			href,
