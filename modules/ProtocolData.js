@@ -123,8 +123,8 @@ export function fillChargesTable(response, protocol = false){
 		for (let [key, value] of Object.entries(record)){
 			let customWidth = 0;
 			switch (key){
-				case "aaField" : customWidth= "5%";break;
-				case "fromField" : customWidth= "20%";break;
+				case "aaField" : customWidth= "10%";break;
+				case "fromField" : customWidth= "15%";break;
 				case "subjectField" :customWidth= "20%";break;
 				case "docDate" : customWidth= "10%";break;
 				case "docNumber" :customWidth= "10%";break;
@@ -145,7 +145,10 @@ export function fillChargesTable(response, protocol = false){
 				//console.log((record['extended']?record['extended']:''))
 				//console.log(value)
 			}
-			tableContent +=`<span style="width:${customWidth};${key=='aaField'?'font-weight:bold;':''}"`;
+			if( key == "aaField"){
+				value = "<b>"+value+"</b> "+new Date(record['insertDateField']).toLocaleDateString('en-GB');
+			}
+			tableContent +=`<span style="width:${customWidth};"`;
 			tableContent +=`" data-colname="`+key+'">'+value+"</span>"	
 		}
 		tableContent +="</div>"
