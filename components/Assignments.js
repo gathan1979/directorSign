@@ -124,8 +124,7 @@ const assignmentsContent = `
         <div id="assignmentsTitle" style="color: DarkRed;font-size: 12px;">Χρεώσεις</div>
         <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
         <div class="col-12" id="assignments" name="assignments" style="padding:0.5em;background: rgba(155, 130, 136, 0.2)!important;">
-            <div id="assignmentsToAbsent" style="background: rgba(155, 130, 136, 0.2)!important;">';
-            </div>';
+            
         </div>
     </div>`;
 
@@ -168,6 +167,7 @@ class Assignments extends HTMLElement {
             employeesTree = await this.getEmployeesTree();
         }
         this.shadow.querySelector("#assignments").innerHTML = employeesTree;
+        this.shadow.querySelector("#assignments").innerHTML += '<div id="assignmentsToAbsent" style="background: rgba(155, 130, 136, 0.2)!important;"></div>'
         //Φόρτωση χρεώσεων και εμφάνιση
         await this.getChargesAndFill();
         //Πτυσσόμενα μενού τμημάτων
@@ -221,7 +221,7 @@ class Assignments extends HTMLElement {
         else if (currentRoleObject.accessLevel == 1){
             // ενεργοποίηση μόνο για τμήμα  -- Απαιτεί διόρθωση για υπαλλήλους εκτός τμήματος
             const employeesOutOfDep = await this.getEmployeesOutOfDep();
-            console.log(employeesOutOfDep);
+            //console.log(employeesOutOfDep);
             this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
                 if (departmentChildren.includes(element.parentNode.parentNode.dataset.dep)){
                     element.removeAttribute("disabled");
@@ -397,7 +397,7 @@ class Assignments extends HTMLElement {
         }
         
         this.protocolCharges = chargesArrFromDb.map((item)=>{
-            const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment)};
+            const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment), fullname : item.fullName};
             if ((item.assignedToUser == loginData.user.aa_staff) && (item.isRead == 1)){
                 isRead = 1;        
             }
@@ -416,28 +416,43 @@ class Assignments extends HTMLElement {
                 document.querySelector(`div [data-record="${this.protocolNo}"]`).dataset.isread = 1;
             }  
         }
-        //console.log(this.protocolCharges);
         this.selectedCharges = [...this.protocolCharges];
-        //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
-        this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-            //console.log(element);
-            const found = this.protocolCharges.find(el => el.assignedTo == element.dataset.user);    
+
+        this.protocolCharges.forEach((element,index)=> {
+            const found = Array.from(this.shadow.querySelectorAll(".departmentEmployees>button")).find(el => element.assignedTo == el.dataset.user);
             if (found !== undefined){
-                element.dataset.charge = 1;
-                element.dataset.chargeType = found.type;
+                found.dataset.charge = 1;
+                found.dataset.chargeType = found.type;
                 if (found.type == "0"){
-                    element.classList.add("notification");
+                    found.classList.add("notification");
                 }
                 else{
-                    element.classList.add("active");
+                    found.classList.add("active");
                 }
             }
             else{
-                element.classList.remove("active");
-                element.classList.remove("notification");
+                this.shadow.querySelector("#absentDiv .absentEmployees").innerHTML +=  `<button  disabled data-charge="1" data-charge-type="${element.type}" data-user="${element.assignedTo}" style="background-color: brown;" class="isButton small" id="user_${element.assignedTo}">${element.fullname}</button>`;
             }
+        });
+
+        this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
+            // const found = this.protocolCharges.find(el => el.assignedTo == element.dataset.user);    
+            // if (found !== undefined){
+            //     element.dataset.charge = 1;
+            //     element.dataset.chargeType = found.type;
+            //     if (found.type == "0"){
+            //         element.classList.add("notification");
+            //     }
+            //     else{
+            //         element.classList.add("active");
+            //     }
+            // }
+            // else{
+            //     element.classList.remove("active");
+            //     element.classList.remove("notification");
+            // }
             element.addEventListener("click",(event)=>{this.changeAssignmentStatus(element.dataset.user)})
-            //this.shadow.querySelector(".customDialogContent").innerHTML += '<div><b>'+element.innerText+"</b> : "+element.title+'</div>';
+
         });
     }
 
