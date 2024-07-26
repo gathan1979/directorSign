@@ -2,7 +2,7 @@ import {updateFilterStorage,createSearch, pagingSize, pagingStart, FILTERS} from
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 import { Pages, getPage } from "./UI_test.js";
 
-export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers){   		//εγγραφές χρεώσεων
+export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers, orderField, orderType){   		//εγγραφές χρεώσεων
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 	document.querySelector("#chargesTableContent").innerHTML = "";
 	//updateFilterStorage();
@@ -23,12 +23,17 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 
 	//ΜΕΤΑΤΡΟΠΗ ΠΙΝΑΚΑ ΣΕ ΑΝΤΙΚΕΙΜΕΝΟ
 	const filteredObject = Object.fromEntries(CFAAFEFC);
-	console.log("filteredObject", filteredObject);
+	//console.log("filteredObject", filteredObject);
 
 	let customObject ={
 		customPagingStart,
 		customPagingSize,
 		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
+	}
+
+	if (orderField !== null && orderType !== null){
+		customObject.orderField = orderField;
+		customObject.orderType = orderType;
 	}
 
 	if (+localStorage.getItem("globalSearch") === 1){
@@ -106,6 +111,9 @@ export function fillChargesTable(response, protocol = false){
 	//table.innerHTML=
 	const result = response.data;
 	let tableContent="";
+	document.querySelector("#chargesTableUsers").style.display = "none"; 
+	document.querySelector("#chargesTableFolders").style.display = "none";
+
 	for (const record of result){
 		let recordColor = "#B6EACB";
 		if (protocol){
@@ -121,6 +129,7 @@ export function fillChargesTable(response, protocol = false){
 		tableContent += `<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(-90deg, white, ${recordColor}); padding:10px;" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 
 		for (let [key, value] of Object.entries(record)){
+			
 			let customWidth = 0;
 			switch (key){
 				case "aaField" : customWidth= "10%";break;
@@ -132,15 +141,22 @@ export function fillChargesTable(response, protocol = false){
 				case "outSubjectField" : customWidth= "10%";break;
 				case "outDocDate" : customWidth= "10%";break;
 				case "statusField" : customWidth= "5%";break;
+				case "extended" : customWidth= "10%";break;
+				case "extendedUsers" : customWidth= "10%";break;
 			}		
-			if((key == "linkField") || (key=="insertDateField") || (key== "isRead") || (key== "extended")){
+			if((key == "linkField") || (key=="insertDateField") || (key== "isRead")){
 				continue;
 			}
+			if (key== "extended"){
+				document.querySelector("#chargesTableUsers").style.display = "block"; 
+				document.querySelector("#chargesTableFolders").style.display = "block";
+			}
+
 			if( key == "statusField"){
 				switch (+value){
-					case 0 : value= "Εκρ. "+(record['extended']?record['extended']:'');break;
-					case 1 : value= "Προς Αρχ. "+(record['extended']?record['extended']:'');break;
-					case 2 : value= "Αρχ. "+(record['extended']?record['extended']:'');break;
+					case 0 : value= "Εκρ. " + (record['extended']? record['extended']:''); break;
+					case 1 : value= "Προς Αρχ. " + (record['extended']? record['extended']:''); break;
+					case 2 : value= "Αρχ. " + (record['extended']? record['extended']:''); break;
 				}
 				//console.log((record['extended']?record['extended']:''))
 				//console.log(value)

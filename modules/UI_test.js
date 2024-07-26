@@ -111,15 +111,17 @@ const signTable = `<table id="dataToSignTable" class="table" style="font-size:0.
 const chargesTable = `<div id="chargesTable" style="font-size:0.9em;">
 						<div id="chargesTableHeader">
 							<div class="flexHorizontal" style="background: linear-gradient(90deg, white, lightgray);font-weight: bold;">
-								<span id="chargesTableAA"  style="width:5%;text-align:center; ">AA</span>
-								<span style="width:20%; text-align:center;" id="chargesTableApostoleas" >Αποστολέας</span>
-								<span style="width:20%;text-align:center;" id="chargesTableThema">Θέμα</span>
-								<span style="width:10%text-align:center;" id="chargesTableImParal" >Ημ.Παραλ.</span>
-								<span style="width:10%;text-align:center;" id="chargesTableArEiserx" ">Αρ.Εισερχ.</span>
-								<span style="width:10%;text-align:center;" id="chargesTablePros" >Προς</span>
-								<span style="width:10%;text-align:center;" id="chargesTableThemaEkserx" >Θέμα Εξερχ.</span>
-								<span style="width:10%;text-align:center;" id="chargesTableImEkserx" >Ημ.Εξερχ.</span>
-								<span style="width:5%;text-align:center;" id="chargesTableKatast" >Κατάστ.</span>
+								<span id="chargesTableAA"  style="width:5%;text-align:center;cursor: pointer;" data-filter="aaField"">AA<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:20%; text-align:center;cursor: pointer;" id="chargesTableApostoleas" data-filter="fromField">Αποστολέας<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:20%;text-align:center;cursor: pointer;" id="chargesTableThema" data-filter="subjectField">Θέμα<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:10%text-align:center;cursor: pointer;" id="chargesTableImParal" data-filter="docDate">Ημ.Παραλ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableArEiserx" data-filter="docNumber">Αρ.Εισερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTablePros" data-filter="toField">Προς<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableThemaEkserx" data-filter="toField"outSubjectField">Θέμα Εξερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableImEkserx" data-filter="outDocDate">Ημ.Εξερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:5%;text-align:center;cursor: pointer;" id="chargesTableKatast" data-filter="statusField">Κατάστ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableFolders" >Φάκελοι<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableUsers" >Χρέωση<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
 							</div>
 						</div>
 						<div id="chargesTableContent" class="flexVertical" style="background-color:white;margin-top:2em;overflow-y:scroll; max-height: 60vh; gap:10px;">
@@ -773,6 +775,10 @@ async function createChargesUIstartUp(){
 		document.querySelector("#generalFilterDiv").insertAdjacentHTML("afterend",chargesFilterMenuDiv);	
 	}
 
+	document.querySelectorAll("#chargesTableHeader>div>span>i").forEach( item =>{
+		item.style.display = "none";
+	})
+
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
 		if(+localStorage.getItem("globalSearch") === 1){
@@ -931,6 +937,27 @@ async function createChargesUIstartUp(){
 	interPeddingReqs = setInterval(async ()=>{
 		const peddingReqs = await getPeddingProtocolReqs();
 	},25000)
+
+
+	document.querySelectorAll("#chargesTableHeader>div>span").forEach( spanItem =>{
+		spanItem.addEventListener("click", async event =>{
+			if (event.target.id == "" ){
+				return;
+			}
+			document.querySelectorAll("#chargesTableHeader>div>span>i").forEach( item =>{
+				item.style.display = "none";
+			})
+			//console.log(event.target.dataset.filter);
+			document.querySelector("#"+event.target.id+">i").style.display = "inline-block";
+			if (document.querySelector("#"+event.target.id+">i").style.rotate == "180deg"){
+				document.querySelector("#"+event.target.id+">i").style.rotate = "0deg";
+			}
+			else{
+				document.querySelector("#"+event.target.id+">i").style.rotate = "180deg";
+			}
+			await getChargesAndFill(event.target.dataset.filter, document.querySelector("#"+event.target.id+">i").style.rotate=="0deg"?"asc":"desc"); 
+		})
+	})
 
 	const chargesRes = await getChargesAndFill(); 
 	//interCharges = setInterval(async ()=>{
@@ -1325,11 +1352,12 @@ export async function getSignedRecordsAndFill(){
 	}, rej => {});			
 }
 
-export async function getChargesAndFill(){
+export async function getChargesAndFill(orderField= null, orderType=null){
+	//console.log(orderField, orderType);
 	abortControllers.charges = new AbortController();
 	signals.charges = abortControllers.charges.signal;
 
-	const recordsNo = await getFilteredData(pagingStart,pagingSize, signals.charges, getControllers())
+	const recordsNo = await getFilteredData(pagingStart,pagingSize, signals.charges, getControllers(), orderField, orderType)
 		//.then( res => {
 			//createSearch();
 		//}, rej => {});	
@@ -1343,7 +1371,7 @@ export async function getChargesAndFill(){
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
 		//console.log("page to render:", event.currentPage);
-		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize, signals.charges, getControllers());
+		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize, signals.charges, getControllers(), orderField, orderType);
 	})		
 }
 

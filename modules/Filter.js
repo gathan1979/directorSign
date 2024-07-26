@@ -317,6 +317,12 @@ export default function createFilter(parentElement){
 					<div >
 						<input  type="checkbox"  id="accessRequests" />
 					</div>
+				</div>
+				<div class="flexHorizontal" style="padding-top:0.3em;">
+						<div ><i  class="fas fa-filter" ></i><b> Εκτεταμένα στοιχεία : </b></div>
+						<div >
+							<input  type="checkbox"  id="extendedView" />
+						</div>
 				</div>`;	
 	}	
 	else{ 
@@ -349,6 +355,12 @@ export default function createFilter(parentElement){
 					<div ><i  class="fas fa-filter" ></i><b> Αιτήματα πρόσβασης : </b></div>
 					<div >
 						<input  type="checkbox"  id="accessRequests" />
+					</div>
+				</div>
+				<div class="flexHorizontal" style="padding-top:0.3em;">
+					<div ><i  class="fas fa-filter" ></i><b> Εκτεταμένα στοιχεία : </b></div>
+					<div >
+						<input  type="checkbox"  id="extendedView" />
 					</div>
 				</div>`;	
 	}  
