@@ -154,9 +154,9 @@ export function fillChargesTable(response, protocol = false){
 
 			if( key == "statusField"){
 				switch (+value){
-					case 0 : value= "Εκρ. " + (record['extended']? record['extended']:''); break;
-					case 1 : value= "Προς Αρχ. " + (record['extended']? record['extended']:''); break;
-					case 2 : value= "Αρχ. " + (record['extended']? record['extended']:''); break;
+					case 0 : value= "Εκρ. "; break;
+					case 1 : value= "Προς Αρχ. "; break;
+					case 2 : value= "Αρχ. "; break;
 				}
 				//console.log((record['extended']?record['extended']:''))
 				//console.log(value)
