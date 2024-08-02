@@ -321,15 +321,16 @@ class ChargesMove extends HTMLElement {
 
         const res = await runFetch("/api/moveCharges.php","POST",formdata);
         if (!res.success){
-            alert(res.msg);
+            alert("Αποτυχία μεταφοράς χρεώσεων. "+ res.msg);
         }
         else{
             const resdec = res.result;
-            console.log(res.result);
-            return;
-            const RefreshProtocolFilesEvent = new CustomEvent("RefreshProtocolFilesEvent", { bubbles: true, cancelable: false, composed: true });
-            this.dispatchEvent(RefreshProtocolFilesEvent);
+            alert(res.msg);
             this.parentElement.close(); 
+            return;
+            // const RefreshProtocolFilesEvent = new CustomEvent("RefreshProtocolFilesEvent", { bubbles: true, cancelable: false, composed: true });
+            // this.dispatchEvent(RefreshProtocolFilesEvent);
+            // this.parentElement.close(); 
         }
     } 
 

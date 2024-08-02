@@ -15,6 +15,7 @@ const pwdBtn = '<button class="isButton warning" id="changePwdBtn" title="αλλ
 const logoutBtn = '<div><button class="isButton warning" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
 
 let interPeddingReqs = null;
+let interPeddingPublishReqs = null;
 let interCharges = null;
 let interToSign = null;
 let interSigned = null;
@@ -535,6 +536,9 @@ function removeIntervals(){
 	if (interSigned !==null) {
 		clearInterval(interSigned);
 	}
+	if (interPeddingPublishReqs !==null) {
+		clearInterval(interSigned);
+	}
 }
 
 
@@ -939,6 +943,12 @@ async function createChargesUIstartUp(){
 	},25000)
 
 
+	if (document.querySelector("#peddingPublishRequestsNo")){
+		interPeddingPublishReqs = setInterval(async ()=>{
+			const peddingReqs = await getPeddingPublishReqs();
+		},60000)
+	}
+	
 	document.querySelectorAll("#chargesTableHeader>div>span").forEach( spanItem =>{
 		spanItem.addEventListener("click", async event =>{
 			if (event.target.id == "" ){
