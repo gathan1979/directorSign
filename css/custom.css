@@ -690,3 +690,31 @@ span.off{
 	margin-right:100px;
 	margin-top:100px;
 }
+
+.invalid{
+	border-width: 5px;
+	border-color: red;	
+	background-color: red;
+}
+
+.contact{
+	display:flex;
+	gap:10px;
+	padding-top:5px;
+}
+
+.contact:nth-child(2n){
+	background-color: bisque;
+}
+
+.contact>div{
+	flex-grow:1;
+}
+
+#contactsResult{
+	border : 2px solid lightgray;
+	background-color: floralwhite;
+	position : relative;
+	padding: 5px;
+	font-family : monospace;
+}

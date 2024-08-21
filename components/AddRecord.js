@@ -156,7 +156,8 @@ const addContent = `
             <div id="addFormDiv">
                 <div class="flexHorizontal" style="background-color:white;">   
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΑΠΟΣΤΟΛΕΑΣ</label>
-                    <input class="formInput" required=""  type="text"  id="fromField" disabled="">
+                    
+                    <auto-complete class="formInput" inputId="fromField">
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">    
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΘΕΜΑ</label>

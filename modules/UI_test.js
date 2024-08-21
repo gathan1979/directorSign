@@ -648,7 +648,7 @@ async function createChargesUIstartUp(){
 						border-radius: 5px; border-style: solid; 
 						border-width: 1px;padding: 2px 6px;color: white; background-color:lightseagreen;border-color:lightseagreen;"><i style="color:white" class="fas fa-mail-bulk  fa-lg"></i></span></a>
 					</div>
-					<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="/kside/index.php"><span style="font-size: 0.7rem;font-weight: bold;
+					<div><a rel="opener"  title="Εφαρμογή ΚΣΗΔΕ" rel="referer" target="_blank" href="/kside/"><span style="font-size: 0.7rem;font-weight: bold;
 															border-radius: 5px; border-style: solid; 
 															border-width: 1px;padding: 0px 2px;color: white; background-color:lightseagreen;border-color:lightseagreen;">ΚΣΗΔΕ</span></a>
 					</div>
