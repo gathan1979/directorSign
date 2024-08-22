@@ -156,12 +156,11 @@ const addContent = `
             <div id="addFormDiv">
                 <div class="flexHorizontal" style="background-color:white;">   
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΑΠΟΣΤΟΛΕΑΣ</label>
-                    
-                    <auto-complete class="formInput" inputId="fromField">
+                    <auto-complete class="formInput" inputId="fromField" data-table="contacts@adeies" data-fields="firstName,lastName" style="z-index:100;">
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">    
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΘΕΜΑ</label>
-                    <textarea class="formInput" required=""  type="text"  id="subjectField" disabled=""></textarea>
+                    <auto-complete class="formInput" inputId="subjectField" data-table="book@protocol" data-fields="subjectField" style="z-index:50;">
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΗΜΕΡ. ΠΑΡΑΛ.</label>
@@ -174,11 +173,11 @@ const addContent = `
                 <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
                 <div class="flexHorizontal" style="background-color:white;">    
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΠΡΟΣ</label>
-                    <input class="formInput" required=""  type="text"  id="toField">
+                    <auto-complete class="formInput" inputId="toField" data-table="contacts@adeies" data-fields="firstName,lastName">
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">   
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΘΕΜΑ ΕΞΕΡΧ.</label>
-                    <input class="formInput" required=""  type="text"  id="outSubjectField">
+                    <auto-complete class="formInput" inputId="outSubjectField" data-table="book@protocol" data-fields="outSubjectField" style="z-index:50;">
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΗΜΕΡ. ΕΞΕΡΧ.</label>
@@ -267,6 +266,9 @@ class AddRecord extends HTMLElement {
                 return;
             }
             element.value = "";
+        });
+        this.shadow.querySelectorAll("auto-complete").forEach((element,index)=> {
+            element.setAttribute("timestamp", Date.now());
         });
     }
 

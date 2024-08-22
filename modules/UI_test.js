@@ -658,7 +658,7 @@ async function createChargesUIstartUp(){
 		`;
 
 	const addRecordDialog =
-		`<dialog id="addRecordModal" class="customDialog" style="max-width: 80%; min-width: 50%;">
+		`<dialog id="addRecordModal" class="customDialog" style="max-width: 90%; min-width: 80%;">
 			<record-add  style="display:flex; flex-direction:column; gap: 10px;"></record-add>
     	</dialog>`;
 

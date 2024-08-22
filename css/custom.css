@@ -717,4 +717,7 @@ span.off{
 	position : relative;
 	padding: 5px;
 	font-family : monospace;
+	max-height:150px;
+	overflow-y : auto;
+	max-width: 50%;
 }
