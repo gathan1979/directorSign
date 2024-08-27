@@ -697,13 +697,13 @@ span.off{
 	background-color: red;
 }
 
-.contact{
+.contact,.dbs,.dbsTitle{
 	display:flex;
 	gap:10px;
 	padding-top:5px;
 }
 
-.contact:nth-child(2n){
+.contact:nth-child(2n),.dbs:nth-child(2n){
 	background-color: bisque;
 }
 
@@ -720,4 +720,8 @@ span.off{
 	max-height:150px;
 	overflow-y : auto;
 	max-width: 50%;
+}
+
+.dbs>div{
+	cursor:pointer;
 }

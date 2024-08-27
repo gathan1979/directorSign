@@ -397,7 +397,7 @@ class Assignments extends HTMLElement {
         }
         
         this.protocolCharges = chargesArrFromDb.map((item)=>{
-            const charge = {assignedTo : item.assignedToUser, type: Number(item.typeOfAssignment), fullname : item.fullName};
+            const charge = {assignedTo : item.assignedToUser, type: +item.typeOfAssignment, fullname : item.fullName};
             if ((item.assignedToUser == loginData.user.aa_staff) && (item.isRead == 1)){
                 isRead = 1;        
             }
@@ -421,9 +421,11 @@ class Assignments extends HTMLElement {
         this.protocolCharges.forEach((element,index)=> {
             const found = Array.from(this.shadow.querySelectorAll(".departmentEmployees>button")).find(el => element.assignedTo == el.dataset.user);
             if (found !== undefined){
+                console.log(found);
+                console.log(element)
                 found.dataset.charge = 1;
-                found.dataset.chargeType = found.type;
-                if (found.type == "0"){
+                found.dataset.chargeType = element.type;
+                if (element.type == 0){
                     found.classList.add("notification");
                 }
                 else{
