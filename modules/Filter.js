@@ -45,7 +45,7 @@ export const FILTERS = {
 	
 export async function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
 	// diff = 0 είναι για υπογραφή στο τμήμα
-	//console.log("filterTable running", searchObject);
+	console.log("filterTable running", searchObject);
 	let table = null;
 	const page = getPage();
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){	
@@ -74,7 +74,7 @@ export async function filterTable (tableName, searchObject){   	// searchObject 
 					//console.log(cell)
 					if (cell.textContent.toUpperCase().indexOf(searchObject.searchString.toUpperCase()) !== -1){
 						findTextInRow = true;
-						//console.log("το κείμενο βρέθηκε στη γραμμή ")
+						console.log("το κείμενο βρέθηκε στη γραμμή ")
 					}
 				}
 			}

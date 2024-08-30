@@ -1487,7 +1487,7 @@ async function requestOTP(){
 }
 
 
-export async function getSignedRecords(signal,controllers){
+export async function getSignedRecords(pagingStart, pagingSize, signal,controllers){
 
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 	
@@ -1496,15 +1496,18 @@ export async function getSignedRecords(signal,controllers){
 			value.abort();
 		}
 	}
+	const searchText = document.getElementById('tableSearchInput').value;
 
-	const res = await runFetch("/api/getSignedRecords.php", "GET", null, undefined, signal);
+	const urlparams = new URLSearchParams({pagingStart, pagingSize, searchText});
+
+	const res = await runFetch("/api/getSignedRecords.php", "GET", urlparams, undefined, signal);
 	if (!res.success){
 		alert(res.msg);
 	}
 	else{
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
-		fillTableWithSigned(res.result);	
-		return 1;
+		//fillTableWithSigned(res.result.data);	
+		return res.result;
 	}
 }
 

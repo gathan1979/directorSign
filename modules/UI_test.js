@@ -1,5 +1,5 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
-import {createActionsTemplate,getSigRecords, getSignedRecords}  from "./Records_test.js";
+import {createActionsTemplate,getSigRecords, getSignedRecords, fillTableWithSigned}  from "./Records_test.js";
 import getFromLocalStorage from "./LocalStorage.js";
 import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
 import {getFilteredData, getProtocolData,openProtocolRecord, printChangedRecords} from "./ProtocolData.js";
@@ -1177,6 +1177,9 @@ export async function createUIstartUp(){
 	//interToSign = setInterval(async ()=>{
 		//const toSignRes = await getToSignRecordsAndFill(); 
 	//},60000)
+	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
+		createSearch();
+	});
 
 }
 
@@ -1194,7 +1197,14 @@ export async function createSignedUIstartUp(){
 	//interSigned = setInterval(async ()=>{
 		//const signedRes = await getSignedRecordsAndFill();
 	//},60000)
-
+	
+	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
+		let debounceFunc = debounce( async () =>  {
+			const chargesRes = await getSignedRecordsAndFill(); 
+		});
+		debounceFunc();
+	});
+	createSearch();
 }
 
 function showPass(field) {
@@ -1357,9 +1367,21 @@ export async function getToSignRecordsAndFill(){
 export async function getSignedRecordsAndFill(){
 	abortControllers.signed = new AbortController();
 	signals.signed = abortControllers.signed.signal;
-	const records = getSignedRecords(signals.signed, getControllers()).then( res => {
-		//createSearch();
-	}, rej => {});			
+	console.log(pagingStart,pagingSize);
+	const records = await getSignedRecords(pagingStart,pagingSize, signals.signed, getControllers());
+	fillTableWithSigned(records.data);
+	if(!document.querySelector("#pageSelectorDiv")){
+		document.querySelector("#dataToSignTable").insertAdjacentHTML("beforebegin",`<page-selector style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${records.totalRecords}"></page-selector>`);
+	}
+	else{
+		document.querySelector("#pageSelectorDiv").remove();
+		document.querySelector("#dataToSignTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${records.totalRecords}"></page-selector>`);
+	}	
+	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
+		//console.log("page to render:", event.currentPage);
+		const records = await getSignedRecords(event.currentPage -1,pagingSize, signals.charges, getControllers());
+		fillTableWithSigned(records.data);
+	})				
 }
 
 export async function getChargesAndFill(orderField= null, orderType=null){
@@ -1644,7 +1666,9 @@ async function getPeddingPublishReqs(){
 				})
 			}
 		}
-		document.querySelector("#peddingPublishRequestsNo").innerText = resdec.requests.length;
+		if (document.querySelector("#peddingPublishRequestsNo")){
+			document.querySelector("#peddingPublishRequestsNo").innerText = resdec.requests.length;
+		}
 	}
 }
 
