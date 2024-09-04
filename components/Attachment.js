@@ -103,7 +103,7 @@ class Attachments extends HTMLElement {
                 this.shadow.querySelector("#attachmentModal .customDialogContent").innerHTML = `<form>
                     <div class="flexVertical" style="padding:5px;">
                         <span></span>
-                        <input type="file" class="btn btn-default" name="selectedFile" id="selectedFile" />
+                        <input type="file" class="btn btn-default" name="selectedFile" id="selectedFile" multiple/>
                         <button class="btn btn-outline-success ektos " id="uploadFileButton"  title="Μεταφόρτωση επιλεγμένου αρχείου"><i class="fas fa-upload"></i></button>
                     </div>
                 </form>`;
@@ -121,8 +121,6 @@ class Attachments extends HTMLElement {
        
         this.users = (await this.getUsers(1)).users;  // get all active protocol users
         this.shadow.querySelector("#addToGdprBtn").addEventListener("click", (event)=> this.addGdprRecords(event));
-       
-
     }
 
     disconnectedCallback() {
@@ -141,7 +139,10 @@ class Attachments extends HTMLElement {
         }
 
         let data = new FormData();
-        data.append('selectedFile', this.shadow.getElementById('selectedFile').files[0]);
+        for (let i = 0; i < this.shadow.getElementById('selectedFile').files.length; i++) {
+            data.append('selectedFile'+i, this.shadow.getElementById('selectedFile').files[i]);
+        }
+        data.append('noOfFiles', this.shadow.getElementById('selectedFile').files.length);
         data.append('protocolNo',protocolNo);
         data.append('year',year);
 

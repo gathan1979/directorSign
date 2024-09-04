@@ -45,7 +45,7 @@ class History extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue){
         //console.log("attribute changed");
-        this.loadHistory(this.protocolNo);
+        this.loadHistoryTranslated(this.protocolNo);
     }
 
     disconnectedCallback() {

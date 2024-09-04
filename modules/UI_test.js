@@ -1412,16 +1412,13 @@ export async function getProtocolAndFill(){
 	signals.protocol = abortControllers.protocol.signal;
 
 	const recordsNo = await getProtocolData(pagingStart,pagingSize, signals.protocol, getControllers());
-		//.then( res => {
-			//createSearch();
-		//}, rej => {});
+
 	if(!document.querySelector("#pageSelectorDiv")){
 		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
 	}
 	else{
 		document.querySelector("#pageSelectorDiv").remove();
 		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
-
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
 		//console.log(event.currentPage);
