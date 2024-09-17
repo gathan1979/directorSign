@@ -308,10 +308,10 @@ class Assignments extends HTMLElement {
         this.selectedCharges = Array.from(this.shadow.querySelectorAll(".departmentEmployees>button")).map((element,index)=>{ 
                 if (element.dataset.charge == 1){
                     if (element.dataset.chargeType == 1){
-                        return {assignedTo :element.dataset.user, type: 1};
+                        return {assignedTo :element.dataset.user, type: 1, fullName : element.innerText};
                     }
                     else{
-                        return {assignedTo :element.dataset.user, type: 0};    
+                        return {assignedTo :element.dataset.user, type: 0, fullName : element.innerText};    
                     }
                 }
                 else{
@@ -319,22 +319,54 @@ class Assignments extends HTMLElement {
                 }
             }).filter(item=>{if (item == null){return 0;}else{return 1;}});
 
-        if (this.protocolCharges.sort((a,b) =>{ if (Number(a.assignedTo) > Number(b.assignedTo)){ return 1;}else{return 0;}}).toString() == this.selectedCharges.sort((a,b) =>{ if (Number(a.assignedTo) > Number(b.assignedTo)){ return 1;}else{return 0;}}).toString()){
-            console.log("no change to charges");
+        const sortedProtocolCharges = this.protocolCharges.toSorted(  (a,b) => { 
+            if (+(a.assignedTo) > +(b.assignedTo)){ 
+                return 1;
+            }
+            else if (+(a.assignedTo) == +(b.assignedTo)){
+                if (+(a.type) > +(b.type)){
+                    return 1;
+                }
+                else {
+                    return -1;
+                }
+            }
+            else{
+                return -1;
+            }
+        }); 
+            
+        const sortedSelectedCharges = this.selectedCharges.toSorted((a,b) =>{ 
+            if (+(a.assignedTo) > +(b.assignedTo)){ 
+                return 1;
+            }
+            else if (+(a.assignedTo) == +(b.assignedTo)){
+                if (+(a.type) > +(b.type)){
+                    return 1;
+                }
+                else {
+                    return -1;
+                }
+            }
+            else{
+                return -1;
+            }
+        })
+
+        if (sortedProtocolCharges.map( row => row.type+"@"+row.assignedTo).join() == sortedSelectedCharges.map( row => row.type+"@"+row.assignedTo).join()){
+            //console.log("no change to charges");
             this.shadow.getElementById('saveAssignmentButton').classList.remove('active');
             this.shadow.querySelector("#saveAssignmentButton  i").classList.remove('faa-shake');
             this.shadow.querySelector("#saveAssignmentButton  i").classList.remove('animated');
         }  
         else{
+            //console.log("change to charges");
             if (!this.shadow.getElementById('saveAssignmentButton').classList.contains('active')){
                 this.shadow.getElementById('saveAssignmentButton').classList.add('active');
                 this.shadow.querySelector("#saveAssignmentButton  i").classList.add('faa-shake');
                 this.shadow.querySelector("#saveAssignmentButton  i").classList.add('animated');
             }
         }
-        //console.log(this.protocolCharges);
-        //console.log("---------------")
-        //console.log(this.selectedCharges);
     }
 
     changeAssignmentStatus(user){
@@ -409,7 +441,7 @@ class Assignments extends HTMLElement {
             formdata.append('currentYear',this.protocolYear);
             const res = await runFetch("/api/makeMessageRead.php", "POST", formdata);
             if (!res.success){
-                console.log(res.msg);
+                //console.log(res.msg);
             }
             else{
                 //const resdec = res.result;
@@ -421,8 +453,8 @@ class Assignments extends HTMLElement {
         this.protocolCharges.forEach((element,index)=> {
             const found = Array.from(this.shadow.querySelectorAll(".departmentEmployees>button")).find(el => element.assignedTo == el.dataset.user);
             if (found !== undefined){
-                console.log(found);
-                console.log(element)
+                //console.log(found);
+                //console.log(element)
                 found.dataset.charge = 1;
                 found.dataset.chargeType = element.type;
                 if (element.type == 0){

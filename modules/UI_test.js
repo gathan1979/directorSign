@@ -1,5 +1,5 @@
 import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
-import {createActionsTemplate,getSigRecords, getSignedRecords, fillTableWithSigned}  from "./Records_test.js";
+import {createActionsTemplate,getSigRecords, getSignedRecords, fillTableWithSigned, signProviders, selectSignProvider, signAllDocuments}  from "./Records_test.js";
 import getFromLocalStorage from "./LocalStorage.js";
 import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
 import {getFilteredData, getProtocolData,openProtocolRecord, printChangedRecords} from "./ProtocolData.js";
@@ -101,7 +101,12 @@ const signTable = `<table id="dataToSignTable" class="table" style="font-size:0.
 		<th id="date" class="text-right">Εισαγωγή</th>
 		<th id="author" class="text-right">Συντάκτης</th>
 		<th id="status" class="text-right">Κατάσταση</th>
-		<th id="fileActions" class="text-right">Ενέργειες</th>
+		<th id="fileActions" class="text-right">
+			<div style="display:flex; justify-content: space-between;">
+				<span>Ενέργειες</span>
+				<button id="signAllModalBtn" class="isButton" style="color:green; background-color: white;" title="Μαζική υπογραφή"><i class="fas fa-tags"></i></button>
+			</div>
+		</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -132,6 +137,7 @@ const chargesTable = `<div id="chargesTable" style="font-size:0.9em;">
 const protocolRecordModal = 
 	`<dialog id="protocolRecordDialog">
 	</dialog>`;
+
 
 export function getPage(){
 	return page;
@@ -520,6 +526,10 @@ function pagesCommonCode(){
 				break;
 		}
 	})
+
+	if (interPeddingPublishReqs !== null){
+		clearInterval(interPeddingPublishReqs);
+	}	
 
 }
 
@@ -1144,6 +1154,7 @@ export async function createUIstartUp(){
     page = Pages.SIGNATURE;
 	pagesCommonCode();
 
+	
 	document.querySelector('#showEmployeesBtn').style.display = "inline-block"; 
 	document.querySelector('#showToSignOnlyBtn').style.display = "inline-block"; 
 
@@ -1161,7 +1172,9 @@ export async function createUIstartUp(){
 	//document.querySelector("#uploadFileButton").addEventListener("click",()=>uploadFileTest());
 
 	// Να δω τι γίνεται εδώ
-	if (+JSON.parse(localStorage.getItem("loginData")).user.roles[0].accessLevel){
+	const currentRole = +localStorage.getItem("currentRole");
+	const currentUserRole = JSON.parse(localStorage.getItem("loginData")).user.roles[currentRole];
+	if (currentUserRole.accessLevel){
 		//$('#example1').DataTable().columns(4).search("#sign#").draw();
 	}
 	else{
@@ -1181,6 +1194,57 @@ export async function createUIstartUp(){
 		createSearch();
 	});
 
+	document.querySelector("#signAllModalBtn").addEventListener("click", async ()=>{
+		const modalButtonsDivContent = `<div id="signAllBtngroup" class="flexHorizontal" aria-label="signBtnGroup">
+                                <button id="signAllAsLastBtn"  type="button" class="btn btn-warning btn-sm">Τελικός υπογράφων</button>
+                                <button id="signAllBtn"  type="button" class="btn btn-success btn-sm">Υπογραφή Όλων</button>
+                                <div id="signAllSpinner" class="spinner-border text-success" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>`;
+        
+		document.querySelector("#signModal .contentFooter").innerHTML = modalButtonsDivContent;
+		document.querySelector("#signAllSpinner").style.display = 'none';
+		
+		//const recordAA = event.currentTarget.getAttribute('data-whatever');
+		//const isExactCopy = event.currentTarget.getAttribute('data-isExactCopy');
+		//document.querySelector("#signModal").dataset.isexactcopy = isExactCopy;
+		
+		
+
+
+		if (+loginData.user.roles[localStorage.getItem("currentRole")].canSignAsLast){
+			document.querySelector('#signAllAsLastBtn').style.display = "inline-block";
+		}else{
+			document.querySelector('#signAllAsLastBtn').style.display = "none";
+		}
+		document.getElementById("signAllBtn").style.display = "inline-block";
+
+		document.querySelector('#signAllSpinner').style.display = "none";
+		
+		(localStorage.getItem("signProvider")==null?localStorage.setItem("signProvider",signProviders.MINDIGITAL.name):localStorage.getItem("signProvider"));
+		//Εξέταση αν οι απαραίτητες τιμές του middleware του provider έχουν οριστεί
+		let signProvider = localStorage.getItem("signProvider");
+		selectSignProvider(signProvider);
+		//Υπογραφή signDocument(aa, isLast=0, objection=0, isExactCopy=0)
+
+		let records = [];
+		document.querySelectorAll("#dataToSignTable tbody tr").forEach( item =>{
+			if (item.querySelector('[type="checkbox"]').checked  === true){
+				if (!+item.dataset.isExactCopy){
+					records.push({aa : +item.dataset.aa , isExactCopy : +item.dataset.isExactCopy});
+				}
+			}
+		})
+		document.querySelector("#signDialogTitle").innerText =`Υπογραφή Επιλεγμένων (${records.length} εγγραφές)`;
+		document.querySelector("#attentionTextDiv").style.display = "none";
+		document.querySelector("#signText").style.display = "none";
+
+		document.querySelector('#signAllBtn').addEventListener("click",() => signAllDocuments(records));
+		document.querySelector('#signAllAsLastBtn').addEventListener("click",() => signAllDocuments(records, 1, 0));
+
+		document.querySelector("#signModal").showModal();
+	})
 }
 
 export async function createSignedUIstartUp(){

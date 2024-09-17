@@ -55,7 +55,7 @@ let UPLOAD = 	{
 					}
 				};
 
-const signProviders = { MINDIGITAL, UPLOAD, FF, SCH};
+export const signProviders = { MINDIGITAL, UPLOAD, FF, SCH};
 Object.freeze(signProviders);
 
 export function createActionsTemplate(){
@@ -342,6 +342,7 @@ export function fillTableToBeSigned(result){
 		row.dataset.currentDep = result[key].currentDep;
 		row.dataset.isExactCopy = result[key].isExactCopy;
 		row.dataset.isReturned = result[key].isReturned;
+		row.dataset.aa = result[key].aa;
 
 		let temp1=[];
 		let filenameBtn = "";
@@ -356,10 +357,10 @@ export function fillTableToBeSigned(result){
 		}
 		
 		if (!result[key].isExactCopy){
-			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-warning btn-sm" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
+			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-warning btn-sm" >'+result[key]['filename']+'</button>'+((accessLevel==1) && (result[key].currentDep == department)?`<input type="checkbox" checked>`:`<input type="checkbox" disabled>`)+'<i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
 		}
 		else{
-			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info btn-sm" >'+result[key]['filename']+'</button><i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
+			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info btn-sm" >'+result[key]['filename']+'</button>'+`<input type="checkbox" checked>`+'<i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
 		}
 
 		let attention = ""
@@ -492,7 +493,6 @@ export function fillTableToBeSigned(result){
 					document.querySelector("#attentionTextDiv").style.display = "block";
 					document.querySelector("#signText").style.display = "block";
 					document.querySelector('#signExactCopyBtn').style.display = "none";
-
 				}
 				document.querySelector('#signSpinner').style.display = "none";
 				
@@ -1027,6 +1027,128 @@ export async function signDocument(aa, isLast=0, objection=0){
 	}
 }
 
+//-----------------------------------------------------ΥΠΟΓΡΑΦΗ ΠΟΛΛΑΠΛΩΝ ΕΓΓΡΑΦΩΝ ΚΑΙ ΛΟΙΠΑ------------------------------------------------------------------------------
+
+export async function signAllDocuments(aa, isLast=0, objection=0){
+	document.querySelector('#signAllBtn').removeAttribute("disabled",true);
+	document.querySelector('#signAllSpinner').style.display = "inline-block";
+
+	let providerExists = 0;
+	let providerName = "";
+	let params = {};
+	//Έλεγχος αν υπάρχει πάροχος στη μνήμη
+	if (localStorage.getItem("signProvider")!==null){
+		providerName = localStorage.getItem("signProvider");
+	}
+	else{
+		alert("Δεν υπάρχει πάροχος υπογραφής αποθηκευμένος");
+		document.querySelector('#signAllBtn').removeAttribute("disabled");
+		document.querySelector('#signAllSpinner').style.display = "none";
+		return;
+	}
+
+	//Έλεγχος αν ο πάροχος στη μνήμη ανήκει στους διαθέσιμους (signProviders)
+	providerExists = Object.values(signProviders).reduce((accum, current) =>{
+		if (providerName === current.name){
+			accum+=1;
+			params = current.params;
+		}
+		return accum;
+	},0);
+	if (providerExists === 0){
+		alert("Ο συγκεκριμένος πάροχος υπογραφής δε βρέθηκε");
+		document.querySelector('#signAllBtn').removeAttribute("disabled");
+		document.querySelector('#signAllSpinner').style.display = "none";
+		return;
+	}
+
+	//Έλεγχος αν οι παράμετροι που πρέπει να είναι στη μνήμη υπάρχουν και φόρτωσή τους
+	//Έλεγχος αν οι παράμετροι όλες έχουν τιμές, όπως πρέπει
+	const keys = Object.keys(params);
+
+	let errorMsgs = keys.reduce((prev,key, index) =>
+		{
+			if (params[key].persist){
+				if(localStorage.getItem(providerName+"_"+key)!==null){
+					signProviders[providerName]["params"][key].value = localStorage.getItem(providerName+"_"+key);
+					return prev;
+				}
+				else{
+					return prev+signProviders[providerName]["params"][key].errorMsg+". ";
+				}
+			}
+			if (params[key].value === null || params[key].value === ""){
+				return prev+signProviders[providerName]["params"][key].errorMsg+". ";
+			}
+			return prev;
+
+		},"");
+	if (errorMsgs !==""){
+		alert("Δεν έχουν οριστεί οι παράμετροι της υπογραφής. "+ errorMsgs);
+		document.querySelector('#signAllBtn').removeAttribute("disabled");
+		document.querySelector('#signAllSpinner').style.display = "none";
+		return;
+	}
+
+	let formData = new FormData();
+	// signDocument(aa, isLast=0, objection=0)
+	formData.append("aa", JSON.stringify(aa));  //πίνακας εγγραφών για υπογραφή
+	formData.append("comment", "Μαζική υπογραφή εγγράφων");
+	formData.append("objection", 0);
+	formData.append("isLast", isLast);
+	formData.append("provider", providerName);
+	const extraFieldsStatus =keys.every( key => {
+		if (params[key].type === "file"){
+			const fileInput = document.querySelector("#"+signProviders[providerName]["params"][key].field);
+			if (fileInput.files.length !==0){
+				formData.append(key, fileInput.files[0]);
+				return true;
+			}
+			else{
+				alert("επιλέξτε υπογεγραμμένο αρχείο");
+				return false;
+			}
+		}
+		else{
+			formData.append(key, signProviders[providerName]["params"][key].value);
+			return true;
+		}
+	});
+	if (!extraFieldsStatus){
+		document.querySelector('#signAllBtn').setAttribute("disabled", true);
+		document.querySelector('#signAllSpinner').style.display = "none";
+		return;
+	};
+
+
+	const res = await runFetch("/api/signAllDocs.php", "POST", formData, undefined);
+
+	if (!res.success){
+		document.querySelector('#signAllSpinner').style.display = "none";
+		document.querySelector('#signAllBtn').removeAttribute("disabled");
+		alert (res.msg);
+	}
+	else {
+		document.querySelector('#signAllBtn').removeAttribute("disabled");
+		document.querySelector('#signAllSpinner').style.display = "none";
+		if(providerName === "MINDIGITAL"){
+			document.querySelector("#otpText").value = "";
+		}
+		document.querySelector("#signModal").close();
+		document.querySelector("#signAllDialog").close();
+		// const records = getSigRecords().then( res => {
+		// 	createSearch();
+		// }, rej => {});
+		// alert(res.msg);
+		abortControllers.toSign = new AbortController();
+		signals.toSign = abortControllers.toSign.signal;
+		const records = getSigRecords(signals.toSign, getControllers()).then( res => {
+			createSearch();
+			alert("Τα έγγραφα έχουν υπογραφεί. Μάλλον ...");
+		}, rej => {});	
+	}
+}
+
 
 export async function rejectDocument(aa, isExactCopy=0){
 	const comment = document.getElementById('rejectText').value;
@@ -1073,7 +1195,7 @@ export async function returnDocument(aa){
 	}
 }
 
-function selectSignProvider(providerName){
+export function selectSignProvider(providerName){
 	let middleware = null;
 	let params = null;
 	//Έλεγχος αν υπάρχει ο συγκεκριμένος provider στη λίστα, αν όχι ορισμός mindigital
