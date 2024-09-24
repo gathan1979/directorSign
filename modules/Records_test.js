@@ -1135,7 +1135,7 @@ export async function signAllDocuments(aa, isLast=0, objection=0){
 			document.querySelector("#otpText").value = "";
 		}
 		document.querySelector("#signModal").close();
-		document.querySelector("#signAllDialog").close();
+		//document.querySelector("#signAllDialog").close();
 		// const records = getSigRecords().then( res => {
 		// 	createSearch();
 		// }, rej => {});

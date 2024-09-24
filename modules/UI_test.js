@@ -1174,13 +1174,13 @@ export async function createUIstartUp(){
 	// Να δω τι γίνεται εδώ
 	const currentRole = +localStorage.getItem("currentRole");
 	const currentUserRole = JSON.parse(localStorage.getItem("loginData")).user.roles[currentRole];
-	if (currentUserRole.accessLevel){
-		//$('#example1').DataTable().columns(4).search("#sign#").draw();
+	if (+currentUserRole.accessLevel > 0){
+		//console.log("if"+currentUserRole.accessLevel);
 	}
 	else{
 		const tempUserElement= document.getElementById('showToSignOnlyBtn');
-		tempUserElement.classList.remove('btn-danger');
-		tempUserElement.classList.add('btn-success');
+		tempUserElement.classList.remove('dismiss');
+		tempUserElement.classList.add('active');
 		tempUserElement.dataset.active=1;
 	}
 	createActionsTemplate();
