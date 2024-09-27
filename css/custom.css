@@ -394,6 +394,7 @@ td .fa-crosshairs{
     justify-content: space-between;
 	margin-bottom: 0.2em;
 	padding-bottom: 0.2em;
+	align-items: flex-start;
 }
 
 #bottomSectionTitle{

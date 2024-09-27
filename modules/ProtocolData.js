@@ -174,7 +174,7 @@ export function fillChargesTable(response, protocol = false){
 
 	//if(!protocol){	
 	for (const record of result){
-		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event, protocol));
+		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["outSubjectField"], record["aaField"], record["insertDateField"], record["statusField"], event, protocol));
 	}
 	//}
 	//else{
@@ -186,7 +186,7 @@ export function fillChargesTable(response, protocol = false){
 	createSearch();
 }
 
-export async function openProtocolRecord(subject,record,recordDate, status, event, protocol){
+export async function openProtocolRecord(subject, outSubjectField, record, recordDate, status, event, protocol){
 	//console.log("record no ..."+record)
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
@@ -197,7 +197,7 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 		<div class="" name="bottomSectionTitleBar" id="bottomSectionTitleBar" >
 			<div style="padding-right:10px;display:flex;gap:10px;" name="bottomSectionTitle" id="bottomSectionTitle">
 			</div>
-			<div style="display:flex; gap:0.2em;" name="bottomSectionButtons" id="bottomSectionButtons">
+			<div style="display:flex; gap:0.2em; align-items: flex-start;" name="bottomSectionButtons" id="bottomSectionButtons">
 				
 			</div>
 		</div>
@@ -268,7 +268,7 @@ export async function openProtocolRecord(subject,record,recordDate, status, even
 		bottomTitleDiv.innerHTML += '<button id="dischargeRecordBtn" title="Αποχρέωση" type="button" class="isButton warning" ><i class="fas fa-archive"></i></button>';
 	 }
 	
-	 bottomTitleDiv.innerHTML += `<span style="font-weight:bold;">${record}/${currentYear} | ${subject}</span>`;
+	 bottomTitleDiv.innerHTML += `<span style="font-weight:bold;">${record}/${currentYear} | ${subject} | ${outSubjectField}</span>`;
 
 	document.querySelector("#bottomSectionButtons").innerHTML +=`<button style="margin-left:20px;" class="isButton danger" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>`;
 	

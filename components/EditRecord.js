@@ -156,15 +156,15 @@ const editContent = `
                 </div>
                 <div class="formRow">   
                     <label class="formItem" for="fromField" >ΑΠΟΣΤΟΛΕΑΣ*</label>
-                    <input class="formInput" required=""  type="text"  id="fromField" disabled="">
+                    <input class="formInput" required=""  type="text"  id="fromField" >
                 </div>
                 <div class="formRow">    
                     <label class="formItem" for="subjectField" >ΘΕΜΑ*</label>
-                    <textarea class="formInput" required=""  type="text"  id="subjectField" disabled=""></textarea>
+                    <textarea class="formInput" required=""  type="text"  id="subjectField" ></textarea>
                 </div>
                 <div class="formRow">
                     <label class="formItem" for="docDate" >ΗΜΕΡ. ΠΑΡΑΛ.*</label>
-                    <input class="formInput" required=""  type="text"  id="docDate" disabled="">
+                    <input class="formInput" required=""  type="text"  id="docDate" >
                 </div>
                 <div class="formRow">    
                     <label class="formItem" for="docNumber" >ΑΡΙΘΜ. ΕΙΣ.*</label>

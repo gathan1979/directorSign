@@ -1150,7 +1150,6 @@ async function getFoldersList(){
 
 export async function createUIstartUp(){
 	removeIntervals();
-	//console.log("signature");
     page = Pages.SIGNATURE;
 	pagesCommonCode();
 
@@ -1194,57 +1193,63 @@ export async function createUIstartUp(){
 		createSearch();
 	});
 
-	document.querySelector("#signAllModalBtn").addEventListener("click", async ()=>{
-		const modalButtonsDivContent = `<div id="signAllBtngroup" class="flexHorizontal" aria-label="signBtnGroup">
-                                <button id="signAllAsLastBtn"  type="button" class="btn btn-warning btn-sm">Τελικός υπογράφων</button>
-                                <button id="signAllBtn"  type="button" class="btn btn-success btn-sm">Υπογραφή Όλων</button>
-                                <div id="signAllSpinner" class="spinner-border text-success" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </div>`;
-        
-		document.querySelector("#signModal .contentFooter").innerHTML = modalButtonsDivContent;
-		document.querySelector("#signAllSpinner").style.display = 'none';
-		
-		//const recordAA = event.currentTarget.getAttribute('data-whatever');
-		//const isExactCopy = event.currentTarget.getAttribute('data-isExactCopy');
-		//document.querySelector("#signModal").dataset.isexactcopy = isExactCopy;
-		
-		
-
-
-		if (+loginData.user.roles[localStorage.getItem("currentRole")].canSignAsLast){
-			document.querySelector('#signAllAsLastBtn').style.display = "inline-block";
-		}else{
-			document.querySelector('#signAllAsLastBtn').style.display = "none";
-		}
-		document.getElementById("signAllBtn").style.display = "inline-block";
-
-		document.querySelector('#signAllSpinner').style.display = "none";
-		
-		(localStorage.getItem("signProvider")==null?localStorage.setItem("signProvider",signProviders.MINDIGITAL.name):localStorage.getItem("signProvider"));
-		//Εξέταση αν οι απαραίτητες τιμές του middleware του provider έχουν οριστεί
-		let signProvider = localStorage.getItem("signProvider");
-		selectSignProvider(signProvider);
-		//Υπογραφή signDocument(aa, isLast=0, objection=0, isExactCopy=0)
-
-		let records = [];
-		document.querySelectorAll("#dataToSignTable tbody tr").forEach( item =>{
-			if (item.querySelector('[type="checkbox"]').checked  === true){
-				if (!+item.dataset.isExactCopy){
-					records.push({aa : +item.dataset.aa , isExactCopy : +item.dataset.isExactCopy});
-				}
+	if (+loginData.user.roles[localStorage.getItem("currentRole")].accessLevel > 0){
+		document.querySelector("#signAllModalBtn").addEventListener("click", async ()=>{
+			const modalButtonsDivContent = `<div id="signAllBtngroup" class="flexHorizontal">
+									<button id="signAllAsLastBtn"  type="button" class="isButton small warning">Τελικός υπογράφων</button>
+									<button id="signAllBtn"  type="button" class="isButton small active">Υπογραφή Όλων</button>
+									<div id="signAllSpinner" class="spinner-border text-success" role="status">
+										<span class="visually-hidden">Loading...</span>
+									</div>
+								</div>`;
+			
+			document.querySelector("#signModal .contentFooter").innerHTML = modalButtonsDivContent;
+			document.querySelector("#signAllSpinner").style.display = 'none';
+			
+			//const recordAA = event.currentTarget.getAttribute('data-whatever');
+			//const isExactCopy = event.currentTarget.getAttribute('data-isExactCopy');
+			//document.querySelector("#signModal").dataset.isexactcopy = isExactCopy;
+			
+			
+	
+	
+			if (+loginData.user.roles[localStorage.getItem("currentRole")].canSignAsLast){
+				document.querySelector('#signAllAsLastBtn').style.display = "inline-block";
+			}else{
+				document.querySelector('#signAllAsLastBtn').style.display = "none";
 			}
+			document.getElementById("signAllBtn").style.display = "inline-block";
+	
+			document.querySelector('#signAllSpinner').style.display = "none";
+			
+			(localStorage.getItem("signProvider")==null?localStorage.setItem("signProvider",signProviders.MINDIGITAL.name):localStorage.getItem("signProvider"));
+			//Εξέταση αν οι απαραίτητες τιμές του middleware του provider έχουν οριστεί
+			let signProvider = localStorage.getItem("signProvider");
+			selectSignProvider(signProvider);
+			//Υπογραφή signDocument(aa, isLast=0, objection=0, isExactCopy=0)
+	
+			let records = [];
+			document.querySelectorAll("#dataToSignTable tbody tr").forEach( item =>{
+				if (item.querySelector('[type="checkbox"]').checked  === true){
+					if (!+item.dataset.isExactCopy){
+						records.push({aa : +item.dataset.aa , isExactCopy : +item.dataset.isExactCopy});
+					}
+				}
+			})
+			document.querySelector("#signDialogTitle").innerText =`Υπογραφή Επιλεγμένων (${records.length} εγγραφές)`;
+			document.querySelector("#attentionTextDiv").style.display = "none";
+			document.querySelector("#signText").style.display = "none";
+	
+			document.querySelector('#signAllBtn').addEventListener("click",() => signAllDocuments(records));
+			document.querySelector('#signAllAsLastBtn').addEventListener("click",() => signAllDocuments(records, 1, 0));
+	
+			document.querySelector("#signModal").showModal();
 		})
-		document.querySelector("#signDialogTitle").innerText =`Υπογραφή Επιλεγμένων (${records.length} εγγραφές)`;
-		document.querySelector("#attentionTextDiv").style.display = "none";
-		document.querySelector("#signText").style.display = "none";
-
-		document.querySelector('#signAllBtn').addEventListener("click",() => signAllDocuments(records));
-		document.querySelector('#signAllAsLastBtn').addEventListener("click",() => signAllDocuments(records, 1, 0));
-
-		document.querySelector("#signModal").showModal();
-	})
+	}
+	else{
+		document.querySelector('#signAllModalBtn').style.display = "none";
+	}
+	
 }
 
 export async function createSignedUIstartUp(){

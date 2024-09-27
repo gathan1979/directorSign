@@ -408,3 +408,13 @@ a,
 .rotate{
 	animation:spin 2s linear infinite;
 }
+
+.emailMsgSubject{
+	color: rgb(57, 57, 243);
+	font-weight: 700;
+}
+
+a.emailMsgSubject:visited{
+	color:rgb(16, 153, 177);
+	font-weight: 300;
+}
