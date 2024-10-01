@@ -1,6 +1,6 @@
 import {updateFilterStorage,createSearch, pagingSize, pagingStart, FILTERS} from "./Filter.js"
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
-import { Pages, getPage } from "./UI_test.js";
+import { Pages, getPage, createHashDatalist } from "./UI_test.js";
 
 export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers, orderField, orderType){   		//εγγραφές χρεώσεων
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
@@ -239,6 +239,11 @@ export async function openProtocolRecord(subject, outSubjectField, record, recor
 	document.querySelector("#protocolRecordDialog").showModal();
 	//event.currentTarget.style.backgroundColor = "green";
 	document.querySelector("#protocolRecordDialog").innerHTML = protocolWindowContent;
+
+	document.querySelector("record-tags").addEventListener("RefreshTagsDatalistEvent", async event => {
+		await createHashDatalist();
+	})	
+	
 	
 	//Fill protocolWindowContent 
 	if (currentRoleObject.protocolAccessLevel ==1){

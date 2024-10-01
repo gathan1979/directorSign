@@ -351,7 +351,7 @@ function pagesCommonCode(){
 		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
 		<div id="outerFilterDiv" class="flexHorizontal smallPadding" style="align-items: flex-start;">
 			<div id="generalFilterDiv" class="flexHorizontal ">
-				<input id="tableSearchInput" type="text" placeholder="Αναζήτηση" aria-label="search" aria-describedby="basic-addon1">
+				<input id="tableSearchInput" autocomplete="off" type="text" placeholder="Αναζήτηση" >
 				<button data-active="0" class="isButton extraSmall dismiss" id="showEmployeesBtn">Προσωπικά</button>
 				<button data-active="0" class="isButton extraSmall dismiss" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
 			</div>
@@ -794,19 +794,31 @@ async function createChargesUIstartUp(){
 	})
 
 
+	// -------------------- ΕΤΙΚΕΤΕΣ --------------------------------------------------------------
+	await createHashDatalist();
+
 	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
+		if (  document.querySelector('#tableSearchInput').value.substring(0,1) === "#"){
+			document.querySelector('#tableSearchInput').setAttribute("list","hashDataListId");
+			document.querySelector('#tableSearchInput').focus();
+			document.querySelector('#tableSearchInput').style.color = "darkcyan";
+		}
+		else{
+			document.querySelector('#tableSearchInput').setAttribute("list",null);
+			document.querySelector('#tableSearchInput').style.color = "black";
+		}
 		if(+localStorage.getItem("globalSearch") === 1){
 			let debounceFunc = debounce( async () =>  {
 				const chargesRes = await getChargesAndFill(); 
 			});
 			debounceFunc();
 		}
-		else{
-			createSearch();
-		}
+		// else{
+		// 	createSearch();
+		// }
 		createSearch();
 	});
-	//console.log("keyup listener added");
+	// -------------------- /ΕΤΙΚΕΤΕΣ --------------------------------------------------------------	
 
 	if(document.querySelector("#reqProtocolAccessBtn")){
 		document.querySelector("#reqProtocolAccessBtn").addEventListener("click", ()=>{
@@ -1209,10 +1221,7 @@ export async function createUIstartUp(){
 			//const recordAA = event.currentTarget.getAttribute('data-whatever');
 			//const isExactCopy = event.currentTarget.getAttribute('data-isExactCopy');
 			//document.querySelector("#signModal").dataset.isexactcopy = isExactCopy;
-			
-			
-	
-	
+
 			if (+loginData.user.roles[localStorage.getItem("currentRole")].canSignAsLast){
 				document.querySelector('#signAllAsLastBtn').style.display = "inline-block";
 			}else{
@@ -1509,6 +1518,35 @@ async function logout(){
 		window.location.href ="/directorSign";
 	}
 }
+
+//--------------------------------------- ΕΤΙΚΕΤΕΣ -------------------------------------------
+async function getAllTags(){
+	const res = await runFetch("/api/getAllTags.php", "GET", null);
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		return res.result.tags;
+	}
+}
+
+export async function createHashDatalist(){
+	if (document.querySelector("#hashDataListId")){
+		document.querySelector("#hashDataListId").remove();
+	}
+	const searchInput = document.querySelector('#tableSearchInput');
+	const generalFilter = document.querySelector('#generalFilterDiv');
+	const hashDataList =  document.createElement('datalist');
+	hashDataList.id = "hashDataListId";
+	const tags = await getAllTags();
+	tags.forEach(elem => {
+		let temp = document.createElement('option');
+		temp.value = "#"+elem.tag;
+		hashDataList.append(temp);
+	})
+	generalFilter.insertBefore(hashDataList, searchInput);
+}
+//--------------------------------------- /ΕΤΙΚΕΤΕΣ -------------------------------------------
 
 async function getPeddingProtocolReqs(){	
 

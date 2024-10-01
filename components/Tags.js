@@ -170,6 +170,8 @@ class Tags extends HTMLElement {
     
     }
 
+
+
     async getTags(protocolNo, protocolYear){
         this.shadow.querySelector("#tagsBody").innerHTML = "";
         let urlparams = new URLSearchParams({protocolNo, currentYear : this.protocolYear});
@@ -206,8 +208,10 @@ class Tags extends HTMLElement {
             }
             else{
                 await this.getTags(this.protocolNo, this.protocolYear);
+                const RefreshTagsDatalistEvent = new CustomEvent("RefreshTagsDatalistEvent", { bubbles: true, cancelable: false, composed: true });
+                this.dispatchEvent(RefreshTagsDatalistEvent);
             }
-        }
+        }    
     }
    
     async saveTags(protocolNo, protocolYear){
@@ -226,6 +230,8 @@ class Tags extends HTMLElement {
             this.shadow.querySelector("#addTagsModal").close();
             this.shadow.querySelector("#insertTagsField").value= "";
             await this.getTags(this.protocolNo, this.protocolYear);
+            const RefreshTagsDatalistEvent = new CustomEvent("RefreshTagsDatalistEvent", { bubbles: true, cancelable: false, composed: true });
+            this.dispatchEvent(RefreshTagsDatalistEvent);
         }
     }
 
