@@ -668,7 +668,7 @@ async function createChargesUIstartUp(){
 		`;
 
 	const addRecordDialog =
-		`<dialog id="addRecordModal" class="customDialog" style="max-width: 90%; min-width: 80%;">
+		`<dialog id="addRecordModal" class="customDialog" style="max-width: 90%; min-width: 800px;">
 			<record-add  style="display:flex; flex-direction:column; gap: 10px;"></record-add>
     	</dialog>`;
 
@@ -1508,15 +1508,17 @@ export async function getProtocolAndFill(){
 
 async function logout(){
 	const res = await runFetch("/api/logout.php", "POST", null);
+	const settingFromStorage = localStorage.getItem("settings")!==null? JSON.parse(localStorage.getItem("settings")): {};
 	if (!res.success){
 		alert(res.msg);
 		localStorage.clear();
-		window.location.href ="/directorSign";
+		
 	}
 	else{
 		localStorage.clear();
-		window.location.href ="/directorSign";
 	}
+	localStorage.setItem("settings", JSON.stringify(settingFromStorage));
+	window.location.href ="/directorSign";
 }
 
 //--------------------------------------- ΕΤΙΚΕΤΕΣ -------------------------------------------
@@ -1774,7 +1776,8 @@ async function getPeddingPublishReqs(){
 							alert(res.msg);
 						}
 						else{
-							openProtocolRecord(res.result.subjectField,res.result.aaField,res.result.insertDateField, res.result.statusField, event, false)
+							// openProtocolRecord(subject, outSubjectField, record, recordDate, status, event, protocol){
+							openProtocolRecord(res.result.subjectField,res.result.outSubjectField,res.result.aaField,res.result.insertDateField, res.result.statusField, event, false)
 						}
 					})
 				}

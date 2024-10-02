@@ -156,11 +156,11 @@ const addContent = `
             <div id="addFormDiv">
                 <div class="flexHorizontal" style="background-color:white;">   
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΑΠΟΣΤΟΛΕΑΣ</label>
-                    <auto-complete class="formInput" inputId="fromField" data-table="contacts@adeies" data-fields="firstName,lastName" style="z-index:100;">
+                    <input class="formInput" id="fromField" inputId="fromField" data-table="contacts@adeies" data-fields="firstName,lastName" autocomplete="off">
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">    
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΘΕΜΑ</label>
-                    <auto-complete class="formInput" inputId="subjectField" data-table="book@protocol" data-fields="subjectField" style="z-index:50;">
+                    <input class="formInput" id="subjectField" inputId="subjectField" data-table="book@protocol" data-fields="subjectField" autocomplete="off" >
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΗΜΕΡ. ΠΑΡΑΛ.</label>
@@ -173,11 +173,11 @@ const addContent = `
                 <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
                 <div class="flexHorizontal" style="background-color:white;">    
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΠΡΟΣ</label>
-                    <auto-complete class="formInput" inputId="toField" data-table="contacts@adeies" data-fields="firstName,lastName">
+                    <input class="formInput" id="toField" inputId="toField" data-table="contacts@adeies" data-fields="firstName,lastName" autocomplete="off">
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">   
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΘΕΜΑ ΕΞΕΡΧ.</label>
-                    <auto-complete class="formInput" inputId="outSubjectField" data-table="book@protocol" data-fields="outSubjectField" style="z-index:50;">
+                    <input class="formInput" id="outSubjectField" inputId="outSubjectField" data-table="book@protocol" data-fields="outSubjectField" autocomplete="off">
                 </div>
                 <div class="flexHorizontal" style="background-color:white;">
                     <label class="formItem" style="flex-basis:150px;font-weight:bold;">ΗΜΕΡ. ΕΞΕΡΧ.</label>
@@ -192,6 +192,11 @@ const addContent = `
             </div>
         </form>
     </div>
+    <datalist id="fromFieldListId"></datalist>
+    <datalist id="toFieldListId"></datalist>
+    <datalist id="subjectFieldListId"></datalist>
+    <datalist id="outSubjectFieldListId"></datalist>
+
     <div class="modal-footer">
     </div>`;
 
@@ -205,6 +210,7 @@ class AddRecord extends HTMLElement {
     shadow;
     protocolProperties;  
     changedProperties;
+    timer;
 
     constructor() {
         super();
@@ -221,7 +227,7 @@ class AddRecord extends HTMLElement {
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
             this.protocolProperties[element.id] = element.value;
         });
-        console.log(this.protocolProperties);
+        //console.log(this.protocolProperties);
         this.changedProperties = {...this.protocolProperties};
         //console.log(this.shadow.querySelectorAll(".departmentEmployees>button"));
 
@@ -237,6 +243,7 @@ class AddRecord extends HTMLElement {
                 element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); 
            }
         });
+
 
         this.setDocDate();
  
@@ -282,7 +289,20 @@ class AddRecord extends HTMLElement {
     
     }
 
-    updateChangedProperties(event){
+    async updateChangedProperties(event){
+        //Φόρτωση datalist αν είναι autocomplete πεδίο
+        const targetElement = event.target;
+        if (targetElement.hasAttribute('inputId')){
+            if (targetElement.value.length >3){
+                let debounceFunc = this.debounce( async (event) =>  {
+                    const datalist = await this.createDatalist(targetElement);
+                    targetElement.setAttribute("list", datalist.id);
+                    targetElement.focus();
+                });
+                debounceFunc();
+            }
+        }
+
         //Ανανέωση αντικειμένου changedProperties με τιμές πεδίων
         this.changedProperties = {};
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
@@ -307,7 +327,13 @@ class AddRecord extends HTMLElement {
             this.shadow.querySelector("#saveRecordBtn  i").classList.add('faa-shake');
             this.shadow.querySelector("#saveRecordBtn  i").classList.add('animated');    
         }
-        console.log(this.changedProperties)
+        if (event.target.value.length >3){
+            event.target.setAttribute("list",event.target.id+"ListId");
+        }
+        else{
+            event.target.removeAttribute("list");
+        }
+        //console.log(this.changedProperties)
     }
 
 
@@ -321,42 +347,6 @@ class AddRecord extends HTMLElement {
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         this.shadow.getElementById('docDate').value = now.toISOString().slice(0,16);
     }
-
-    // async getRecord(protocolNo){
-    //     const {jwt,role} = getFromLocalStorage();
-    //     const myHeaders = new Headers();
-    //     myHeaders.append('Authorization', jwt);
-    //     let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
-        
-    //     let init = {method: 'GET', headers : myHeaders};
-    //     const res = await fetch("/api/getRecord.php?"+urlparams,init);
-    //     if (!res.ok){
-    //         const resdec = res.json();
-    //         if (res.status ==  401){
-    //             const resRef = await refreshToken();
-    //             if (resRef ==1){
-    //                 this.getCharges(protocolNo);
-    //             }
-    //             else{
-    //                 alert("σφάλμα εξουσιοδότησης");
-    //             }
-    //         }
-    //         else if (res.status==403){
-    //             alert("δεν έχετε πρόσβαση στο συγκεκριμένο πόρο");
-    //         }
-    //         else if (res.status==404){
-    //             alert("το αρχείο δε βρέθηκε");
-    //         }
-    //         else{
-    //             alert("Σφάλμα!!!");
-    //         }
-    //     }
-    //     else{
-    //         const resdec = await res.json();
-    //         return resdec;
-    //     }    
-    // }
-
 
     async addRecord(){
         //const {jwt,role} = getFromLocalStorage();
@@ -411,6 +401,42 @@ class AddRecord extends HTMLElement {
             this.parentElement.close(); 
         }
     } 
+
+    async getDataList(searchTable, searchFields, needle = ""){
+        let urlparams = new URLSearchParams({needle : needle, table: searchTable, fields: JSON.stringify(searchFields)});
+        const res = await runFetch("/api/searchSimilar.php", "GET", urlparams);
+        if (!res.success){
+        }
+        else{
+            const resdec = res.result;
+            //console.log(resdec)
+           if (res.result.contacts){
+                return res.result.contacts;
+           }
+        }
+    }
+
+    async createDatalist(element, needle){
+        console.log(element)
+        const newDataList =  this.shadow.querySelector(`#${element.id}ListId`);
+        const searchFieldsArray = element.dataset.fields.split(",");
+        const res = await this.getDataList(element.dataset.table, searchFieldsArray, needle);
+        let temp = "";
+        res.forEach(elem => {
+            searchFieldsArray.forEach( field =>{
+                temp += `<option value="${elem[field]}">`;
+            })
+        })
+        newDataList.innerHTML = temp;
+        return newDataList;
+    }
+
+    debounce(func, timeout = 1000){
+        return (...args) => {
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => { func.apply(this, args); }, timeout);
+        };
+    }
 }
 
 customElements.define("record-add", AddRecord);

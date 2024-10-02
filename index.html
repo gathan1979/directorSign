@@ -120,7 +120,9 @@
 							return;
 						}
 						if (res.status ==200){
+							const settingFromStorage = localStorage.getItem("settings")!==null? JSON.parse(localStorage.getItem("settings")): {};
 							localStorage.clear();
+							localStorage.setItem("settings", JSON.stringify(settingFromStorage));
 							const loginData = await res.json();
 							localStorage.setItem("loginData", JSON.stringify(loginData));
 							//console.log(JSON.parse(localStorage.getItem("loginData")));
