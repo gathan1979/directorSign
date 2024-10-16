@@ -149,14 +149,14 @@ const uploadDiv = `
         </div>
         <div class="customDialogContent" style="margin:10px;">
             <div id="uploadFileForm" style="padding:10px;">
-                <div id="addFormDiv" class="flexVertical">
+                <div id="addFormDiv" class="flexVertical" style="gap: 10px;">
                     <div class="flexHorizontal">    
                         <input type="file" class="form-control-file" name="selectedFile" id="selectedFile"  multiple  accept="pdf,PDF,doc,DOC,docx,DOCX,xls,XLS,xlsx,XLSX"/>
                     </div>
                     <div class="flexHorizontal" id="viewSelectedFiles"></div>
                     <div class="flexHorizontal">   
-                        <label class="formItem" for="authorComment" class="col-sm-2 col-form-label">Σχόλιο</label>
-                        <textarea  class="form-control" type="text" name="authorComment" id="authorComment" rows="2" cols="50" placeholder="Προαιρετικό κείμενο"></textarea>
+                        <label class="formItem" for="authorComment" class="col-sm-2 col-form-label">Αρ.Πρωτ.</label>
+                        <input  class="form-control" type="number" name="authorComment" id="authorComment" placeholder="Προαιρετικός αριθμός">
                     </div>
                 </div>
             </div>

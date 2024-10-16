@@ -1,8 +1,8 @@
 import {updateFilterStorage,createSearch, pagingSize, pagingStart, FILTERS} from "./Filter.js"
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
-import { Pages, getPage, createHashDatalist } from "./UI_test.js";
+import { Pages, getPage, createHashDatalist, paggingPage, signals, getControllers } from "./UI_test.js";
 
-export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers, orderField, orderType){   		//εγγραφές χρεώσεων
+export async function getFilteredData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers, orderField = null , orderType = null){   		//εγγραφές χρεώσεων
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 	document.querySelector("#chargesTableContent").innerHTML = "";
 	//updateFilterStorage();
@@ -369,28 +369,26 @@ async function publishToSite(protocolNo, protocolYear){
 		document.querySelector("#publishToSiteBtn").dispatchEvent(commentsRefreshEvent);
 		const assignmentsRefreshEvent = new CustomEvent("assignmentsRefreshEvent",  { bubbles: true, cancelable: false});
 		document.querySelector("#publishToSiteBtn").dispatchEvent(assignmentsRefreshEvent);
-		console.log("events dispatched")
+		//console.log("events dispatched");
 		//alert(res.msg);
 	}
 }
 
-
-async function  changeStatus(protocolNo, newStatus){
+async function changeStatus(protocolNo, newStatus){
 	const formdata = new FormData();
 	formdata.append('protocolNo', protocolNo);
 	formdata.append('newStatus', newStatus);
-
 	const res = await runFetch("/api/changeStatus.php", "POST", formdata);
 	if (!res.success){
 		alert(res.msg);
 	}
 	else{
-		await getFilteredData();
+		//await getFilteredData(event.currentPage -1, pagingSize, signals.charges, getControllers(), orderField, orderType);
+		await getFilteredData(paggingPage-1, pagingSize, signals.charges, getControllers());
+		document.querySelector(`[data-record="${protocolNo}"]`).scrollIntoView({behavior: 'smooth'});
 		alert(res.msg);
 	}
 }
-
-
 
 async function copyProtocol(){
 	const formdata = new FormData();

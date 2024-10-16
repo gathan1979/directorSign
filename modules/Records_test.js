@@ -370,7 +370,7 @@ export function fillTableToBeSigned(result){
 		}
 
 		temp1[0] = filenameBtn;
-		temp1[1] = result[key].date;
+		temp1[1] = result[key].comment??"---"+"/"+result[key].date;
 		temp1[2] = result[key].fullName;
 
 		let recordStatus = "";
@@ -1689,7 +1689,7 @@ export function fillTableWithSigned(result){
 		}
 		
 		temp1[0] = filenameBtn;
-		temp1[1] = result[key].date;
+		temp1[1] = result[key].comment??"---/"+result[key].date;
 		temp1[2] = result[key].fullName;
 		
 		let recordStatus = '<button id="signedBtn_'+result[key]['aa']+'" type="button" class="btn btn-warning btn-sm" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-download" data-toggle="tooltip" title="Υπογεγραμμένο για αρχειοθέτηση" data-whatever="'+result[key].aa+'"></i>'+"</button>";

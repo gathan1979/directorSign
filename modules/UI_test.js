@@ -8,6 +8,7 @@ import runFetch from "./CustomFetch.js";
 
 let loginData = null;
 let page = null;
+export let paggingPage = 0;
 export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed', PROTOCOL : "protocol"};
 Object.freeze(Pages);       
 const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
@@ -25,29 +26,29 @@ export let signals = {};
 
 
 const passwordModalDiv =
-`<dialog id="passwordModal" class="customDialog" style="width:70%;"> 
+`<dialog id="passwordModal" class="customDialog" style="max-width: 800px;; min-width:500px;"> 
 	<div class="customDialogContentTitle">
-		<span style="font-weight:bold;">Αλλαγή κωδικού</span>
+		<span style="font-weight:bold;">Αλλαγή κωδικού πρόσβασης</span>
 		<div class="topButtons" style="display:flex;gap: 7px;">
-			<button id="setPwd" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
+			<button id="setPwd" title="Αποθήκευση αλλαγών" type="button" class="isButton active"><i class="far fa-save"></i></button>
 			<button class="isButton " name="closePasswordModalBtn" id="closePasswordModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 		</div>
 	</div>
 	<div class="customDialogContent" style="margin-top:10px;">
 		<form id="passwordModalForm">
-			<div id="passwordForm">
-				<div class="formRow">    
-					<label class="formItem" for="oldPwd">Παλιός Κωδικός Πρόσβασης*</label>
+			<div id="passwordForm" style="display:flex; flex-direction: column; gap: 5px;">
+				<div class="formRow" style="display:flex; align-items: center;">    
+					<label class="formItem" for="oldPwd" style="flex-basis:300px;">Παλιός Κωδικός*</label>
 					<input class="formInput" required=""  type="text"  id="oldPwd" ></input>
 					<i id="showOldPassBtn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
 				</div>
-				<div class="formRow">    
-					<label class="formItem" for="newPwd" >Νέος Κωδικός Πρόσβασης*</label>
+				<div class="formRow" style="display:flex; align-items: center;">    
+					<label class="formItem" for="newPwd" style="flex-basis:300px;">Νέος Κωδικός*</label>
 					<input class="formInput" required=""  type="text"  id="newPwd">
 					<i id="showNewPass1Btn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
 				</div>
-				<div class="formRow">   
-					<label class="formItem" for="newPwd2">Επανεισαγωγή Νέου Κωδικού Πρόσβασης*</label>
+				<div class="formRow" style="display:flex; align-items: center;">   
+					<label class="formItem" for="newPwd2" style="flex-basis:300px;">Επανεισαγωγή Νέου Κωδικού*</label>
 					<input class="formInput" required=""  type="text"  id="newPwd2">
 					<i id="showNewPass2Btn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
 				</div>
@@ -98,7 +99,7 @@ const signTable = `<table id="dataToSignTable" class="table" style="font-size:0.
 	<thead>
 	<tr>
 		<th id="filename" class="text-right">Έγγραφο</th>
-		<th id="date" class="text-right">Εισαγωγή</th>
+		<th id="date" class="text-right">Αρ.Πρωτ.-Εισαγωγή</th>
 		<th id="author" class="text-right">Συντάκτης</th>
 		<th id="status" class="text-right">Κατάσταση</th>
 		<th id="fileActions" class="text-right">
@@ -482,12 +483,6 @@ function pagesCommonCode(){
 	document.querySelector("#showNewPass1Btn").addEventListener("click", ()=>showPass('newPwd'));
 	document.querySelector("#showNewPass2Btn").addEventListener("click",()=>showPass('newPwd2'));
 
-	document.querySelector("#passwordModal").addEventListener("show.bs.modal",(e)=> {
-		document.getElementById('oldPwd').value= "";
-		document.getElementById('newPwd').value= "";
-		document.getElementById('newPwd2').value= "";
-    });
-
 	document.querySelector("#setPwd").addEventListener("click",changePassword);	
 
 
@@ -530,6 +525,7 @@ function pagesCommonCode(){
 	if (interPeddingPublishReqs !== null){
 		clearInterval(interPeddingPublishReqs);
 	}	
+	paggingPage = 0;
 
 }
 
@@ -1268,7 +1264,7 @@ export async function createSignedUIstartUp(){
 	pagesCommonCode();
 
 	document.querySelector('#showEmployeesBtn').style.display = "inline-block"; 
-	document.querySelector('#showToSignOnlyBtn').style.display = "inline-block"; 
+	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
 
 	//Γέμισμα πίνακα με εγγραφές χρήστη
 	const signedRes = await getSignedRecordsAndFill();
@@ -1449,15 +1445,16 @@ export async function getSignedRecordsAndFill(){
 	const records = await getSignedRecords(pagingStart,pagingSize, signals.signed, getControllers());
 	fillTableWithSigned(records.data);
 	if(!document.querySelector("#pageSelectorDiv")){
-		document.querySelector("#dataToSignTable").insertAdjacentHTML("beforebegin",`<page-selector style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${records.totalRecords}"></page-selector>`);
+		document.querySelector("#dataToSignTable").insertAdjacentHTML("beforebegin",`<page-selector data-page="1" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${records.totalRecords}"></page-selector>`);
 	}
 	else{
 		document.querySelector("#pageSelectorDiv").remove();
-		document.querySelector("#dataToSignTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${records.totalRecords}"></page-selector>`);
+		document.querySelector("#dataToSignTable").insertAdjacentHTML("beforebegin",`<page-selector data-page="1" style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${records.totalRecords}"></page-selector>`);
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
 		//console.log("page to render:", event.currentPage);
-		const records = await getSignedRecords(event.currentPage -1,pagingSize, signals.charges, getControllers());
+		paggingPage = event.currentPage;
+		const records = await getSignedRecords(event.currentPage -1, pagingSize, signals.charges, getControllers());
 		fillTableWithSigned(records.data);
 	})				
 }
@@ -1467,19 +1464,19 @@ export async function getChargesAndFill(orderField= null, orderType=null){
 	abortControllers.charges = new AbortController();
 	signals.charges = abortControllers.charges.signal;
 
-	const recordsNo = await getFilteredData(pagingStart,pagingSize, signals.charges, getControllers(), orderField, orderType)
+	const recordsNo = await getFilteredData(pagingStart,pagingSize, signals.charges, getControllers(), orderField, orderType);
 		//.then( res => {
 			//createSearch();
 		//}, rej => {});	
 	if(!document.querySelector("#pageSelectorDiv")){
-		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector data-page="1" style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
 	}
 	else{
 		document.querySelector("#pageSelectorDiv").remove();
-		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
-
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector data-page="1" style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
+		paggingPage = event.currentPage;
 		//console.log("page to render:", event.currentPage);
 		const recordsNo = await getFilteredData(event.currentPage -1,pagingSize, signals.charges, getControllers(), orderField, orderType);
 	})		
@@ -1492,14 +1489,15 @@ export async function getProtocolAndFill(){
 	const recordsNo = await getProtocolData(pagingStart,pagingSize, signals.protocol, getControllers());
 
 	if(!document.querySelector("#pageSelectorDiv")){
-		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector data-page="1" style="" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
 	}
 	else{
 		document.querySelector("#pageSelectorDiv").remove();
-		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
+		document.querySelector("#chargesTable").insertAdjacentHTML("beforebegin",`<page-selector data-page="1" style="margin-top:1em;" id="pageSelectorDiv" paggingStart="${pagingStart}" paggingSize="${pagingSize}" totalRecords="${recordsNo}"></page-selector>`);
 	}	
 	document.querySelector("#pageSelectorDiv").addEventListener("pageChangeEvent", async (event)=>{
 		//console.log(event.currentPage);
+		paggingPage = event.currentPage;
 		const recordsNo = await getProtocolData(event.currentPage -1,pagingSize, signals.protocol, getControllers());
 	})							
 }

@@ -129,6 +129,7 @@ class PagingSelector extends HTMLElement {
     paggingStart;
     paggingSize;
     timer = null;
+    page = null;
     static observedAttributes = ["paggingstart"];
 
     constructor() {
@@ -138,7 +139,8 @@ class PagingSelector extends HTMLElement {
     async connectedCallback(){
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = paggingSelectorDiv;
-        
+        this.page = this.dataset.page;
+        console.log("page", this.page)
         this.totalRecords = this.attributes.totalRecords.value;
         this.paggingStart = this.attributes.paggingStart.value;
         this.paggingSize = this.attributes.paggingSize.value;
@@ -152,6 +154,8 @@ class PagingSelector extends HTMLElement {
                     this.shadow.querySelector('#currentPageSelector').value -=1;
                     const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
                     pageChangeEvent.currentPage = +this.shadow.querySelector('#currentPageSelector').value;
+                    this.page = +this.shadow.querySelector('#currentPageSelector').value;
+                    this.dataset.page = this.page;
                     let debouncedFilter = this.debounce( () =>  this.dispatchEvent(pageChangeEvent));
                     debouncedFilter();
                     this.checkDisabledArrows()
@@ -166,6 +170,8 @@ class PagingSelector extends HTMLElement {
                     this.shadow.querySelector('#currentPageSelector').value= + this.shadow.querySelector('#currentPageSelector').value + 1;
                     const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
                     pageChangeEvent.currentPage = +this.shadow.querySelector('#currentPageSelector').value;
+                    this.page = +this.shadow.querySelector('#currentPageSelector').value;
+                    this.dataset.page = this.page;
                     let debouncedFilter = this.debounce( () =>  this.dispatchEvent(pageChangeEvent));
                     debouncedFilter();
                     this.checkDisabledArrows()
@@ -183,6 +189,8 @@ class PagingSelector extends HTMLElement {
                 }
                 const pageChangeEvent = new CustomEvent("pageChangeEvent",  { bubbles: true, cancelable: false });
                 pageChangeEvent.currentPage = +this.shadow.querySelector('#currentPageSelector').value;
+                this.page = +this.shadow.querySelector('#currentPageSelector').value;
+                this.dataset.page = this.page;
                 this.dispatchEvent(pageChangeEvent);
                 this.checkDisabledArrows();
             })

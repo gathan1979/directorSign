@@ -108,31 +108,44 @@
 					// 		localStorage.removeItem('filter');
 					// 	}	
 					// }
-						
+					
+					const defaultSettings = {
+						'#header@background-color': "#99614d",
+						'#topMenu@background-color' : "#99614d",
+						'.protocol@background-color':"#f5f5dc",
+						'.report@background-color':"#90ee90",
+						'.report@display':"none",
+						'body@background-color':"#ffffff",
+						'body@color':"#000000"
+					}
+
 					async function login(){ // login με jwt
 						let formData = new FormData();
 						formData.append('name',document.getElementById("name").value);
 						formData.append('pass',document.getElementById("pass").value);
 						let init = {method: 'POST', body: formData};
 						const res = await fetch("/api/login2JWT.php",init); 
+						console.log(res)
 						if (!res.ok){
 							alert("πρόβλημα σύνδεσης");
 							return;
 						}
-						if (res.status ==200){
-							const settingFromStorage = localStorage.getItem("settings")!==null? JSON.parse(localStorage.getItem("settings")): {};
-							localStorage.clear();
-							localStorage.setItem("settings", JSON.stringify(settingFromStorage));
-							const loginData = await res.json();
-							localStorage.setItem("loginData", JSON.stringify(loginData));
-							//console.log(JSON.parse(localStorage.getItem("loginData")));
-							localStorage.setItem("currentRole",0);
-							location.href= "signatures_test.html";
-							localStorage.removeItem('filter');
-						}
-						else if (res.status ==403){
-							alert("Λάθος κωδικοί πρόσβασης");
-							return;
+						else {
+							const result = await res.json();
+							if (result.connect){
+								const settingFromStorage = JSON.parse(localStorage.getItem("settings")) ?? defaultSettings;
+								localStorage.clear();
+								localStorage.setItem("settings", JSON.stringify(settingFromStorage));
+								//const loginData = await res.json();
+								localStorage.setItem("loginData", JSON.stringify(result.loginData));
+								//console.log(JSON.parse(localStorage.getItem("loginData")));
+								localStorage.setItem("currentRole",0);
+								location.href= "signatures_test.html";
+								localStorage.removeItem('filter');
+							}
+							else{
+								alert("Σφάλμα κωδικών πρόσβασης");
+							}
 						}
 					}
 

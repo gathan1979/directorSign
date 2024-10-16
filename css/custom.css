@@ -201,7 +201,7 @@ td .fa-crosshairs{
 	display : flex;	
 	flex-flow: row wrap;
 	gap : 0.5em;
-	background-color : gray;
+	background-color : #9f1c1c;
 	padding : 5px;	
 	align-items : stretch;
 }
