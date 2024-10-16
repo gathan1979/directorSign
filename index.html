@@ -13,6 +13,7 @@
 			
 			<link rel="icon" type="image/png" href="/directorSign/css/images/server4.png">
 			<link rel="stylesheet" type="text/css" href="css/custom.css" />
+			<link rel="stylesheet" type="text/css" href="/libraries/fontawesome-free-5.15.4-web/css/all.css" >
 			
 			<script type="module">
 					import runFetch from "./modules/CustomFetch.js";
@@ -28,7 +29,8 @@
 						// var name = d.options[d.selectedIndex].value;
 						// document.getElementById("name").value = name;
 					// }
-
+					
+					const LOGS = {APACHE : 0, PHP : 1, LIQUIBASE : 2}
 
 					function getChar(e) {
 						if (e.which == null) {
@@ -81,33 +83,6 @@
 					function removeCapsWarning() {
 						document.getElementById('caps').style.display = 'none';
 					}
-						
-					
-					// async function login(){  // login με session, jwt. Θα αφαιρεθεί το session
-					// 	let formData = new FormData();
-					// 	formData.append('name',document.getElementById("name").value);
-					// 	formData.append('pass',document.getElementById("pass").value);
-					// 	let init = {method: 'POST', body: formData};
-					// 	//console.log(init);
-					// 	const res = await runFetch("/api/login1.php","POST", formData); 
-					// 	if (!res.success){
-					// 		alert(res.msg);
-					// 	}
-					// 	else{
-					// 		const res2 = await fetch("/api/login2JWT.php",init); 
-					// 		if (res2.status >= 200 && res2.status <= 299) {
-					// 			const loginData = await res2.json();
-					// 			localStorage.setItem("loginData",JSON.stringify(loginData));
-					// 			console.log(JSON.parse(localStorage.getItem("loginData")));
-					// 			localStorage.setItem("currentRole",0);
-					// 		}
-					// 		else{
-					// 			alert("Σφάλμα στην αυθεντικοποίηση");
-					// 		}
-					// 		location.href= "signatures_test.html";
-					// 		localStorage.removeItem('filter');
-					// 	}	
-					// }
 					
 					const defaultSettings = {
 						'#header@background-color': "#99614d",
@@ -147,9 +122,7 @@
 								alert("Σφάλμα κωδικών πρόσβασης");
 							}
 						}
-					}
-
-					
+					}			
 
 					async function showUsers(){ 
 						let urlpar = new URLSearchParams({});
@@ -179,11 +152,53 @@
 						}
 					}
 
+					async function getCurrentVersions(){ 
+						const res = await fetch("/api/getContainerVersionsFromLog.php"); 
+						if (res.status >= 200 && res.status <= 299) {
+							const resDec = await res.json();
+							document.querySelector("#currentVersionsDiv").innerHTML = `
+									<span class="isButton active" id="apacheLogBtn" active">httpd: ${resDec.httpd.match(/\d+.\d+.\d+/i)}</span>
+									<span class="isButton active" id="phpLogBtn" active">php: ${resDec.php.match(/\d+.\d+.\d+/i)}</span>
+									<span class="isButton active" id="liquibaseLogBtn" active">liquibase: ${resDec.liquibase.match(/\d+.\d+.\d+/i)}</span>
+								`;
+								document.querySelector("#apacheLogBtn").addEventListener("click", async (event)=> {
+									showLog(LOGS.APACHE);
+								});
+								document.querySelector("#phpLogBtn").addEventListener("click", async (event)=> {
+									showLog(LOGS.PHP);
+								});
+								document.querySelector("#liquibaseLogBtn").addEventListener("click", async (event)=> {
+									showLog(LOGS.LIQUIBASE);
+								});
+						}
+						else{
+							alert("Σφάλμα στην εμφάνιση εκδόσεων Docker Containers");
+						}
+					}
+					
+					async function showLog(log){ 
+						const urlpar = new URLSearchParams();
+						urlpar.append("logType", log);
+						const res = await fetch("/api/getlog.php?"+urlpar); 
+						if (res.status >= 200 && res.status <= 299) {
+							const resDec = await res.json();
+							document.querySelector("#log").innerHTML = resDec.log;
+						}
+						else{
+							alert("Σφάλμα στην λήψη ιστορικού");
+						}
+					}
+
 					showUsers();
+					getCurrentVersions();
+
 					document.querySelector("#pass").addEventListener("keyUp", (event)=> {checkCapsWarning(event);});
 					document.querySelector("#pass").addEventListener("focus", (event)=> {checkCapsWarning(event);});
 					document.querySelector("#pass").addEventListener("blur", (event)=> {removeCapsWarning()});	
-					document.querySelector("#submit_form1").addEventListener("click", (event)=> login());	
+					document.querySelector("#submit_form1").addEventListener("click", (event)=> login());
+
+					document.querySelector("#logDialogBtn").addEventListener("click", (event)=> document.querySelector("#logModal").showModal());
+					document.querySelector("#closelogModalBtn").addEventListener("click", (event)=> document.querySelector("#logModal").close());	
 
 			</script>
 
@@ -194,9 +209,10 @@
 	<body style="font-family: roboto; ">
 		<div id="containerDiv" style="display:flex; flex-direction: column;align-items: center;padding-top: 3em;">
 			<div id="loginDiv" style="box-shadow: 0.5em 0.5em rgba(255,215,0,0.5); border-style:solid; background-color: white; display:flex; flex-direction: column; gap: 10px; width: 450px;padding: 2em; border-radius : 10px; color: black">
-				<div id="logoContainer"  style="display:flex; justify-content: center; margin-bottom:60px;margin-top:20px;">
-					<div><img src="css/images/aianiHorseEdge3.png" alt="logimage" style="width:60px;"></div>
+				<div id="logoContainer"  style="display:flex; justify-content: center; margin-bottom:60px;margin-top:20px;gap:10px; align-items:center;">
+					<div><img src="css/images/aianiHorseEdge3.png" alt="logoimage" style="width:60px;"></div>
 					<div><label class="titlos">Αιανός</label></div>
+					<div><button id="logDialogBtn" class="isButton secondary small"><i class="fab fa-docker fa-2x"></i></button></div>
 				</div >
 				<div  style="display:flex; flex-direction: column; gap: 10px; ">
 						<div  style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -216,5 +232,19 @@
 			<div  style="display:flex; flex-wrap: wrap; margin-top : 3em; width: 80%; justify-content: center;" id="nameList"></div>
 			<div id="bottomSection" style="margin-top:4em;"></div>
 		</div>
+
+		<dialog id="logModal" class="customDialog" style="width:clamp(600px, 800px, 800px); margin-top: 0; margin-bottom:0; top:30px;"> 
+			<div class="customDialogContentTitle">
+				<span style="font-weight:bold;">Εμφάνιση Εκδόσεων Εφαρμογής</span>
+				<div class="topButtons" style="display:flex;gap: 7px;">
+					<button class="isButton " name="closelogModalBtn" id="closelogModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+				</div>
+			</div>
+			<div class="customDialogContent" style="margin-top:10px;">
+				<div id="currentVersionsDiv" style="display:flex; gap:15px;"></div>
+				<div id="log"></div>
+				
+			</div>
+		</dialog>
 	</body>
 </html>
