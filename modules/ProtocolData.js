@@ -1,4 +1,4 @@
-import {updateFilterStorage,createSearch, pagingSize, pagingStart, FILTERS} from "./Filter.js"
+import {updateFilterStorage,createSearch, pagingSize, pagingStart, FILTERS, FILTERS_GROUPS} from "./Filter.js"
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 import { Pages, getPage, createHashDatalist, paggingPage, signals, getControllers } from "./UI_test.js";
 
@@ -7,24 +7,8 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	document.querySelector("#chargesTableContent").innerHTML = "";
 	//updateFilterStorage();
 
-	//ΛΗΨΗ ΦΙΛΤΡΩΝ
-	const currentFilter = JSON.parse(localStorage.getItem("filter"));
-	//ΜΕΤΑΤΡΟΠΗ ΣΕ ΠΙΝΑΚΑ  current filter as array
-	const CFAA = Object.entries(currentFilter);
-	//console.log("CFAA", CFAA);
-
-	//ΦΙΛΤΡΑΡΙΣΜΑ ΑΝΕΝΕΡΓΩΝ ΦΙΛΤΡΩΝ current filter as array filter emptry
-	const CFAAFE = CFAA.filter(([key, value]) => !(value==0 || value=="" || value==null));
-	//console.log("CFAAFE",CFAAFE);
-
-	//ΦΙΛΤΡΑΡΙΣΜΑ - ΦΙΛΤΡΑ ΧΡΕΩΣΕΩΝ ΜΟΝΟ current filter as array filter emptry filter charges filters
-	const CFAAFEFC = CFAAFE.filter( ([key, value]) => (FILTERS.CHARGES.includes(key)?1:0) );
-	//console.log("CFAAFEFC", CFAAFEFC);
-
-	//ΜΕΤΑΤΡΟΠΗ ΠΙΝΑΚΑ ΣΕ ΑΝΤΙΚΕΙΜΕΝΟ
-	const filteredObject = Object.fromEntries(CFAAFEFC);
-	//console.log("filteredObject", filteredObject);
-
+	const filteredObject = getActiveFilters();
+	 
 	let customObject ={
 		customPagingStart,
 		customPagingSize,
@@ -42,7 +26,6 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	} 
 
 	const  completeOblect= Object.assign(filteredObject, customObject);
-	//console.log(completeOblect);
 
 	const urlpar = new URLSearchParams(completeOblect);
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal);
@@ -52,41 +35,68 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	}
 	else{
 		const response = res.result;
-
 		fillChargesTable(response);
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
 		return response.totalRecords;
 	}
 }
 
+function getActiveFilters(){
+	//ΛΗΨΗ ΦΙΛΤΡΩΝ από LocalStorage
+	let currentFilterFromLS = null;
+	if (localStorage.getItem("filter")){
+		currentFilterFromLS = JSON.parse(localStorage.getItem("filter"));
+	}
+
+	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
+	const currentRole = localStorage.getItem("currentRole");
+	//console.log(userData.roles[currentRole].protocolAccessLevel);
+	//ΦΙΛΤΡΟ ΠΟΥ ΑΝΤΙΣΤΟΙΧΕΙ ΣΤΗΝ ΠΕΡΙΠΤΩΣΗ ΣΕΛΙΔΑΣ ΚΑΙ ΧΡΗΣΤΗ
+	const page = getPage();
+	let pageRelevantFiltersArray = []
+	if (page == Pages.PROTOCOL){
+		pageRelevantFiltersArray = FILTERS_GROUPS.PROTOCOL;
+	}
+	else if (userData.roles[currentRole].protocolAccessLevel == 1){
+		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_PROTOCOL;
+ 	}
+	else if (userData.roles[currentRole].accessLevel ==1){
+		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_DEP_DIRECTOR;
+	}	
+	else{ 
+		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_USER;
+	} 
+	const filteredObject = {};
+	//ΛΗΨΗ ΜΗ ΚΕΝΩΝ ΦΙΛΤΡΩΝ
+	pageRelevantFiltersArray.forEach( pageFilter =>{
+		console.log(currentFilterFromLS[pageFilter.filterName]);
+		if (currentFilterFromLS[pageFilter.filterName] !== "" && +currentFilterFromLS[pageFilter.filterName] !== 0){
+			filteredObject[pageFilter.filterName] = currentFilterFromLS[pageFilter.filterName] ;
+		}
+	})
+	return filteredObject;
+}
+
 export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers){   		//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');
 
-	//ΛΗΨΗ ΦΙΛΤΡΩΝ
-	const currentFilter = JSON.parse(localStorage.getItem("filter"));
-	//ΜΕΤΑΤΡΟΠΗ ΣΕ ΠΙΝΑΚΑ  current filter as array
-	const CFAA = Object.entries(currentFilter);
-	//console.log("CFAA", CFAA);
-
-	//ΦΙΛΤΡΑΡΙΣΜΑ ΑΝΕΝΕΡΓΩΝ ΦΙΛΤΡΩΝ current filter as array filter emptry
-	const CFAAFE = CFAA.filter(([key, value]) => !(value==0 || value=="" || value==null));
-	console.log("CFAAFE",CFAAFE);
-
-	//ΦΙΛΤΡΑΡΙΣΜΑ - ΦΙΛΤΡΑ ΧΡΕΩΣΕΩΝ ΜΟΝΟ current filter as array filter emptry filter charges filters
-	const CFAAFEFC = CFAAFE.filter( ([key, value]) => (FILTERS.PROTOCOL.includes(key)?1:0) );
-	//console.log("CFAAFEFC", CFAAFEFC);
-
-	//ΜΕΤΑΤΡΟΠΗ ΠΙΝΑΚΑ ΣΕ ΑΝΤΙΚΕΙΜΕΝΟ
-	const filteredObject = Object.fromEntries(CFAAFEFC);
-	console.log("filteredObject", filteredObject);
-	
-	const customObject ={
+	let customObject ={
 		customPagingStart,
 		customPagingSize,
-		allRecords: true,
-		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear()),
-		searchText : document.querySelector("#tableSearchInput").value
+		currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())
 	}
+
+	//if (orderField !== null && orderType !== null){
+		//customObject.orderField = orderField;
+		//customObject.orderType = orderType;
+	//}
+
+	if (+localStorage.getItem("globalSearch") === 1){
+		const searchText = document.querySelector("#tableSearchInput").value;
+		customObject.searchText = searchText;
+	} 
+
+	const filteredObject = getActiveFilters();
 
 	const  completeOblect= Object.assign(filteredObject, customObject);
 

@@ -345,25 +345,28 @@ function pagesCommonCode(){
 	
 	//--------- Μεταφέρθηκαν στο starτUp()
 
-	const extraMenuDiv = `<div id="headmasterExtraMenuDiv">
-		<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton primary"><i class="fas fa-sync"></i></button>
-		<div class="flexVertical" id="uploadBtnDiv">
-		</div>
-		<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
-		<div id="outerFilterDiv" class="flexHorizontal smallPadding" style="align-items: flex-start;">
-			<div id="generalFilterDiv" class="flexHorizontal ">
-				<input id="tableSearchInput" autocomplete="off" type="text" placeholder="Αναζήτηση" >
-				<button data-active="0" class="isButton extraSmall dismiss" id="showEmployeesBtn">Προσωπικά</button>
-				<button data-active="0" class="isButton extraSmall dismiss" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
-			</div>
-		</div>
-		
-		<div id="recentProtocolsDiv"></div>
-	</div>`;
+	const extraMenuDiv = 	`<div id="headmasterExtraMenuDiv">
+								<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton primary"><i class="fas fa-sync"></i></button>
+								<div class="flexVertical" id="uploadBtnDiv"></div>
+								<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
+								<div id="outerFilterDiv" class="flexHorizontal smallPadding" style="align-items: flex-start;">
+									<div id="generalFilterDiv" class="flexHorizontal ">
+										<input id="tableSearchInput" autocomplete="off" type="text" placeholder="Αναζήτηση" >
+										<button data-active="0" class="isButton extraSmall dismiss" id="showEmployeesBtn">Προσωπικά</button>
+										<button data-active="0" class="isButton extraSmall dismiss" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
+									</div>
+								</div>
+								<div id="recentProtocolsDiv"></div>
+							</div>
+							<div id="filterDownDiv" class="flexHorizontal" style="background-color:#f3ecec; justify-content: center; gap:15px;" ></div>`;
 
 	if (document.body.querySelector("#headmasterExtraMenuDiv")){
 		document.body.querySelector("#headmasterExtraMenuDiv").remove();
 	}
+	if (document.body.querySelector("#filterDownDiv") !== null){
+		document.body.querySelector("#filterDownDiv").remove();
+	}
+
 	document.querySelector("#myNavBar").insertAdjacentHTML("afterend",extraMenuDiv);
 
 
@@ -460,24 +463,6 @@ function pagesCommonCode(){
 	document.querySelector("#closePasswordModalBtn").addEventListener("click",()=>{
 		document.querySelector("#passwordModal").close();
 	});	
-		
-	//localStorage.setItem("filter", JSON.stringify({}));
-	//create Roles UI	
-
-	// document.querySelector("#userRoles").innerHTML = "";
-	// loginData.user.roles.forEach((role,index)=>{
-	// 	let newRole;
-	// 	if(index == cRole){
-	// 		newRole = `<div><button id="role_${index}_btn"  type="button" class="isButton active extraSmall">${role.roleName}</button></div>`;
-	// 	}
-	// 	else{
-	// 		newRole = `<div><button id="role_${index}_btn"  type="button" class="isButton extraSmall">${role.roleName}</button></div>`;
-	// 	}
-	// 	document.querySelector('#userRoles').innerHTML += newRole;
-	// });  
-	// loginData.user.roles.forEach((role,index)=>{
-	// 		document.querySelector('#role_'+index+'_btn').addEventListener("click",()=>{setRole(index);}); 
-	// })
 
 	document.querySelector("#showOldPassBtn").addEventListener("click", ()=>showPass('oldPwd'));
 	document.querySelector("#showNewPass1Btn").addEventListener("click", ()=>showPass('newPwd'));
@@ -494,6 +479,8 @@ function pagesCommonCode(){
 			document.querySelector('#showToSignOnlyBtn').addEventListener("click", createSearch);
 		}
 	}
+
+	document.querySelector("#filterDownDiv").innerHTML = "";
 	
 
 	document.querySelector("#syncRecords").addEventListener("click", async ()=>  { 
@@ -682,12 +669,6 @@ async function createChargesUIstartUp(){
 				</button>
 				
 			</div>
-			<div id="filterBtnDiv" >
-				<button class="isButton extraSmall primary" type="button" id="openFilterBtn" data-toggle="tooltip" title="Φίλτρο">
-					<i class="fas fa-filter"></i>
-				</button>
-				
-			</div>
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
 					``:
@@ -716,19 +697,6 @@ async function createChargesUIstartUp(){
 								</div>
 								<div id="changesContent"></div>
 								<div id="changesDetailsContent" style="margin-top:1em;"></div>
-							</dialog>
-
-							<dialog id="filterDiv" class="customModal" style="position: absolute; top :0">
-								<div id="filterTitle" class="customDialogContentTitle">
-									<div>Φίλτρο αναζήτησης</div>
-									<div class="topButtons" style="display:flex;gap: 7px;">
-										<div id="filterCloseButtonDiv">
-											<button id="filterCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
-										</div>
-									</div>
-								</div>
-								<div id="filterContent" ></div>
-								<div id="filterApplyDiv"></div>
 							</dialog>`;
 
 	const peddingRequestsDiv= `<dialog id="peddingRequestsModal" class="customModal" style="min-width:80%;">
@@ -766,12 +734,20 @@ async function createChargesUIstartUp(){
 		<charges-move  style="display:flex; flex-direction:column; gap: 10px;"></charges-move>
 	</dialog>`;
 
+	const filterDownDiv = `<div id="filterDownDiv"></div>`;
+
 	document.body.insertAdjacentHTML("afterend",peddingPublishRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",peddingAccessRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",copyChargesDiv);
 	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	document.body.insertAdjacentHTML("afterend",peddingRequestsDiv);
 	document.body.insertAdjacentHTML("afterend",addRecordDialog);
+
+
+	//if (document.querySelector("#headmasterExtraMenuDiv") !== null){
+		//document.querySelector("#headmasterExtraMenuDiv").insertAdjacentHTML("afterend",filterDownDiv);
+	//}
+
 
 	if (document.querySelector("#roleSelectorDiv") !== null){
 		document.querySelector("#roleSelectorDiv").insertAdjacentHTML("afterend",yearSelector);
@@ -871,7 +847,7 @@ async function createChargesUIstartUp(){
 		});
 	}
 
-	createFilter(document.querySelector("#filterContent"));
+	createFilter(document.querySelector("#filterDownDiv"));
 	updateBtnsFromFilter();
 
 	const lsGlobalSearchValue = localStorage.getItem("globalSearch");
@@ -891,7 +867,7 @@ async function createChargesUIstartUp(){
 	//---------------------------------------------------------------------------------Αλλαγές σε πρωτόκολλα ---------------------------------------------------------------------
 	
 	const changesButton  = document.querySelector("#openChangesBtn");
-	const filterButton  = document.querySelector("#openFilterBtn");
+	//const filterButton  = document.querySelector("#openFilterBtn");
 	const changesCloseButton  = document.querySelector("#changesCloseButton");
 	const filterCloseButton  = document.querySelector("#filterCloseButton");
 	const changesDatesBtns = document.querySelectorAll("#changesDatesDiv button");
@@ -901,17 +877,18 @@ async function createChargesUIstartUp(){
 		const changesDiv  = document.querySelector("#changesDiv").showModal();
 	});
 
-	filterButton.addEventListener("click", () => {
-		const filterDiv  = document.querySelector("#filterDiv").showModal();
-	});
+	// filterButton.addEventListener("click", () => {
+	// 	//const filterDiv  = document.querySelector("#filterDiv").showModal();
+	// 	document.querySelector("#filterDiv").display 
+	// });
 
 	changesCloseButton.addEventListener("click", () => {
 		const changesDiv  = document.querySelector("#changesDiv").close();
 	});
 
-	filterCloseButton.addEventListener("click", () => {
-		const filterDiv  = document.querySelector("#filterDiv").close();
-	});
+	// filterCloseButton.addEventListener("click", () => {
+	// 	const filterDiv  = document.querySelector("#filterDiv").close();
+	// });
 
 	globalSearchBtn.addEventListener("click", ()=>{
 		const lsGlobalSearchValue = localStorage.getItem("globalSearch");
@@ -1040,66 +1017,36 @@ async function createProtocolUIstartUp(){
 
 	
 	
-	const chargesFilterMenuDiv = 
-	`<div id="chargesFilterMenu" class="flexVertical ">
-		<div id="topSettingsDiv" class="flexHorizontal" >	
-			<div id="filterBtnDiv" >
-				<button class="isButton extraSmall primary" type="button" id="openFilterBtn" data-toggle="tooltip" title="Φίλτρο">
-					<i class="fas fa-filter"></i>
-				</button>
+	// const chargesFilterMenuDiv = 
+	// `<div id="chargesFilterMenu" class="flexVertical ">
+	// 	<div id="topSettingsDiv" class="flexHorizontal" >	
+	// 		<div id="filterBtnDiv" >
+	// 			<button class="isButton extraSmall primary" type="button" id="openFilterBtn" data-toggle="tooltip" title="Φίλτρο">
+	// 				<i class="fas fa-filter"></i>
+	// 			</button>
 				
-			</div>
+	// 		</div>
 
-		</div>
-		</div>
-	</div>`;
+	// 	</div>
+	// 	</div>
+	// </div>`;
+	
 
-	const changesFilterDiv= `<dialog id="changesDiv" class="customModal" style="width: 80%;">
-						<div id="changesTitle" class="customTitle">
-							<div>Τελευταίες αλλαγές</div>
-							<div id="changesDatesDiv"> 
-								<button type="button" data-days="1" class="btn btn-warning btn-sm">1ημ.</button>
-								<button type="button" data-days="7" class="btn btn-warning btn-sm">7ημ.</button>
-								<button type="button" data-days="30" class="btn btn-warning btn-sm">30ημ.</button>
-							</div>
-							<div id="changesCloseButtonDiv">
-								<button id="changesCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
-							</div>
-						</div>
-						<div id="changesContent"></div>
-						<div id="changesDetailsContent" style="margin-top:1em;"></div>
-					</dialog>
-
-					<dialog id="filterDiv" class="customModal" style="position: absolute; top :0">
-						<div id="filterTitle" class="customDialogContentTitle">
-							<div>Φίλτρο αναζήτησης</div>
-							<div class="topButtons" style="display:flex;gap: 7px;">
-								<div id="filterCloseButtonDiv">
-									<button id="filterCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
-								</div>
-							</div>
-						</div>
-						<div id="filterContent"></div>
-						<div id="filterApplyDiv"></div>
-					</dialog>`;
-
-			
-
-	document.body.insertAdjacentHTML("afterend",changesFilterDiv);
+	//document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	
 	document.querySelector("role-selector").insertAdjacentHTML("afterend", `<year-selector id="yearSelectorDiv"></year-selector>`);
-	document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
+	//document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
 
-	const filterButton  = document.querySelector("#openFilterBtn");	
-	const filterCloseButton  = document.querySelector("#filterCloseButton");	
+	//const filterButton  = document.querySelector("#openFilterBtn");	
+	//const filterCloseButton  = document.querySelector("#filterCloseButton");	
 
-	filterButton.addEventListener("click", () => {
-		const filterDiv  = document.querySelector("#filterDiv").showModal();
-	});
+	// filterButton.addEventListener("click", () => {
+	// 	const filterDiv  = document.querySelector("#filterDiv").showModal();
+	// });
 
-	filterCloseButton.addEventListener("click", () => {
-		const filterDiv  = document.querySelector("#filterDiv").close();
-	});
+	// filterCloseButton.addEventListener("click", () => {
+	// 	const filterDiv  = document.querySelector("#filterDiv").close();
+	// });
 
 	let folderList = null;
 	if (localStorage.getItem("folders") !== null){
@@ -1114,11 +1061,8 @@ async function createProtocolUIstartUp(){
 		folderList = await getFoldersList();
 	}
 	
-	createFilter(document.querySelector("#filterContent"));
+	createFilter(document.querySelector("#filterDownDiv"));
 	updateBtnsFromFilter();
-
-
-	
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
 	
@@ -1135,9 +1079,6 @@ async function createProtocolUIstartUp(){
 		});
 		debounceFunc();
 	})
-
-	
-
 
 	const chargesRes = await getProtocolAndFill(); 
 	
@@ -1639,12 +1580,14 @@ async function getPeddingAccessProtocolReqs(){
 			document.querySelector("#peddingAccessRequestsNo").parentElement.style.backgroundColor = "orange";
 			document.querySelector("#peddingAccessRequestsNo").style.backgroundColor = "orange";
 			document.querySelector("#peddingAccessReqsRecords").innerHTML = `<div><b>Αίτημα από</div><div>Αρ.Πρωτ.</div><div>Φάκελος</div><div>Έτος</div><div>Αιτιολογία</div><div>Ημερ.</div><div>Ενέργειες</b></div>`;
+			let tempInnerHTML = "";
 			resdec.requests.forEach(elem => {
 					const calendarReqBtn = '<input data-field="access" data-req="'+elem.aa+'" data-action="calendarReq" type="date"></input>';
 					const rejectReqBtn = '<button data-field="access" data-req="'+elem.aa+'" data-action="dismissReq" data-protocol="'+elem.protocolField+'" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
 					const acceptReqBtn = '<button data-field="access" data-req="'+elem.aa+'" data-action="acceptReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-check-square"></i></button>';
 					const removeReqBtn = '<button data-field="access" data-req="'+elem.aa+'" data-action="removeReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="fas fa-trash-alt"></i></button>';
-					document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
+					//document.querySelector("#peddingAccessReqsRecords").innerHTML+= 
+					tempInnerHTML +=
 						`<div data-field="access" data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
 						<div data-field="access" data-req="${elem.aa}" data-name="protocolField">${elem.protocolField==0?"":elem.protocolField}</div>
 						<div data-field="access" data-req="${elem.aa}" data-name="folderlField">${elem.folderNameField==0?"":elem.folderNameField}</div>
@@ -1653,7 +1596,9 @@ async function getPeddingAccessProtocolReqs(){
 						<div data-field="access" data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;
 					let statusText = "";
 					if(+loginData.user.roles[cRole].protocolAccessLevel == 1){
-						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div data-req="${elem.aa}" data-name="actionsField">${calendarReqBtn+acceptReqBtn+rejectReqBtn+removeReqBtn}</div>`;
+						tempInnerHTML += 
+						//document.querySelector("#peddingAccessReqsRecords").innerHTML+=
+							`<div data-req="${elem.aa}" data-name="actionsField">${calendarReqBtn+acceptReqBtn+rejectReqBtn+removeReqBtn}</div>`;
 					}
 					else{
 						switch(+elem.active){
@@ -1661,12 +1606,15 @@ async function getPeddingAccessProtocolReqs(){
 							case 0 : statusText= `<button class="isButton active" data-req="${elem.aa}" data-access="0" data-protocol="${elem.protocolField}"><i class="fas fa-lock-open"></i></button>`;break;
 							case 1 : statusText= `<button class="isButton warning" disabled="disabled" data-req="${elem.aa}" data-access="1"><i class="fas fa-key"></i></button>`;break;
 						}
-						document.querySelector("#peddingAccessReqsRecords").innerHTML+=`<div disabled data-req="${elem.aa}" data-name="actionsField">${calendarReqBtn}</div>`;
+						tempInnerHTML += 
+						//document.querySelector("#peddingAccessReqsRecords").innerHTML+=
+							`<div disabled data-req="${elem.aa}" data-name="actionsField">${calendarReqBtn}</div>`;
 					}
 					
 					
 				}
 			);
+			document.querySelector("#peddingAccessReqsRecords").innerHTML+= tempInnerHTML;
 			document.querySelectorAll(`#peddingAccessRequestsModal [data-access="0"]`).forEach( elem=>{
 				elem.addEventListener("click", ()=>{
 					openProtocolRecord("test",elem.dataset.protocol, localStorage.getItem("currentYear"));
