@@ -358,7 +358,7 @@ function pagesCommonCode(){
 								</div>
 								<div id="recentProtocolsDiv"></div>
 							</div>
-							<div id="filterDownDiv" class="flexHorizontal" style="background-color:#f3ecec; justify-content: center; gap:15px;" ></div>`;
+							<div id="filterDownDiv" class="flexHorizontal" style="background-color:#f3ecec; justify-content: center; align-items:center; gap:15px;" ></div>`;
 
 	if (document.body.querySelector("#headmasterExtraMenuDiv")){
 		document.body.querySelector("#headmasterExtraMenuDiv").remove();

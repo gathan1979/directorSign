@@ -1,4 +1,4 @@
-import {updateFilterStorage,createSearch, pagingSize, pagingStart, FILTERS, FILTERS_GROUPS} from "./Filter.js"
+import {updateFilterStorage,createSearch, getActiveFilters, pagingSize, pagingStart, FILTERS, FILTERS_GROUPS} from "./Filter.js"
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 import { Pages, getPage, createHashDatalist, paggingPage, signals, getControllers } from "./UI_test.js";
 
@@ -41,41 +41,7 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	}
 }
 
-function getActiveFilters(){
-	//ΛΗΨΗ ΦΙΛΤΡΩΝ από LocalStorage
-	let currentFilterFromLS = null;
-	if (localStorage.getItem("filter")){
-		currentFilterFromLS = JSON.parse(localStorage.getItem("filter"));
-	}
 
-	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
-	const currentRole = localStorage.getItem("currentRole");
-	//console.log(userData.roles[currentRole].protocolAccessLevel);
-	//ΦΙΛΤΡΟ ΠΟΥ ΑΝΤΙΣΤΟΙΧΕΙ ΣΤΗΝ ΠΕΡΙΠΤΩΣΗ ΣΕΛΙΔΑΣ ΚΑΙ ΧΡΗΣΤΗ
-	const page = getPage();
-	let pageRelevantFiltersArray = []
-	if (page == Pages.PROTOCOL){
-		pageRelevantFiltersArray = FILTERS_GROUPS.PROTOCOL;
-	}
-	else if (userData.roles[currentRole].protocolAccessLevel == 1){
-		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_PROTOCOL;
- 	}
-	else if (userData.roles[currentRole].accessLevel ==1){
-		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_DEP_DIRECTOR;
-	}	
-	else{ 
-		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_USER;
-	} 
-	const filteredObject = {};
-	//ΛΗΨΗ ΜΗ ΚΕΝΩΝ ΦΙΛΤΡΩΝ
-	pageRelevantFiltersArray.forEach( pageFilter =>{
-		console.log(currentFilterFromLS[pageFilter.filterName]);
-		if (currentFilterFromLS[pageFilter.filterName] !== "" && +currentFilterFromLS[pageFilter.filterName] !== 0){
-			filteredObject[pageFilter.filterName] = currentFilterFromLS[pageFilter.filterName] ;
-		}
-	})
-	return filteredObject;
-}
 
 export async function getProtocolData(customPagingStart = pagingStart, customPagingSize = pagingSize, signal, controllers){   		//εγγραφές χρεώσεων πρωτοκόλλου
 	document.querySelector("#syncRecords>i").classList.add('faa-circle');

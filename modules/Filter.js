@@ -18,7 +18,7 @@ const isAssignedFilter = {filterName : "isAssigned", type: "boolean", extension 
 const isAssignedLastFilter = {filterName : "isAssignedLast", type: "boolean", extension : false, description:"Τελευταίες Χρεώσεις"};
 const isAssignedToDepFilter = {filterName : "isAssignedToDep", type: "boolean", extension : false, description:"Αχρέωτα"};
 const noNotificationsFilter = {filterName : "noNotifications", type: "boolean", extension : false, description:"Απόκρυψη κοινοποιήσεων"};
-const selectedFolderFilter = {filterName : "selectedFolder", type: "list", extension : false, description:"Λίστα φακέλων"};
+const selectedFolderFilter = {filterName : "selectedFolder", type: "list", extension : false, description:"Λίστα φακέλων", dataSource: getFoldersFromLS()};
 const extendedViewFilter = {filterName : "extendedView", type: "boolean", extension : true, description:"Εκτεταμένα στοιχεία"};
 
 //Αντιστοίχιση id κουμπιού φίλτρου με το αντίστοιχο φίλτρο object	
@@ -38,7 +38,7 @@ mapBtnsToLSFilter.set(extendedViewFilter, "extendedView");
 export const FILTERS = {};
 
 export const FILTERS_GROUPS = {
-	PROTOCOL: [selectedFolderFilter, selectedDateFilter],
+	PROTOCOL: [selectedFolderFilter, selectedDateFilter, extendedViewFilter],
 	CHARGES_USER: [hideArchievedFilter, isAssignedLastFilter, noNotificationsFilter, accessRequestsFilter, extendedViewFilter],
 	CHARGES_PROTOCOL: [hideArchievedFilter, isAssignedFilter, selectedDateFilter, showForArchiveFilter, extendedViewFilter],
 	CHARGES_DEP_DIRECTOR: [hideArchievedFilter, isAssignedLastFilter, isAssignedToDepFilter, noNotificationsFilter, selectedDateDepFilter, accessRequestsFilter, extendedViewFilter]
@@ -98,6 +98,29 @@ else{
 	resetFilterStorage();
 }
 
+function getFoldersFromLS(that){
+	if (localStorage.getItem("folders") !== null){
+		try{
+			const folderList = JSON.parse(localStorage.getItem("folders"));
+			//document.querySelector("#filterFolderSelection")
+			let temp = `<option value="0"></option>`
+			folderList.forEach( elem => {
+				//console.log(elem)
+				const template = document.createElement('template');
+				template.innerHTML = elem;
+				const btn = template.content.querySelector("button");
+				temp += `<option value="${btn.dataset.folderAa}">${btn.textContent}</option>`
+			})
+			return temp;
+		}
+		catch(e){
+			return `<option value="-1">Αδυναμία λήψη δεδομένων </option>`;
+		}
+	}
+	else{
+		return `<option value="-1">Αδυναμία λήψη δεδομένων </option>`;
+	}	
+}
 
 export async function filterTable (tableName, searchObject){   	// searchObject example {dataKeys :{author : "Αθανασιάδης Γιάννης", diff : 0}, searchString : "καλημέρα"}
 	// diff = 0 είναι για υπογραφή στο τμήμα
@@ -299,7 +322,7 @@ export default function createFilter(parentElement){
 				temp += `<input type="date" class="isButton" id="${mapBtnsToLSFilter.get(filter)}"  title="${filter.description}"/>`;
 				break;
 			case "list": 
-				temp +=`<select id="${mapBtnsToLSFilter.get(filter)}" ></select>`;
+				temp +=`<select id="${mapBtnsToLSFilter.get(filter)}" >${filter.dataSource}</select>`;
 				break
 			case "boolean": 
 				temp += `<button id="${mapBtnsToLSFilter.get(filter)}" class="isButton" title="${filter.description}" data-value="0">${filter.description}</button>`;
@@ -311,11 +334,48 @@ export default function createFilter(parentElement){
 	})	
 
 	parentElement.innerHTML = `<div id="upperToolBar" class="flexHorizontal" style=" justify-content: center; flex-wrap : wrap; padding: 5px; gap: 5px; font-size: 0.8em;">${parentElementContent}</div>
-								<div id="filterExtensions" class="flexHorizontal" style=" justify-content: center; flex-wrap : wrap; padding: 5px; gap: 5px; font-size: 0.8em;">${parentElementExtendedContent}</div>
-							`;	
+								<i class="fas fa-plus"></i>							
+								<div id="filterExtensions" class="flexHorizontal" style=" justify-content: center; flex-wrap : wrap; padding: 5px; gap: 5px; font-size: 0.8em;">${parentElementExtendedContent}</div>`;	
 	
 	addListeners(tempFiltersArray);
 }
+
+export function getActiveFilters(){
+	//ΛΗΨΗ ΦΙΛΤΡΩΝ από LocalStorage
+	let currentFilterFromLS = null;
+	if (localStorage.getItem("filter")){
+		currentFilterFromLS = JSON.parse(localStorage.getItem("filter"));
+	}
+
+	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
+	const currentRole = localStorage.getItem("currentRole");
+	//console.log(userData.roles[currentRole].protocolAccessLevel);
+	//ΦΙΛΤΡΟ ΠΟΥ ΑΝΤΙΣΤΟΙΧΕΙ ΣΤΗΝ ΠΕΡΙΠΤΩΣΗ ΣΕΛΙΔΑΣ ΚΑΙ ΧΡΗΣΤΗ
+	const page = getPage();
+	let pageRelevantFiltersArray = []
+	if (page == Pages.PROTOCOL){
+		pageRelevantFiltersArray = FILTERS_GROUPS.PROTOCOL;
+	}
+	else if (userData.roles[currentRole].protocolAccessLevel == 1){
+		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_PROTOCOL;
+ 	}
+	else if (userData.roles[currentRole].accessLevel ==1){
+		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_DEP_DIRECTOR;
+	}	
+	else{ 
+		pageRelevantFiltersArray = FILTERS_GROUPS.CHARGES_USER;
+	} 
+	const filteredObject = {};
+	//ΛΗΨΗ ΜΗ ΚΕΝΩΝ ΦΙΛΤΡΩΝ
+	pageRelevantFiltersArray.forEach( pageFilter =>{
+		console.log(currentFilterFromLS[pageFilter.filterName]);
+		if (currentFilterFromLS[pageFilter.filterName] !== "" && +currentFilterFromLS[pageFilter.filterName] !== 0){
+			filteredObject[pageFilter.filterName] = currentFilterFromLS[pageFilter.filterName] ;
+		}
+	})
+	return filteredObject;
+}
+
 
 export function updateBtnsFromFilter(){
 	let filterFromLS = null;
@@ -405,7 +465,8 @@ export function updateFilterStorage(event = null){
 		}
 	}
 
-	console.log("σχετικό φίλτρο",associatedFilter)
+	//console.log("σχετικό φίλτρο",associatedFilter)
+
 	//Ανάγνωση φίλτρου χωρίς αποθήκευση, χωρίς extension filters
 	let filter;
 	if (associatedFilter.extension !== true){
@@ -443,28 +504,9 @@ export function updateFilterStorage(event = null){
 		nextValue = event.target.value;
 	}
 
-	// if(+event.target.dataset.value === 0 || event.target.dataset.value === ""){
-	// 	event.target.classList.remove("active");
-	// }
-	// else{
-	// 	event.target.classList.add("active");
-	// }
-
 	filter[associatedFilter.filterName] = associatedFilter.type=="boolean"?+nextValue: nextValue;
 	localStorage.setItem('filter', JSON.stringify(filter));
 	updateBtnsFromFilter();
-	
-	// if (notAssignedBtn!==null){
-	// 	if (userData.roles[currentRole].protocolAccessLevel == 1){
-	// 		//filter.isAssigned = +notAssignedBtn.options[notAssignedBtn.selectedIndex].value;
-	// 		(+notAssignedBtn.value?filter.isAssigned =1:filter.isAssigned =0);	
-	// 	}
-	// 	else if (userData.roles[currentRole].accessLevel == 1){
-	// 		//filter.isAssignedToDep = +notAssignedBtn.options[notAssignedBtn.selectedIndex].value;
-	// 		(+notAssignedBtn.value?filter.isAssignedToDep =1:filter.isAssignedToDep =0);	
-	// 	}
-	// }
-	//console.log(filter);
 }
 
 function addListeners(filterArray){
