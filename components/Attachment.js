@@ -118,7 +118,6 @@ class Attachments extends HTMLElement {
         }
         this.shadow.querySelector("#closeAttModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#attachmentModal").close());
         this.shadow.querySelector("#closeGdprModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#gdprModal").close());
-       
         this.users = (await this.getUsers(1)).users;  // get all active protocol users
         this.shadow.querySelector("#addToGdprBtn").addEventListener("click", (event)=> this.addGdprRecords(event));
     }
@@ -353,7 +352,8 @@ class Attachments extends HTMLElement {
 
     async viewAttachment(attachmentNo, showProtocol=0){   // 15-12-2022 Θα αντικαταστήσει το παραπάνω ΚΑΙ ΤΟ VIEWATTACHMENTWITHPROTOCOL
         const currentYear = this.protocolYear;
-        const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol});
+        const protocolDate = this.attributes.protocolDate.value;
+        const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol, protocolDate});
         this.shadow.querySelector("#actionStatus").innerHTML = "";
 
         const res = await runFetch("/api/viewAttachmentTest.php", "GET", urlpar, FetchResponseType.blob);

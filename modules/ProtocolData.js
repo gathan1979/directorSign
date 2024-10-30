@@ -150,7 +150,7 @@ export function fillChargesTable(response, protocol = false){
 
 	//if(!protocol){	
 	for (const record of result){
-		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["outSubjectField"], record["aaField"], record["insertDateField"], record["statusField"], event, protocol));
+		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["aaField"], record["insertDateField"], protocol));
 	}
 	//}
 	//else{
@@ -162,8 +162,32 @@ export function fillChargesTable(response, protocol = false){
 	createSearch();
 }
 
-export async function openProtocolRecord(subject, outSubjectField, record, recordDate, status, event, protocol){
-	//console.log("record no ..."+record)
+async function getRecord(year, protocolNo){
+	const urlData = new URLSearchParams();
+
+	urlData.append("year", year);
+	urlData.append("protocolNo", protocolNo);
+
+	const res = await runFetch("/api/getRecord.php", "GET", urlData);
+	if (!res.success){
+		alert(res.msg);
+		return false;
+	}
+	else{  
+	   return res.result;
+	}
+} 
+
+export async function openProtocolRecord(record, recordDate, protocol){
+	if (recordDate.match(/\d{4}-\d{2}-\d{2}/i) !==null){
+		recordDate = recordDate.split("-")[0];
+	}
+	console.log(record, recordDate)
+	const recordFields = await getRecord(recordDate, record);
+	const subject  = recordFields.subjectField;
+	const outSubjectField = recordFields.outSubjectField;
+	const status = recordFields. statusField;
+
 	const loginData = JSON.parse(localStorage.getItem("loginData"));
 	const currentRoleObject = loginData.user.roles[localStorage.getItem("currentRole")];
 	const currentYear = (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear());

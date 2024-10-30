@@ -1617,7 +1617,7 @@ async function getPeddingAccessProtocolReqs(){
 			document.querySelector("#peddingAccessReqsRecords").innerHTML+= tempInnerHTML;
 			document.querySelectorAll(`#peddingAccessRequestsModal [data-access="0"]`).forEach( elem=>{
 				elem.addEventListener("click", ()=>{
-					openProtocolRecord("test",elem.dataset.protocol, localStorage.getItem("currentYear"));
+					openProtocolRecord(elem.dataset.protocol, localStorage.getItem("currentYear"));
 				})
 			})
 
@@ -1701,7 +1701,9 @@ async function getPeddingPublishReqs(){
 					const acceptReqBtn = '<button data-field="publish" data-req="'+elem.aa+'" data-action="acceptReq" data-protocol="'+elem.protocolField+'" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-check-square"></i></button>';
 					document.querySelector("#peddingPublishReqsRecords").innerHTML+= 
 						`<div data-field="publish" data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
-						<div style="cursor:pointer; color: blue; font-weight:500;" data-field="publish" data-req="${elem.aa}" data-name="protocolField">${elem.protocolField==0?"":elem.protocolField}</div>
+						<div style="cursor:pointer; color: blue; font-weight:500;" data-field="publish" data-req="${elem.aa}" data-name="protocolField">
+							<protocol-btn protocolNo="${elem.protocolField}" protocolDate="${elem.yearField}"></protocol-btn>
+						</div>
 						<div data-field="publish" data-req="${elem.aa}" data-name="yearField">${elem.yearField}</div>
 						<div data-field="publish" data-req="${elem.aa}" data-name="insertDate" >${elem.insertDate}</div>`;
 					let statusText = "";
@@ -1711,24 +1713,24 @@ async function getPeddingPublishReqs(){
 				}
 			);
 			
-			resdec.requests.forEach(elem => {
-				if(document.querySelector(`[data-field="publish"][data-name="protocolField"][data-req="${elem.aa}"]`)){
-					document.querySelector(`[data-field="publish"][data-name="protocolField"][data-req="${elem.aa}"]`).addEventListener("click", async (event) =>	{
-						const urlData = new URLSearchParams();
-						urlData.append("protocolNo", elem.protocolField);
-						urlData.append("year", elem.yearField);
-						const res = await runFetch("/api/getRecord.php", "GET", urlData);
-						if (!res.success){
-							alert(res.msg);
-						}
-						else{
-							// openProtocolRecord(subject, outSubjectField, record, recordDate, status, event, protocol){
-							openProtocolRecord(res.result.subjectField,res.result.outSubjectField,res.result.aaField,res.result.insertDateField, res.result.statusField, event, false)
-						}
-					})
-				}
+			// resdec.requests.forEach(elem => {
+			// 	if(document.querySelector(`[data-field="publish"][data-name="protocolField"][data-req="${elem.aa}"]`)){
+			// 		document.querySelector(`[data-field="publish"][data-name="protocolField"][data-req="${elem.aa}"]`).addEventListener("click", async (event) =>	{
+			// 			const urlData = new URLSearchParams();
+			// 			urlData.append("protocolNo", elem.protocolField);
+			// 			urlData.append("year", elem.yearField);
+			// 			const res = await runFetch("/api/getRecord.php", "GET", urlData);
+			// 			if (!res.success){
+			// 				alert(res.msg);
+			// 			}
+			// 			else{
+			// 				// openProtocolRecord(subject, outSubjectField, record, recordDate, status, event, protocol){
+			// 				openProtocolRecord(res.result.aaField,res.result.insertDateField, false)
+			// 			}
+			// 		})
+			// 	}
 
-			})
+			// })
 				
 			if(+loginData.user.roles[cRole].canPublish == 1){
 				resdec.requests.forEach(elem => {

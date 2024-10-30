@@ -263,6 +263,7 @@ class RequestRecord extends HTMLElement {
             this.shadow.querySelector("#saveRecordBtn i").classList.remove('animated');
             const RefreshRequestProtocol = new CustomEvent("RefreshRequestProtocol", { bubbles: true, cancelable: false, composed: true });
             this.dispatchEvent(RefreshRequestProtocol);
+            this.undoChanges();
             this.parentElement.close();
         }
     } 
