@@ -82,7 +82,7 @@ const loadingModal =
 		</div>
 	</dialog>`;
 
-const navBarDiv = `<div id="myNavBar">
+const navBarDiv = `<nav id="myNavBar">
 	<div  id="prosIpografi" ><a>Προς Υπογραφή</a></div>
 	<div  id="ipogegrammena" ><a>Διεκπεραιωμένα</a></div>
 		
@@ -91,7 +91,7 @@ const navBarDiv = `<div id="myNavBar">
 	<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>-->
 	<!--<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>-->
 	<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
-	</div><!-- /.container-fluid -->`;
+	</nav><!-- /.container-fluid -->`;
 
 
 

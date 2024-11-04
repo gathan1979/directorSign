@@ -118,7 +118,7 @@ function getFoldersFromLS(that){
 		}
 	}
 	else{
-		return `<option value="-1">Αδυναμία λήψη δεδομένων </option>`;
+		return `<option value="-1">Αδυναμία λήψη δεδομένων 2</option>`;
 	}	
 }
 
@@ -226,7 +226,7 @@ export function createSearch(event) {
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
 		const showToSignOnlyBtn = document.getElementById('showToSignOnlyBtn');
 		const showEmployeesBtn = document.getElementById('showEmployeesBtn');
-		console.log(event);
+		//console.log(event);
 		if (event !== undefined){
 			console.log("in")
 			if(event.target.dataset.active == "0"){
@@ -292,7 +292,7 @@ function debounce(func, timeout = 500){
 
 //Δημιουργεί τα κουμπιά του φίλτρου χωρίς καμία ενημέρωση με το localStorage
 export default function createFilter(parentElement){
-	console.log("creating filter")
+	//console.log("creating filter")
 	resetFilterStorage();
 	//console.log("creating filter")
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
@@ -330,14 +330,19 @@ export default function createFilter(parentElement){
 		}
 		temp += `</div>`;
 		filter.extension? parentElementExtendedContent +=temp : parentElementContent += temp;
-		console.log(parentElementContent)
+		//console.log(parentElementContent)
 	})	
 
 	parentElement.innerHTML = `<div id="upperToolBar" class="flexHorizontal" style=" justify-content: center; flex-wrap : wrap; padding: 5px; gap: 5px; font-size: 0.8em;">${parentElementContent}</div>
 								<i class="fas fa-plus"></i>							
 								<div id="filterExtensions" class="flexHorizontal" style=" justify-content: center; flex-wrap : wrap; padding: 5px; gap: 5px; font-size: 0.8em;">${parentElementExtendedContent}</div>`;	
 	
-	addListeners(tempFiltersArray);
+	if (page == Pages.PROTOCOL){
+		addListeners(tempFiltersArray, true);						
+	}
+	else{
+		addListeners(tempFiltersArray, false);
+	}
 }
 
 export function getActiveFilters(){
@@ -368,7 +373,7 @@ export function getActiveFilters(){
 	const filteredObject = {};
 	//ΛΗΨΗ ΜΗ ΚΕΝΩΝ ΦΙΛΤΡΩΝ
 	pageRelevantFiltersArray.forEach( pageFilter =>{
-		console.log(currentFilterFromLS[pageFilter.filterName]);
+		//console.log(currentFilterFromLS[pageFilter.filterName]);
 		if (currentFilterFromLS[pageFilter.filterName] !== "" && +currentFilterFromLS[pageFilter.filterName] !== 0){
 			filteredObject[pageFilter.filterName] = currentFilterFromLS[pageFilter.filterName] ;
 		}
@@ -509,14 +514,24 @@ export function updateFilterStorage(event = null){
 	updateBtnsFromFilter();
 }
 
-function addListeners(filterArray){
+function addListeners(filterArray, getFromProtocolData){
 	filterArray.forEach(itemFilter => {
 		if (document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`)){
 			if(itemFilter.type == "boolean"){
-				document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("click",(event)=> {updateFilterStorage(event); getChargesAndFill();});
+				if(getFromProtocolData){
+					document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("click",(event)=> {updateFilterStorage(event); getProtocolAndFill();});
+				}
+				else{
+					document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("click",(event)=> {updateFilterStorage(event); getChargesAndFill();});
+				}
 			}
 			else{
-				document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("change",(event)=> {updateFilterStorage(event); getChargesAndFill();});
+				if(getFromProtocolData){
+					document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("change",(event)=> {updateFilterStorage(event); getProtocolAndFill();});
+				}
+				else{
+					document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("change",(event)=> {updateFilterStorage(event); getChargesAndFill();});
+				}
 			}
 		}
 	} )

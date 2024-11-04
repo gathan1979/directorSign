@@ -64,7 +64,10 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 
 	const filteredObject = getActiveFilters();
 
-	const  completeOblect= Object.assign(filteredObject, customObject);
+
+
+	let  completeOblect= Object.assign(filteredObject, customObject);
+	completeOblect= Object.assign(completeOblect, {allRecords : true});
 
 	const urlpar = new URLSearchParams(completeOblect);
 	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal);
@@ -207,21 +210,14 @@ export async function openProtocolRecord(record, recordDate, protocol){
 				<record-attachments data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:40%;" protocolDate="${recordDate}" protocolNo="${record}"></record-attachments>
 				<record-relative data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-relative>
 				<record-comment data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-comment>
-				<record-history style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-history>
+			
 				<record-tags data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-tags>
 
-				<div class="table-responsive mt-2 pt-2" id="kshde" style="background: rgba(122, 160, 126, 0.2)!important;">
-					<table class="table" id="kshdeTableInProtocol">
-						<thead>
-						<tr>
-							<th id="kshdeTitle">ΚΣΗΔΕ</th>
-						</tr>
-						</thead>
-						<tbody>
-					
-						</tbody>
-					</table>
-				</div>
+				<record-events data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-events>
+
+				<record-kside data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-kside>
+
+				<record-history style="max-height:20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-history>
 			</div>	
 
 			<record-folders data-locked="${(protocol===true)?1:0}" style="flex-basis: 20%;" protocolDate="${recordDate}" protocolNo="${record}"></record-folders>
