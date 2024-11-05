@@ -5,8 +5,9 @@
 	--my-secondary : gray;
 	--my-primary : rgb(43, 144, 245);
 	--my-info : #9feeff;
+	--my-component-light : #f5f5f5!important;
+	--my-component-dark : #e0e0e0!important;
 }
-
 ::view-transition-group(root){
 	animation-duration : 0.5s;
 }
@@ -725,4 +726,11 @@ span.off{
 
 .dbs>div{
 	cursor:pointer;
+}
+
+.isComponent{
+	border-style: solid;
+    border-color: gray;
+    border-width: 1px;
+    border-radius: 5px;
 }

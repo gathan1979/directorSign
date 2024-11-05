@@ -91,21 +91,21 @@ const tagsContent = `
         }
 
     </style>
-    <div id="tagsModule" class="isComponent" style="display:flex;gap:10px;flex-direction:column;background: var(--my-component-light);padding:10px;height:100%;">
+    <div id="ksideModule" class="isComponent" style="display:flex;gap:10px;flex-direction:column;background: var(--my-component-light);padding:10px;height:100%;">
         <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
         <link rel="stylesheet" type="text/css" href="css/custom.css" />
         <link href="css/all.css" rel="stylesheet">
         
         <details>
             <summary>
-                <span id="commentTableTitle" style="font-weight:bold;">Ετικέτες</span>
-                <span class="badge bg-secondary" id="tagsTableTitleBadge"></span>
+                <span id="ksideTitle" style="font-weight:bold;">Αρ.πρωτ. ΚΣΗΔΕ</span>
+                <span class="badge bg-secondary" id="ksideTableTitleBadge"></span>
             </summary>
             <div style="display:flex;gap:10px;flex-direction:column;">
                 <div style="display:inline-flex;align-self:end;gap:5px;">
-                    <button id="showAddTagModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
+                    <button id="showAddKsideModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
                 </div>
-                <div id="tagsBody" style="height:90%;overflow-y:scroll;display:flex; flex-wrap:wrap;gap:5px;"></div>
+                <div id="ksideBody" style="height:90%;overflow-y:scroll;display:flex; flex-wrap:wrap;gap:5px;"></div>
                 <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
             </div>    
         </details>
@@ -113,9 +113,9 @@ const tagsContent = `
     </div>
 
    
-    <dialog id="addTagsModal" class="customDialog" style="width:60%;">
+    <dialog id="addKsideModal" class="customDialog" style="width:60%;">
         <div class="customDialogContentTitle">
-            <span style="font-weight:bold;">Νέες Ετικέτες</span>
+            <span style="font-weight:bold;">Αριθμός Πρωτοκόλλου ΚΣΗΔΕ</span>
             <button class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
         <div class="customDialogContent">
@@ -125,14 +125,14 @@ const tagsContent = `
                 </form>
                 <div class="flexHorizontal" style="justify-content: space-between;">
                     <div id="searchResults" style="display:flex; gap:5px; padding: 10px;"></div>
-                    <button id="insertTagsBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
+                    <button id="insertKsideBtn" type="button" class="btn btn-success mb-2">Εισαγωγή</button>	
                 </div>
             </div>
         </div>
     </dialog>`;
 
 
-class Tags extends HTMLElement {
+class Kside extends HTMLElement {
     protocolNo;
     protocolYear;
     shadow;
@@ -148,22 +148,22 @@ class Tags extends HTMLElement {
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         this.locked = this.dataset.locked;
-        if (!+this.locked){
-            this.shadow.querySelector("#showAddTagModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addTagsModal").showModal());
-        }
-        else{
-            this.shadow.querySelector("#showAddTagModalBtn").style.display = "none";
-        }
-        //this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>this.loadRelativeFull(this.protocolNo,1,1));
-        this.shadow.querySelector("#insertTagsBtn").addEventListener("click",()=>this.saveTags(this.protocolNo, this.protocolYear));
-        this.getTags(this.protocolNo, this.protocolYear);
+        // if (!+this.locked){
+        //     this.shadow.querySelector("#showAddTagModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addTagsModal").showModal());
+        // }
+        // else{
+        //     this.shadow.querySelector("#showAddTagModalBtn").style.display = "none";
+        // }
+        // //this.shadow.querySelector("#fullRelativeTree").addEventListener("click",()=>this.loadRelativeFull(this.protocolNo,1,1));
+        // this.shadow.querySelector("#insertTagsBtn").addEventListener("click",()=>this.saveTags(this.protocolNo, this.protocolYear));
+        // this.getTags(this.protocolNo, this.protocolYear);
         
-        this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> {
-            this.shadow.querySelector("#addTagsModal").close();
-            this.shadow.querySelector("#insertTagsField").value= "";   
-            this.shadow.querySelector("#searchResults").innerHTML = ""; 
-        });
-        this.shadow.querySelector("#insertTagsField").addEventListener("keyup",()=>{this.searchTags()});
+        // this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> {
+        //     this.shadow.querySelector("#addTagsModal").close();
+        //     this.shadow.querySelector("#insertTagsField").value= "";   
+        //     this.shadow.querySelector("#searchResults").innerHTML = ""; 
+        // });
+        // this.shadow.querySelector("#insertTagsField").addEventListener("keyup",()=>{this.searchTags()});
     }
 
     disconnectedCallback() {
@@ -195,7 +195,7 @@ class Tags extends HTMLElement {
         }    
     }
 
-    async removeTag(aaField){   
+    async removeKsideProtocol(aaField){   
         const dialogRes = confirm("Πρόκειται να διαγράψετε μια ετικέτα");
         if (dialogRes == true) {  
             const formdata = new FormData();
@@ -214,7 +214,7 @@ class Tags extends HTMLElement {
         }    
     }
    
-    async saveTags(protocolNo, protocolYear){
+    async saveKsideProtocol(protocolNo, protocolYear){
 
         const formdata = new FormData();
         formdata.append('protocolNo',protocolNo);
@@ -234,85 +234,7 @@ class Tags extends HTMLElement {
             this.dispatchEvent(RefreshTagsDatalistEvent);
         }
     }
-
-    async searchTags(){
-        const selectedTags = [...this.shadow.querySelectorAll("#tagsBody>span")].map(elem=>elem.innerHTML);
-
-        const currentTextAsArray = this.shadow.getElementById("insertTagsField").value.split(",");
-        const searchValue = currentTextAsArray.at(-1);
-        //ΟΤΑΝ ΒΑΖΟΥΜΕ ΝΕΟ ΣΤΟΙΧΕΙ0 ΜΕ (ΚΟΜΜΑ) ΓΙΝΕΤΑΙ ΕΛΕΓΧΟΣ ΑΝ ΥΠΑΡΧΕΙ ΗΔΗ ΚΑΙ ΑΦΑΙΡΕΙΤΑΙ 
-        if (currentTextAsArray.at(-1)=="" && currentTextAsArray.at(-2) != null){
-            console.log("ειμαι εδω",currentTextAsArray.at(-2))
-            if (selectedTags.indexOf(currentTextAsArray.at(-2)) !== -1){
-                console.log(currentTextAsArray)
-               this.shadow.getElementById("insertTagsField").value = currentTextAsArray.slice(0,-2).join(", ");
-            }
-        }
-        if (searchValue.trim().length <3){
-            this.shadow.querySelector("#searchResults").innerHTML = "";
-            return;
-        }
-        this.shadow.querySelector("#searchResults").innerHTML = "";
-        const similarTags = await this.searchSimilar(searchValue);
-        
-        //console.log(selectedTags);
-
-        //ΕΛΕΓΧΟΣ ΑΝ ΣΤΑ ΟΜΟΙΑ ΠΟΥ ΒΡΈΘΗΚΑΝ ΚΑΠΟΙΟ ΕΧΕΙ ΚΑΤΑΧΩΡΗΘΕΙ ΗΔΗ ΩΣΤΕ ΝΑ ΕΜΦΑΝΙΣΤΕΙ ΠΡΑΣΙΝΟ 
-        similarTags.forEach( (elem,index) => {
-            if (selectedTags.indexOf(elem.tag) === -1){
-                this.shadow.querySelector("#searchResults").innerHTML += "<span id='similar_"+index+"'  style='cursor: pointer; background-color: var(--bs-orange); border-radius:5px; font-size: 10px;padding: 5px;color: white;'>"+elem.tag+'</span>'
-            }
-            else{
-                this.shadow.querySelector("#searchResults").innerHTML += "<span id='similar_"+index+"' class='active' style='border-radius:5px; font-size: 10px;padding: 5px;color: white;'>"+elem.tag+'</span>'
-            }
-        })
-        similarTags.forEach( (elem,index) => {
-            if (selectedTags.indexOf(elem.tag) === -1){
-                this.shadow.querySelector("#similar_"+index).addEventListener("click", (event)=>{
-                    if (currentTextAsArray.length == 1){
-                        this.shadow.getElementById("insertTagsField").value = event.currentTarget.innerHTML;
-                    }
-                    else{
-                        this.shadow.getElementById("insertTagsField").value = currentTextAsArray.slice(0,-1).join(", ")+", "+event.currentTarget.innerHTML;
-                    }
-                })
-            }
-        });
-        return;
-
-        this.shadow.querySelectorAll("#folderList > button").forEach((element,index)=> {
-            //console.log(element.title.toLowerCase());
-            //console.log(searchValue.toLowerCase());
-            if (element.title.toLowerCase().includes(searchValue.toLowerCase())){
-                //console.log(element.title);
-                let isActive = 0;
-                if (this.shadow.querySelector('#folderList [data-folder-aa="'+element.dataset.folderAa+'"]').dataset.active == "1"){
-                    isActive = 1;
-                }
-                let newButtonText = '<button data-active="'+isActive+'" data-folder-search-aa="'+element.dataset.folderAa+'" id="searchFoldersRes_'+element.dataset.folderAa+'" style="margin-bottom:0.5em;margin-left:0.5em;" type="button" class="isButton small '+(isActive?"active":"")+'" >';
-                // /onclick="selectSearchFolder('+result[key]['aaField']+');"    
-                newButtonText +="Φ"+element.innerText+" "+element.title+'</button>';
-                //console.log(newButtonText);
-                this.shadow.querySelector("#searchResults").innerHTML += newButtonText;
-                this.shadow.querySelector('#searchFoldersRes_'+element.dataset.folderAa).addEventListener("click",(event)=>{
-                    this.selectSearchFolder(event.currentTarget.dataset.folderSearchAa);
-                })
-            }
-        });
-    }
-
-    async searchSimilar(tag){
-        let urlparams = new URLSearchParams({tag, currentYear : this.protocolYear});
-        const res = await runFetch("/api/searchSimilarTags.php", "GET", urlparams);
-        if (!res.success){
-            alert(res.msg);
-        }
-        else{
-            const resdec = res.result;
-            return resdec;
-        }    
-    }
     
 }
 
-customElements.define("record-tags", Tags);
+customElements.define("record-kside", Kside);

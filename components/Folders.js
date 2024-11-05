@@ -100,8 +100,9 @@ const foldersContent = `
         }
 
     </style>
-    <div id="foldersDiv" class="secondBottomSectionColumn" style="background: rgba(86, 86, 136, 0.2)!important;">	
+    <div id="foldersDiv" class="secondBottomSectionColumn isComponent" style="background: rgba(86, 86, 136, 0.2)!important;">	
         <link href="css/all.css" rel="stylesheet">
+        <link href="css/custom.css" rel="stylesheet">
         <div  style="padding-top:10px; display: flex; padding: 15px; gap: 5px;">
             <button id="saveFoldersButton" type="button" class="isButton"  title="Αποθήκευση Αλλαγών στους Φακέλους"><i class="far fa-save"></i></button>
             <button id="showFoldersButton" type="button"  class="isButton"  style="background-color:chocolate;" title="Εμφάνιση λίστας φακέλων με επεξηγήσεις"><i class="fas fa-list-ol"></i></button>
@@ -123,7 +124,7 @@ const foldersContent = `
             
         </div>
     </dialog>
-    <dialog id="seachfoldersModal" class="customDialog" style="width: 80%;">
+    <dialog id="seachfoldersModal" class="customDialog" style="width: 50%; min-width:500px;">
         <div class="customDialogContentTitle">
             <span style="font-weight:bold;">Αναζήτηση φακέλων αρχειοθέτησης</span>
             <button class="isButton " name="closeModalBtn2" id="closeModalBtn2" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
@@ -132,7 +133,7 @@ const foldersContent = `
                 <input id="folderSearchText" type="text"  placeholder="Αναζήτηση εδώ (τουλάχιστον 3 χαρακτήρες)">
             </div>
             <hr>
-            <div id="searchResults" style="display:flex; flex-direction : column; gap: 5px;"></>
+            <div id="searchResults" style="display:flex-inline; gap: 5px;"></>
             </div>
         </div>
     </dialog>`;

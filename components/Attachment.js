@@ -2,77 +2,72 @@ import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 import {getPage,Pages} from "../modules/UI_test.js"
 
 const content = 
-`<div  id="attachmentsDiv"  style="display:flex;gap:10px;flex-direction:column;height:100%;background: rgba(122, 130, 136, 0.2)!important;border-radius:5px;padding:10px;">
-    <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
-    <link rel="stylesheet" type="text/css" href="css/custom.css" />
-    <link href="css/all.css" rel="stylesheet">
+    `<div  id="attachmentsDiv" class="isComponent"  style="display:flex;gap:10px;flex-direction:column;height:100%;background: rgba(122, 130, 136, 0.2)!important;border-radius:5px;padding:10px;">
+        <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
+        <link rel="stylesheet" type="text/css" href="css/custom.css" />
+        <link href="css/all.css" rel="stylesheet">
 
-    <div style="display:flex;justify-content: space-between;align-items:center;">
-        <div>
-            <span style="font-weight:bold;">Συνημμένα</span>
-            <div id="attachmentSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none;">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <span class="badge bg-secondary" id="attachmentTableTitleBadge"></span>
-        </div>
-        <div>
-            <button class="btn btn-outline-danger btn-sm" id="zipFileButton"  title="Λήψη όλων"><i class="fas fa-file-archive"></i></button>
-            <button id="showAttachmentModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
-        </div>
-    </div>
 
-    <div style="height:90%;overflow-y:scroll;">
-        <table id="attachments" name="attachments" class="table table-striped">
-            <tbody> 
-            </tbody>
-        </table>
-    </div>
-    <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
-</div>
 
-<dialog id="attachmentModal" class="customDialog" style="width:500px;"> 
-    <div class="customDialogContentTitle">
-        <span style="font-weight:bold;"></span>
-        <button class="btn btn-secondary" name="closeAttModalBtn" id="closeAttModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
-    </div>
-    <div class="customDialogContent">
-       
-    </div>
-</dialog>
-
-<dialog id="loadingDialog">
-    <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</dialog>
-
-<dialog id="gdprModal" class="customDialog" style="width:70%;"> 
-    <div class="customDialogContentTitle">
-        <span style="font-weight:bold;"></span>
-        <div id="customDialogContentTitleBtns">
-            <button class="btn btn-secondary" name="closeGdprModalBtn" id="closeGdprModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
-        </div>
-    </div>
-    <div class="customDialogContent">
-        <div class="gdprContent" style="display:flex;gap:10px;">
-            <div id="gdprSelectedUsers" style="flex-basis: 100px; flex-shrink:0;flex-grow:1; padding: 5px; border-right: 5px solid orange; background-color:palegoldenrod;">
-                <span id="gdprSelectedUsersTitle" style="margin-bottom:10px;">Επιλεγμένοι υπάλληλοι</span>
-                <div id="gdprSelectedUsersContent" style="display:flex; flex-direction: column; gap:5px; wrap: no-wrap;"></div>
-            </div>
-            <div id="gdprUsersSelectionDiv" style="flex-basis:250px;flex-shrink:0;flex-grow:1;background-color:aliceblue;">
-                <span class="gdprUsers" style="margin-bottom:10px;">Επιλέξτε Υπάλληλο:</span> 
-                <div id="selectGdprUserDiv" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-            </div>  
-            <div id="gdprPageSelectionDiv" style="flex-basis:150px;flex-shrink:0;flex-grow:1;background-color:aliceblue;">	
-                <div class="karteles">
-                    <b>Σελίδες Πρόσβασης</b>
-                     <input type="text"  name="pages" id="pages" placeholder="π.χ. 2,4,5 ή #6,#8 (άρνηση πρόσβασης) ή κενό για πλήρη πρόσβαση ">
+        <details open>
+            <summary>
+                <span id="ksideTitle" style="font-weight:bold;">Συνημμένα</span>
+                <span class="badge bg-secondary" id="attachmentTableTitleBadge"></span>
+            </summary>
+            <div style="display:flex;gap:10px;flex-direction:column;">
+                <div style="display:inline-flex;align-self:end;gap:5px;">
+                    <button class="btn btn-outline-danger btn-sm" id="zipFileButton"  title="Λήψη όλων"><i class="fas fa-file-archive"></i></button>
+                    <button id="showAttachmentModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
                 </div>
-                <button id="addToGdprBtn" data-att="0" class="isButton active">Προσθήκη</button>
+                <div style="height:90%;overflow-y:scroll;">
+                    <table id="attachments" name="attachments" class="table table-striped">
+                        <tbody> 
+                        </tbody>
+                    </table>
+                </div>
+                <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
+            </div>    
+        </details>
+    </div>
+
+    <dialog id="attachmentModal" class="customDialog" style="width:500px;"> 
+        <div class="customDialogContentTitle">
+            <span style="font-weight:bold;"></span>
+            <button class="btn btn-secondary" name="closeAttModalBtn" id="closeAttModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+        </div>
+        <div class="customDialogContent" >
+        
+        </div>
+    </dialog>
+
+
+    <dialog id="gdprModal" class="customDialog" style="width:70%;"> 
+        <div class="customDialogContentTitle">
+            <span style="font-weight:bold;"></span>
+            <div id="customDialogContentTitleBtns">
+                <button class="btn btn-secondary" name="closeGdprModalBtn" id="closeGdprModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
             </div>
         </div>
-    </div>
-</dialog>`;
+        <div class="customDialogContent" >
+            <div class="gdprContent" style="display:flex;gap:10px;">
+                <div id="gdprSelectedUsers" style="flex-basis: 100px; flex-shrink:0;flex-grow:1; padding: 5px; border-right: 5px solid orange; background-color:palegoldenrod;">
+                    <span id="gdprSelectedUsersTitle" style="margin-bottom:10px;">Επιλεγμένοι υπάλληλοι</span>
+                    <div id="gdprSelectedUsersContent" style="display:flex; flex-direction: column; gap:5px; wrap: no-wrap;"></div>
+                </div>
+                <div id="gdprUsersSelectionDiv" style="flex-basis:250px;flex-shrink:0;flex-grow:1;background-color:aliceblue;">
+                    <span class="gdprUsers" style="margin-bottom:10px;">Επιλέξτε Υπάλληλο:</span> 
+                    <div id="selectGdprUserDiv" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+                </div>  
+                <div id="gdprPageSelectionDiv" style="flex-basis:150px;flex-shrink:0;flex-grow:1;background-color:aliceblue;">	
+                    <div class="karteles">
+                        <b>Σελίδες Πρόσβασης</b>
+                        <input type="text"  name="pages" id="pages" placeholder="π.χ. 2,4,5 ή #6,#8 (άρνηση πρόσβασης) ή κενό για πλήρη πρόσβαση ">
+                    </div>
+                    <button id="addToGdprBtn" data-att="0" class="isButton active">Προσθήκη</button>
+                </div>
+            </div>
+        </div>
+    </dialog>`;
 
 
 class Attachments extends HTMLElement {
@@ -98,7 +93,7 @@ class Attachments extends HTMLElement {
         //this.uploadFile(undefined,this.protocolNo,this.currentYear)
         if (!+this.locked){
             this.shadow.querySelector("#showAttachmentModalBtn").addEventListener("click",()=> {
-                this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+                //this.shadow.querySelector("#attachmentSpinner").style.display = "none";
                 this.shadow.querySelector("#attachmentModal .customDialogContentTitle>span").innerText = "Προσθήκη συνημμένου σε "+this.protocolNo+"/"+this.protocolYear;
                 this.shadow.querySelector("#attachmentModal .customDialogContent").innerHTML = `<form>
                     <div class="flexVertical" style="padding:5px;">
@@ -127,7 +122,7 @@ class Attachments extends HTMLElement {
     }
 
     async uploadFile(uploadURL="/api/uploadProtocolAtt.php",protocolNo, year){
-        this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
+        //this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
         //console.log(this.shadow.getElementById('selectedFile'))
         const files = this.shadow.getElementById('selectedFile').files;
     
@@ -147,11 +142,11 @@ class Attachments extends HTMLElement {
 
         const res = await runFetch(uploadURL, "POST", data);
         if (!res.success){
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+            //this.shadow.querySelector("#attachmentSpinner").style.display = "none";
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else {
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+            //this.shadow.querySelector("#attachmentSpinner").style.display = "none";
             this.shadow.querySelector("#selectedFile").value = null;
             alert("Το έγγραφο έχει αποσταλεί! Μάλλον...");
             this.loadAttachments(1);
@@ -162,7 +157,7 @@ class Attachments extends HTMLElement {
     }
 
     async loadAttachments(level){ // το level να ελεγχθεί, δουλεύει πλέον με το localStorage, Εννοεί διαχειριστή στο 1 και απενεργοποίηση πλήκτρων στο -1
-        this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
+        //this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
         this.shadow.querySelector("#attachments>tbody").innerHTML = "";
         this.shadow.querySelector("#actionStatus").innerHTML = "";
 
@@ -182,7 +177,7 @@ class Attachments extends HTMLElement {
         const res = await runFetch("/api/getAttachments.php", "GET", urlpar);
         if (!res.success){
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+            //this.shadow.querySelector("#attachmentSpinner").style.display = "none";
         }
         else{
             const result =  res.result;     
@@ -281,12 +276,12 @@ class Attachments extends HTMLElement {
                 }
             }
             this.shadow.getElementById('zipFileButton').addEventListener("click",async ()=> await this.zipFiles());
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";	
+            //this.shadow.querySelector("#attachmentSpinner").style.display = "none";	
         }
     }
 
     async zipFiles(){
-        this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
+        //this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
         this.shadow.querySelector("#actionStatus").innerHTML = "";
         let formData  = new FormData();
         formData.append('protocolNo',this.protocolNo);
@@ -305,14 +300,14 @@ class Attachments extends HTMLElement {
 			href,
 			download: decodeURI(this.protocolNo+" "+this.protocolYear+".zip")
 			}).click();
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+            //this.shadow.querySelector("#attachmentSpinner").style.display = "none";
         }
     };
 
     async removeAttachment(aa,protocolNo, year){
         const procc = confirm("Πρόκειται να διαγράψετε ενα συνημμένο έγγραφο");
         if ( procc == true) {
-            this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
+            //this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
             this.shadow.querySelector("#actionStatus").innerHTML = "";
             let data = new FormData();
             data.append('attAA',aa);
@@ -324,13 +319,13 @@ class Attachments extends HTMLElement {
             }
             else{
                 this.loadAttachments(1);
-                this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+                //this.shadow.querySelector("#attachmentSpinner").style.display = "none";
             }
         } 
     }
 
     async renameAttachment(aa,protocolNo, year){
-        this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
+        //this.shadow.querySelector("#attachmentSpinner").style.display = "inline-block";
         this.shadow.querySelector("#actionStatus").innerHTML = "";
         let data = new FormData();
         data.append('attAA',aa);
@@ -340,12 +335,12 @@ class Attachments extends HTMLElement {
 
         const res = await runFetch("/api/renameProtocolAtt.php", "POST", data);
         if (!res.success){
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+            //this.shadow.querySelector("#attachmentSpinner").style.display = "none";
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
         }
         else{
             this.loadAttachments(1);
-            this.shadow.querySelector("#attachmentSpinner").style.display = "none";
+            //this.shadow.querySelector("#attachmentSpinner").style.display = "none";
             this.shadow.querySelector("#attachmentModal").close();
         }
     }

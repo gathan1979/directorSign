@@ -112,7 +112,8 @@ const assignmentsContent = `
 
     </style>
     <link href="css/all.css" rel="stylesheet">
-    <div class="thirdBottomSectionColumn" id="assignmentsDiv">
+    <link href="css/custom.css" rel="stylesheet">
+    <div class="thirdBottomSectionColumn isComponent" id="assignmentsDiv">
         <div style="padding:10px;display:flex;gap:5px;background: rgba(155, 130, 136, 0.2)!important;">	
             <button id="saveAssignmentButton" title="Αποθήκευση αλλαγών" type="button" class="isButton"><i class="far fa-save"></i></button>
             <button id="addNotificationButton" style="background-color:chocolate;" title="Κοινοποίηση σε όλους" type="button" class="isButton"><i class="far fa-bell"></i></button>
@@ -121,7 +122,6 @@ const assignmentsContent = `
             <div style="background-color: var(--bs-success);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Χρέωση</div>
             <div style="background-color: var(--bs-blue);font-size:0.7em;padding:2px;border-radius:5px;align-self:flex-end;color:white;">Κοιν.</div>
         </div>
-        <div id="assignmentsTitle" style="color: DarkRed;font-size: 12px;">Χρεώσεις</div>
         <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
         <div class="col-12" id="assignments" name="assignments" style="padding:0.5em;background: rgba(155, 130, 136, 0.2)!important;">
             
@@ -172,22 +172,22 @@ class Assignments extends HTMLElement {
         await this.getChargesAndFill();
         //Πτυσσόμενα μενού τμημάτων
         this.shadow.querySelectorAll(".departmentTitle").forEach(element => {
-            if (element.dataset.opened == 0){
-                element.firstChild.innerHTML = '<i style="margin-right:10px;" class="far fa-folder"></i>';
-            }
-            else if (element.dataset.opened == 1){
-                element.firstChild.innerHTML = '<i style="margin-right:10px;" class="far fa-folder-open"></i>';
-            }
-            element.addEventListener("click",(event)=>{
-                if (element.nextElementSibling.style.display == "none"){
-                    element.nextElementSibling.style.display = "flex";
-                    element.firstChild.innerHTML = '<i style="margin-right:10px;" class="far fa-folder-open"></i>';
-                }
-                else{
-                    element.nextElementSibling.style.display = "none";
-                    element.firstChild.innerHTML = '<i style="margin-right:10px;" class="far fa-folder"></i>';
-                }
-            })
+            // if (element.dataset.opened == 0){
+            //     element.firstChild.innerHTML = '<i style="margin-right:10px;" class="far fa-folder"></i>';
+            // }
+            // else if (element.dataset.opened == 1){
+            //     element.firstChild.innerHTML = '<i style="margin-right:10px;" class="far fa-folder-open"></i>';
+            // }
+            // element.addEventListener("click",(event)=>{
+            //     if (element.nextElementSibling.style.display == "none"){
+            //         element.nextElementSibling.style.display = "flex";
+            //         element.firstChild.innerHTML = '<i style="margin-right:10px;" class="far fa-folder-open"></i>';
+            //     }
+            //     else{
+            //         element.nextElementSibling.style.display = "none";
+            //         element.firstChild.innerHTML = '<i style="margin-right:10px;" class="far fa-folder"></i>';
+            //     }
+            // })
         });
 
         //Listeners πάνω κουμπιών

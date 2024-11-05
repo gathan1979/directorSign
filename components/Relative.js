@@ -2,43 +2,42 @@ import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 import {getPage,Pages} from "../modules/UI_test.js"
 
 const relativeContent = `
-    <div id="relativeModule" style="display:flex;gap:10px;flex-direction:column;background: rgba(122, 160, 126, 0.2)!important;padding:10px;height:100%;">
+    <div id="relativeModule" class="isComponent" style="background: var(--my-component-light);padding:10px;height:100%;">
         <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
         <link rel="stylesheet" type="text/css" href="css/custom.css" />
         <link href="css/all.css" rel="stylesheet">
         
-        <div style="display:flex;justify-content: space-between;align-items:center;">
-            <div>
+        <details>
+            <summary>
                 <span style="font-weight:bold;">Σχετικά</span>
                 <span class="badge bg-secondary" id="relativeTableTitleBadge"></span>
-                <div id="relativeSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none;">
-                    <span class="visually-hidden">Loading...</span>
+            </summary>
+            <div style="display:flex;gap:10px;flex-direction:column;">
+                <div style="display:inline-flex;align-self:end;gap:5px;">
+                    <button id="fullRelativeTree" type="button" data-full="0" class="btn btn-sm btn-outline-success"><i class="fas fa-sitemap"></i></button>
+                    <button id="showRelativeModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
                 </div>
-            </div>
-            <div>
-                <button id="fullRelativeTree" type="button" data-full="0" class="btn btn-sm btn-outline-success"><i class="fas fa-sitemap"></i></button>
-                <button id="showRelativeModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
-            </div>
-        </div>
-        <div style="height:90%;overflow-y:scroll;">
-            <table class="table" id="relativeTable">
-                
-                <tbody id="relativeTableBody" style="font-size : 12px;">
-            
-                </tbody>
-            </table>
-        </div>
-        <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
+                <div style="min-height: 50px; max-height: 200px; overflow-y:scroll;">
+                    <table class="table" id="relativeTable">
+                        
+                        <tbody id="relativeTableBody" style="font-size : 12px;">
+                    
+                        </tbody>
+                    </table>
+                </div>
+                <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
+            </div>    
+        </details>
     </div>
     <dialog id="addRelativeModal" class="customDialog" >
         <div class="customDialogContentTitle">
             <span style="font-weight:bold;">Νέο Σχετικό</span>
             <button class="btn btn-secondary" name="closeModalBtn" id="closeModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
         </div>
-        <div class="customDialogContent">
+        <div class="customDialogContent" style="align-items:end;>
             <div class="flexVertical">
                 <form>
-                    <div class="flexHorizontal">
+                    <div class="flexHorizontal" style="padding:10px;">
                         <input type="number" class="form-control form-control-sm" id="insertRelativeField" placeholder="αρ.πρωτ">&nbsp/&nbsp
                         <input type="number" class="form-control form-control-sm" id="insertRelativeYearField" value="">
                     </div>
@@ -99,9 +98,9 @@ class Relative extends HTMLElement {
     disconnectedCallback() {    
     }
 
-    async loadRelativeFull(protocolNo, active, deepSearch){
+    async loadRelativeFull(protocolNo, active, deepSearch){ 
         this.shadow.querySelector("#insertRelativeField").value = "";
-        this.shadow.querySelector("#insertRelativeYearField").value = new Date().getFullYear;
+        this.shadow.querySelector("#insertRelativeYearField").value = new Date().getFullYear();
         this.shadow.querySelector("#relativeTableBody").innerHTML = "";
         this.shadow.querySelector("#actionStatus").innerHTML = "";
 

@@ -2,27 +2,27 @@ import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
 
 
 const historyContent = `    
-    <div id="historyModule" style="display:flex;gap:10px;flex-direction:column;background: rgba(122, 160, 180, 0.2)!important;padding:10px;height:100%;">	
+    <div id="historyModule" class="isComponent" style="background: var(--my-component-dark);padding:10px;height:100%;">
         <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3-dist/css/bootstrap.min.css" >
         <link rel="stylesheet" type="text/css" href="css/custom.css" />
         <link href="css/all.css" rel="stylesheet">
 
-        <div style="display:flex;justify-content: space-between;align-items:center;">
-            <div>
-                <span id="historyTableTitle" style="font-size:14px;font-weight:bold;">Ιστορικό</span> 
+        <details open>
+            <summary>
+                <span id="historyTableTitle" style="font-weight:bold;">Ιστορικό</span>
                 <span class="badge bg-secondary" id="historyTableTitleBadge"></span>
-                <div id="historySpinner" class="spinner-border" style="display:none;margin-left:1em;width: 1rem; height: 1rem;" role="status"></div>
+            </summary>
+            <div style="min-height: 50px; max-height: 300px; overflow-y: scroll;">
+                <table class="table" id="historyTable">
+                    <tbody style="font-size : 12px;">
+                
+                    </tbody>
+                </table>
             </div>
-        </div>
-        <div style="height:90%;overflow-y:scroll;">
-            <table class="table" id="historyTable">
-                <tbody style="font-size : 12px;">
-            
-                </tbody>
-            </table>
-        </div>
-        <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
+            <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
+        </details>
     </div>`;
+
 
 class History extends HTMLElement {
     static observedAttributes = ["timestamp"];
@@ -54,17 +54,17 @@ class History extends HTMLElement {
 
     async loadHistory(protocolNo){
         this.shadow.querySelector("#historyTable tbody").innerHTML = "";
-        this.shadow.querySelector("#historySpinner").display = "inline-block"; 
+        //this.shadow.querySelector("#historySpinner").display = "inline-block"; 
         const urlparams = new URLSearchParams({postData: this.protocolNo, currentYear : this.protocolYear})
 
         const res = await runFetch("/api/getHistory.php", "GET", urlparams);
         if (!res.success){
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
-            this.shadow.querySelector("#historySpinner").display = "none"; 
+            //this.shadow.querySelector("#historySpinner").display = "none"; 
         }
         else{
             const resdec = await res.result;
-            this.shadow.querySelector("#historySpinner").display = "none"; 
+            //this.shadow.querySelector("#historySpinner").display = "none"; 
             this.shadow.querySelector("#historyTableTitleBadge").textContent = resdec.length;
             let html = "";
             //$("#historyTable").append(html);
@@ -77,7 +77,7 @@ class History extends HTMLElement {
 
     async loadHistoryTranslated(protocolNo){
         this.shadow.querySelector("#historyTable tbody").innerHTML = "";
-        this.shadow.querySelector("#historySpinner").display = "inline-block"; 
+        //this.shadow.querySelector("#historySpinner").display = "inline-block"; 
         const urlparams = new URLSearchParams({postData: this.protocolNo, currentYear : this.protocolYear})
 
         const res = await runFetch("/api/getHistoryTranslated.php", "GET", urlparams);
@@ -87,7 +87,7 @@ class History extends HTMLElement {
         }
         else{
             const resdec = await res.result.ssr;
-            this.shadow.querySelector("#historySpinner").display = "none"; 
+           // this.shadow.querySelector("#historySpinner").display = "none"; 
             this.shadow.querySelector("#historyTableTitleBadge").textContent = resdec.length;
             let html = "";
             //$("#historyTable").append(html);
