@@ -744,18 +744,10 @@ span.off{
     border-radius: 5px;
 }
 
-summary {list-style: none}
+details > summary {
+    list-style-type: '\01F782';
+}
 
-details summary::before { 
-	content:'\2192'; 
-	color: black; 
-	font-size: 1.2em;
-	/* you can style it however you want, use background-image for example */
-  }
-  
-  /* By using [open] we can define different styles when the disclosure widget is open */
-  details[open] summary::before { 
-	content:'\2193'; 
-	color: black; 
-	font-size: 1.2em;
-  }
+details[open] > summary {
+    list-style-type: '\01F783';
+}
