@@ -185,7 +185,9 @@ class Tags extends HTMLElement {
 
             for (let key1=0;key1<resdec.length;key1++) {
                 let temp="<span id='tag_"+resdec[key1]['aaField']+"' style='cursor: pointer; background-color:green; border-radius:5px; font-size: 10px;padding: 5px;color: white;'>"+resdec[key1]['tag']+"</span>";
+                let tempInfo = "<span class='isButton' style='cursor: not-allowed;border-radius:5px; background-color:var(--my-secondary); font-size: 10px;color: white;'>#"+resdec[key1]['tag']+"</span>";
                 this.shadow.getElementById("tagsBody").innerHTML += temp;
+                document.querySelector("#tagsInfo").innerHTML +=tempInfo;
             }
             for (let key1=0;key1<resdec.length;key1++) {
                 this.shadow.querySelector("#tag_"+resdec[key1]['aaField']).addEventListener("click", ()=>{

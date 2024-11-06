@@ -402,6 +402,15 @@ td .fa-crosshairs{
 	font-size: 1.2em;
 }
 
+#bottomSectionInfoBar{
+	display: flex;
+	margin-bottom: 0.2em;
+	padding-bottom: 0.2em;
+	align-items: flex-start;
+	justify-content: left;
+	gap:10px;
+}
+
 #bottomSectionBody {
 	display: flex;
 	flex-direction: row;
@@ -734,3 +743,19 @@ span.off{
     border-width: 1px;
     border-radius: 5px;
 }
+
+summary {list-style: none}
+
+details summary::before { 
+	content:'\2192'; 
+	color: black; 
+	font-size: 1.2em;
+	/* you can style it however you want, use background-image for example */
+  }
+  
+  /* By using [open] we can define different styles when the disclosure widget is open */
+  details[open] summary::before { 
+	content:'\2193'; 
+	color: black; 
+	font-size: 1.2em;
+  }

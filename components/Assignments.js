@@ -109,6 +109,18 @@ const assignmentsContent = `
             background-color : cadetblue;
         }
 
+        button[data-charge="1"][data-charge-type="0"]{
+            background-color: var(--my-primary);
+        }
+
+        button[data-charge="1"][data-charge-type="1"]{
+            background-color: var(--my-success);
+        }
+
+        button[data-charge="0"][data-charge-type="0"]{
+            background-color: var(--my-secondary);
+        }
+
 
     </style>
     <link href="css/all.css" rel="stylesheet">
@@ -375,20 +387,20 @@ class Assignments extends HTMLElement {
         const chargedType = tempUserElement.dataset.chargeType;
         if (charged == 0){ 
             //tempUserElement.style.backgroundColor = "lightGray";
-            tempUserElement.classList.remove('notification')
-            tempUserElement.classList.add('active')
+            //tempUserElement.classList.remove('notification');
+            //tempUserElement.classList.remove('active');
             tempUserElement.dataset.charge = 1;
             tempUserElement.dataset.chargeType = 1;
         }
         else if (charged == 1 && chargedType == 1){
-            tempUserElement.classList.add('notification');
-            tempUserElement.classList.remove('active');
+           // tempUserElement.classList.remove('notification');
+            //tempUserElement.classList.add('active');
             tempUserElement.dataset.charge = 1;
             tempUserElement.dataset.chargeType = 0;
         }
         else if (charged == 1 && chargedType == 0){
-            tempUserElement.classList.remove('notification');
-            tempUserElement.classList.remove('active');
+            //tempUserElement.classList.add('notification');
+            //tempUserElement.classList.remove('active');
             tempUserElement.dataset.charge = 0;
             tempUserElement.dataset.chargeType = 0;
         }

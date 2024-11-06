@@ -204,7 +204,10 @@ export async function openProtocolRecord(record, recordDate, protocol){
 				
 			</div>
 		</div>
-		
+		<div id="bottomSectionInfoBar">
+			<div id="ksideInfo" style="display:flex;gap:2px;"><span class="isButton secondary" style="font-size: 10px;">Αρ.ΚΣΗΔΕ </span><span id="ksideInfoNo"></span></div>
+			<div id="tagsInfo" style="display:flex;gap:2px;"></div>
+		</div>
 		<div id="bottomSectionBody">
 			<div style="flex-basis: 50%;" class="firstBottomSectionColumn">
 				<record-attachments data-locked="${(status>0 || protocol===true)?1:0}" style="max-height:40%;" protocolDate="${recordDate}" protocolNo="${record}"></record-attachments>

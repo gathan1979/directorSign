@@ -12,7 +12,7 @@ const historyContent = `
                 <span id="historyTableTitle" style="font-weight:bold;">Ιστορικό</span>
                 <span class="badge bg-secondary" id="historyTableTitleBadge"></span>
             </summary>
-            <div style="min-height: 50px; max-height: 300px; overflow-y: scroll;">
+            <div style="height: clamp(50px, 200px, 300px); overflow-y: scroll;">
                 <table class="table" id="historyTable">
                     <tbody style="font-size : 12px;">
                 
