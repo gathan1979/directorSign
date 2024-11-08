@@ -35,7 +35,8 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	}
 	else{
 		const response = res.result;
-		fillChargesTable(response);
+		const protocolsArray = fillChargesTable(response);
+		await showListEvents(protocolsArray);
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
 		return response.totalRecords;
 	}
@@ -79,12 +80,13 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 		const response = res.result;
 		//console.log("εκτέλεση λήψης χρεώσεων 1");
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
-		fillChargesTable(response, true);
+		console.log(rangeEvents)
+		fillChargesTable(response, true, rangeEvents );
 		return response.totalRecords;
 	}
 }
 
-export function fillChargesTable(response, protocol = false){  
+export function fillChargesTable(response, protocol = false, rangeEvents = [] ){  
 	
 	//const table = document.querySelector("#chargesTableHeader");
 	//table.innerHTML=
@@ -104,6 +106,8 @@ export function fillChargesTable(response, protocol = false){
 		else if(record["statusField"]=="2"){ // Αρχείο
 			recordColor = "Gray";				
 		}
+
+		
 		
 		tableContent += `<div class="flexHorizontal" style="cursor:pointer; border-bottom: 2px solid lightgray; background: linear-gradient(-90deg, white, ${recordColor}); padding:10px;" data-isRead="${record["isRead"]==0?0:1}" data-statusField="`+record["statusField"]+'" data-record="'+record.aaField+'">';
 
@@ -150,9 +154,10 @@ export function fillChargesTable(response, protocol = false){
 	}
 	document.querySelector("#chargesTableContent").innerHTML = tableContent;
 	
-
+	let protocols = [];
 	//if(!protocol){	
 	for (const record of result){
+		protocols.push(record["aaField"]);
 		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["aaField"], record["insertDateField"], protocol));
 	}
 	//}
@@ -163,7 +168,25 @@ export function fillChargesTable(response, protocol = false){
 		//}
 	//}
 	createSearch();
+	return protocols;
 }
+
+async function showListEvents(protocols = []){
+  
+	let urlparams = new URLSearchParams({protocols : JSON.stringify(protocols), currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
+
+	const res = await runFetch("/api/getListEvents.php", "GET", urlparams);
+	if (!res.success){
+		
+	}
+	else{
+		res.result.events.forEach( event => {
+			const eventStringForInfo = `${event['eventField']}, ${(event['startDateField'] !=null? "ΕΝΑΡΞΗ "+event['startDateField']:" ")}|${(event['endDateField'] !=null? " ΛΗΞΗ "+event['endDateField']:" ")}`;
+			document.querySelector(`[data-record="${event.recordField}"] [data-colname="aaField"]`).innerHTML += ` <i title="${eventStringForInfo}" style="color:red;" class="fas fa-exclamation"></i>`;
+		} )
+	}
+}
+
 
 async function getRecord(year, protocolNo){
 	const urlData = new URLSearchParams();
@@ -207,6 +230,7 @@ export async function openProtocolRecord(record, recordDate, protocol){
 		<div id="bottomSectionInfoBar">
 			<div id="ksideInfo" style="display:flex;gap:2px;"><span class="isButton secondary" style="font-size: 10px;">Αρ.ΚΣΗΔΕ </span><span id="ksideInfoNo"></span></div>
 			<div id="tagsInfo" style="display:flex;gap:2px;"></div>
+			<div id="eventsInfo" style="display:flex;gap:2px;"></div>
 		</div>
 		<div id="bottomSectionBody">
 			<div style="flex-basis: 50%;" class="firstBottomSectionColumn">

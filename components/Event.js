@@ -14,7 +14,7 @@ const eventContent = `
             </summary>
             <div style="display:flex;gap:10px;flex-direction:column;">
                 <div style="display:inline-flex;align-self:end;gap:5px;">
-                    <button id="showEventModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
+                    <button id="showAddEventModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
                 </div>
                 <div style="min-height: 50px; max-height: 200px; overflow-y:scroll;" id="eventTable">
         
@@ -41,15 +41,15 @@ const eventContent = `
                     <label for="insertStartDateField">
                         Έναρξη 
                     </label>
-                    <input type="date" id="insertStartDateField"></input>
+                    <input type="datetime-local" id="insertStartDateField"></input>
                 </div>
                 <div class="flexHorizontal" style="justify-content:space-between;">
                     <label for="insertEndDateField">
                         Λήξη
                     </label>
-                    <input type="date" id="insertEndDateField"></input>
+                    <input type="datetime-local" id="insertEndDateField"></input>
                 </div>
-                <button id="saveCommentBtn" type="button" class="btn-sm btn-success mb-2">Εισαγωγή</button>	
+                <button id="saveEventBtn" type="button" class="isButton active" style="align-self:end;margin-top:10px;">Εισαγωγή</button>	
             </form>
         </div>
     </dialog>`;
@@ -73,19 +73,21 @@ class Event extends HTMLElement {
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         this.locked = this.dataset.locked;
-        // if (!+this.locked){
-        //     this.loadEvents(this.protocolNo,1);
-        //     this.shadow.querySelector("#showAddCommentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addCommentModal").showModal());
-        // }
-        // else{
-        //     this.loadEvents(this.protocolNo,0);
-        //     this.shadow.querySelector("#showAddCommentModalBtn").style.display = "none";
-        // }
-        // this.shadow.querySelector("#saveCommentBtn").addEventListener("click",()=>{ 
-        //     const comment = this.shadow.getElementById("insertCommentField").value; 
-        //     this.saveComment(this.protocolNo, this.protocolYear, comment);
-        // });
-        // this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addCommentModal").close());
+        if (!+this.locked){
+            this.loadEvents(this.protocolNo,1);
+            this.shadow.querySelector("#showAddEventModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addEventModal").showModal());
+        }
+        else{
+            this.loadEvents(this.protocolNo,0);
+            this.shadow.querySelector("#showAddEventModalBtn").style.display = "none";
+        }
+        this.shadow.querySelector("#saveEventBtn").addEventListener("click",()=>{ 
+            const event = this.shadow.getElementById("insertEventField").value; 
+            const startDate = this.shadow.getElementById("insertStartDateField").value; 
+            const endDate = this.shadow.getElementById("insertEndDateField").value; 
+            this.saveEvent(this.protocolNo, event, startDate, endDate);
+        });
+        this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addEventModal").close());
        
     }
 
@@ -99,81 +101,83 @@ class Event extends HTMLElement {
     }
     
     async loadEvents(protocolNo, active){
-        this.shadow.querySelector("#insertCommentField").value = "";
-        this.shadow.querySelector("#commentsTable tbody").innerHTML = "";
-        this.shadow.querySelector("#commentsSpinner").display = "inline-block"; 
+        this.shadow.querySelector("#eventTable").innerHTML = "";
         this.shadow.querySelector("#actionStatus").innerHTML = "";
       
         let urlparams = new URLSearchParams({protocolNo, currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
 
-        const res = await runFetch("/api/getComments.php", "GET", urlparams);
+        const res = await runFetch("/api/getEvents.php", "GET", urlparams);
         if (!res.success){
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
-            this.shadow.querySelector("#commentsSpinner").display = "none"; 
         }
         else{
-            const resdec = res.result;
-            this.shadow.querySelector("#commentsSpinner").display = "none"; 
-            this.shadow.querySelector("#commentTableTitleBadge").textContent = resdec.length;
+            const resdec = res.result.events;
+            this.shadow.querySelector("#eventTitleBadge").textContent = resdec.length;
             let html = "";
+            let info = "";
             for (let key1=0;key1<resdec.length;key1++) {
-                const commentUser = '<div style="background-color: lightgray; padding: 5px;border-radius: 5px;">'+resdec[key1]['userField']+"</div>";
-                let removeComment = "";
+                const eventUser = '<span>'+resdec[key1]['userField']+"</span>";
+                let removeEvent = "";
                 if (active){
-                    removeComment = '<button style="margin-left:5px;" id="removeCommentBtn-'+resdec[key1]['aaField']+'" class="btn btn-sm btn-danger"><i class="far fa-minus-square"></i></button>';
+                    removeEvent = '<button style="margin-left:5px;" id="removeEventBtn-'+resdec[key1]['aa']+'" class="isButton danger"><i class="far fa-minus-square"></i></button>';
                 }
-                const commentString = '<div>'+resdec[key1]['commentField']+(resdec[key1]['insertDateField'] !=null? " - στις <b>"+resdec[key1]['insertDateField']:"")+"</b>"+removeComment+"</div>";;
-                let temp = '<tr><td><div style="display:flex; flex-direction : column;align-items:flex-start; border-left: solid;padding-left: 10px;border-color:#b5b9bd;">'+commentUser+commentString+"</div></td></tr>";
-                html += temp;
+                const eventString = `<span>${resdec[key1]['eventField']}
+                                            ${(resdec[key1]['startDateField'] !=null? " - ΕΝΑΡΞΗ <b>"+resdec[key1]['startDateField']:"")}
+                                            ${(resdec[key1]['endDateField'] !=null? " - ΛΗΞΗ <b>"+resdec[key1]['endDateField']:"")}
+                                            </b>${removeEvent}</span>`;
+                const eventStringForInfo = `<span style="cursor: not-allowed;border-radius:5px; font-size: 10px;" class="isButton danger">${resdec[key1]['eventField']}
+                                            ${(resdec[key1]['startDateField'] !=null? " - ΕΝΑΡΞΗ <b>"+resdec[key1]['startDateField']:"")}
+                                            ${(resdec[key1]['endDateField'] !=null? " - ΛΗΞΗ <b>"+resdec[key1]['endDateField']:"")}</b></span>`;
+                html += '<div style="display:flex; flex-direction : column;align-items:flex-start; border-left: solid;padding-left: 10px;border-color:#b5b9bd;font-size:12px;">'+eventUser+eventString+"</div>";
+                info += eventStringForInfo;
             }
-            this.shadow.querySelector("#commentsTable tbody").innerHTML = html;
+            this.shadow.querySelector("#eventTable").innerHTML = html;
+            document.querySelector("#eventsInfo").innerHTML = info;
             //onclick="removeComment('+resdec[key1]['aaField']+')"
             for (let key1=0;key1<resdec.length;key1++) {
-                   this.shadow.querySelector("#removeCommentBtn-"+resdec[key1]['aaField']).addEventListener("click", ()=>{this.removeComment(this.protocolNo, this.protocolYear, resdec[key1]['aaField'])}); 
+                   this.shadow.querySelector("#removeEventBtn-"+resdec[key1]['aa']).addEventListener("click", ()=>{this.removeEvent(this.protocolNo, resdec[key1]['aa'])}); 
             }
         }
     }
 
-    async removeEvent (protocolNo, protocolYear, aa){
-        var r = confirm("Πρόκειται να διαγράψετε ενα σχόλιο");
+    async removeEvent (protocolNo, aa){
+        var r = confirm("Πρόκειται να διαγράψετε ενα συμβάν");
         if (r !== true) {
             return;
         }
         let formData = new FormData();
         formData.append("aaField",aa);
         formData.append("protocolNo",protocolNo);
-        formData.append("protocolYear",protocolYear);
         this.shadow.querySelector("#actionStatus").innerHTML = "";
 
-        const res = await runFetch("/api/removeComment.php", "POST", formData);
+        const res = await runFetch("/api/removeEvent.php", "POST", formData);
         if (!res.success){
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
-            this.shadow.querySelector("#commentsSpinner").display = "none"; 
         }
         else{
-            this.loadComments(this.protocolNo,1);
+            this.loadEvents(this.protocolNo,1);
         }    
     }
 
-    async saveEvent(protocolNo, protocolYear, comment){
-        let formData = new FormData();
-        formData.append("commentField",comment);
-        if (comment == ""){
-            this.shadow.querySelector("#actionStatus").innerHTML = "Δεν υπάρχει κείμενο σχολίου";
+    async saveEvent(protocolNo, eventField, startDateField ="", endDateField = ""){
+        if (eventField == "" && startDateField =="" && endDateField == ""){
+            this.shadow.querySelector("#actionStatus").innerHTML = "Δεν υπάρχουν στοιχεία για παραχώρηση";
             return;
         }
-        formData.append("protocolNo",protocolNo);
-        formData.append("protocolYear",protocolYear);
+        let formData = new FormData();
+        formData.append("eventField", eventField);
+        formData.append("startDateField", startDateField);
+        formData.append("endDateField", endDateField);
+        formData.append("protocolNo", protocolNo);
         this.shadow.querySelector("#actionStatus").innerHTML = "";
 
-        const res = await runFetch("/api/saveComment.php", "POST", formData);
+        const res = await runFetch("/api/saveEvent.php", "POST", formData);
         if (!res.success){
             this.shadow.querySelector("#actionStatus").innerHTML = res.msg;
-            this.shadow.querySelector("#commentsSpinner").display = "none"; 
         }
         else{
-            this.loadComments(this.protocolNo,1);
-            this.shadow.querySelector("#addCommentModal").close()
+            this.loadEvents(this.protocolNo,1);
+            this.shadow.querySelector("#addEventModal").close()
         }    
     }
 }
