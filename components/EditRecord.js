@@ -150,51 +150,57 @@ const editContent = `
     <div class="customDialogContent" style="margin-top:10px;">
         <form id="editRecordForm">
             <div id="editFormDiv">
-                <div class="formRow">
-                    <label class="formItem" for="aaField" >AA*</label>
-                    <input class="formInput" required=""  type="number" step="1"  id="aaField" disabled="">
-                </div>
-                <div class="formRow">   
-                    <label class="formItem" for="fromField" >ΑΠΟΣΤΟΛΕΑΣ*</label>
-                    <input class="formInput" required=""  type="text"  id="fromField" >
-                </div>
-                <div class="formRow">    
-                    <label class="formItem" for="subjectField" >ΘΕΜΑ*</label>
-                    <textarea class="formInput" required=""  type="text"  id="subjectField" ></textarea>
-                </div>
-                <div class="formRow">
-                    <label class="formItem" for="docDate" >ΗΜΕΡ. ΠΑΡΑΛ.*</label>
-                    <input class="formInput" required=""  type="text"  id="docDate" >
-                </div>
-                <div class="formRow">    
-                    <label class="formItem" for="docNumber" >ΑΡΙΘΜ. ΕΙΣ.*</label>
-                    <input class="formInput" required=""  type="text"  id="docNumber">
-                </div>
-                <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
-                <div class="formRow">    
-                    <label class="formItem" for="toField" >ΠΡΟΣ*</label>
-                    <input class="formInput" required=""  type="text"  id="toField">
-                </div>
-                <div class="formRow">   
-                    <label class="formItem" for="outSubjectField" >ΘΕΜΑ ΕΞΕΡΧ.*</label>
-                    <input class="formInput" required=""  type="text"  id="outSubjectField">
-                </div>
-                <div class="formRow">
-                    <label class="formItem" for="outDocDate" >ΗΜΕΡ. ΕΞΕΡΧ.*</label>
-                    <input class="formInput" required="" type="date"  id="outDocDate">
-                </div>
-                <div class="formRow">    
-                    <label class="formItem" for="statusField" >ΚΑΤΑΣΤ.*</label>
-                    <input class="formInput" required="" type="number" step="1"  id="statusField" disabled="">
-                </div>
-                <div class="formRow">
-                    <label class="formItem" for="linkField" >ΣΤΟΙΧΕΙΑ EMAIL*</label>
-                    <input class="formInput" required="" type="text"  id="linkField" disabled="">
-                </div>
-                <div class="formRow">
-                    <label class="formItem" for="insertDateField" >ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ*</label>
-                    <input class="formInput" required="" type="date"  id="insertDateField" disabled="">
-                </div>
+                <fieldset id="internal" style="display:flex; flex-direction:column; gap:10px;">
+                    <div class="formRow">
+                        <label class="formItem" for="aaField" >AA*</label>
+                        <input class="formInput" required=""  type="number" step="1"  id="aaField" disabled="true">
+                    </div>
+                    <div class="formRow">   
+                        <label class="formItem" for="fromField" >ΑΠΟΣΤΟΛΕΑΣ*</label>
+                        <input class="formInput" required=""  type="text"  id="fromField" disabled="true">
+                    </div>
+                    <div class="formRow">    
+                        <label class="formItem" for="subjectField" >ΘΕΜΑ*</label>
+                        <textarea class="formInput" required=""  type="text"  id="subjectField" disabled="true"></textarea>
+                    </div>
+                    <div class="formRow">
+                        <label class="formItem" for="docDate" >ΗΜΕΡ. ΠΑΡΑΛ.*</label>
+                        <input class="formInput" required=""  type="text"  id="docDate" disabled="true">
+                    </div>
+                    <div class="formRow">    
+                        <label class="formItem" for="docNumber" >ΑΡΙΘΜ. ΕΙΣ.*</label>
+                        <input class="formInput" required=""  type="text"  id="docNumber" disabled="true">
+                    </div>
+                    <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
+                </fieldset>
+                <fieldset id="external" style="display:flex; flex-direction:column; gap:10px;">
+                    <div class="formRow">    
+                        <label class="formItem" for="toField" >ΠΡΟΣ*</label>
+                        <input class="formInput" required=""  type="text"  id="toField" disabled="true">
+                    </div>
+                    <div class="formRow">   
+                        <label class="formItem" for="outSubjectField" >ΘΕΜΑ ΕΞΕΡΧ.*</label>
+                        <input class="formInput" required=""  type="text"  id="outSubjectField" disabled="true">
+                    </div>
+                    <div class="formRow">
+                        <label class="formItem" for="outDocDate" >ΗΜΕΡ. ΕΞΕΡΧ.*</label>
+                        <input class="formInput" required="" type="date"  id="outDocDate" disabled="true">
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <div class="formRow">    
+                        <label class="formItem" for="statusField" >ΚΑΤΑΣΤ.*</label>
+                        <input class="formInput" required="" type="number" step="1"  id="statusField" disabled="true">
+                    </div>
+                    <div class="formRow">
+                        <label class="formItem" for="linkField" >ΣΤΟΙΧΕΙΑ EMAIL*</label>
+                        <input class="formInput" required="" type="text"  id="linkField" disabled="true">
+                    </div>
+                    <div class="formRow">
+                        <label class="formItem" for="insertDateField" >ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ*</label>
+                        <input class="formInput" required="" type="date"  id="insertDateField" disabled="true">
+                    </div>
+                </fieldset>
             </div>
         </form>
     </div>
@@ -231,8 +237,18 @@ class EditRecord extends HTMLElement {
         //Συμπλήρωση περιεχομένου πεδίων και ενεργοποίηση ανάλογα με την ιδιότητα
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
            element.value = this.protocolProperties[element.id];
-           if (currentRoleObject.protocolAccessLevel == 1){
-                //element.removeAttribute("disabled");
+           if (+currentRoleObject.protocolAccessLevel !== 1){
+                if (this.shadow.querySelector(`#external #${element.id}`)){
+                    element.removeAttribute("disabled");
+                }
+           }
+           else{
+                if (this.shadow.querySelector(`#external #${element.id}`)){
+                    element.removeAttribute("disabled");
+                }
+                if (this.shadow.querySelector(`#internal #${element.id}`)){
+                    element.removeAttribute("disabled");
+                }
            }
            if (element.type == "date"){
                 element.addEventListener("change", (event) => this.updateChangedProperties(event)); 

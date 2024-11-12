@@ -16,7 +16,7 @@ const eventContent = `
                 <div style="display:inline-flex;align-self:end;gap:5px;">
                     <button id="showAddEventModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
                 </div>
-                <div style="min-height: 50px; max-height: 200px; overflow-y:scroll;" id="eventTable">
+                <div style="min-height: 50px; max-height: 200px; overflow-y:scroll; padding: 0 8px;" id="eventTable">
         
                 </div>
                 <div id="actionStatus" name="actionStatus" style="background-color: orange;"></div>
@@ -119,12 +119,12 @@ class Event extends HTMLElement {
                 const eventUser = '<span>'+resdec[key1]['userField']+"</span>";
                 let removeEvent = "";
                 if (active){
-                    removeEvent = '<button style="margin-left:5px;" id="removeEventBtn-'+resdec[key1]['aa']+'" class="isButton danger"><i class="far fa-minus-square"></i></button>';
+                    removeEvent = '<div><button style="margin-left:5px;" id="removeEventBtn-'+resdec[key1]['aa']+'" class="isButton danger"><i class="far fa-minus-square"></i></button></div>';
                 }
-                const eventString = `<span>${resdec[key1]['eventField']}
+                const eventString = `<div style="display:inline-flex; justify-content: space-between; width: 100%; "><div>${resdec[key1]['eventField']}
                                             ${(resdec[key1]['startDateField'] !=null? " - ΕΝΑΡΞΗ <b>"+resdec[key1]['startDateField']:"")}
                                             ${(resdec[key1]['endDateField'] !=null? " - ΛΗΞΗ <b>"+resdec[key1]['endDateField']:"")}
-                                            </b>${removeEvent}</span>`;
+                                            </b></div><div>${removeEvent}</div></div>`;
                 const eventStringForInfo = `<span style="cursor: not-allowed;border-radius:5px; font-size: 10px;" class="isButton danger">${resdec[key1]['eventField']}
                                             ${(resdec[key1]['startDateField'] !=null? " - ΕΝΑΡΞΗ <b>"+resdec[key1]['startDateField']:"")}
                                             ${(resdec[key1]['endDateField'] !=null? " - ΛΗΞΗ <b>"+resdec[key1]['endDateField']:"")}</b></span>`;
@@ -135,8 +135,12 @@ class Event extends HTMLElement {
             document.querySelector("#eventsInfo").innerHTML = info;
             //onclick="removeComment('+resdec[key1]['aaField']+')"
             for (let key1=0;key1<resdec.length;key1++) {
+                if (active){
                    this.shadow.querySelector("#removeEventBtn-"+resdec[key1]['aa']).addEventListener("click", ()=>{this.removeEvent(this.protocolNo, resdec[key1]['aa'])}); 
+                }
             }
+            const historyRefreshEvent = new CustomEvent("historyRefreshEvent",  { bubbles: true, cancelable: false, composed: true });
+            this.dispatchEvent(historyRefreshEvent);
         }
     }
 
@@ -146,8 +150,8 @@ class Event extends HTMLElement {
             return;
         }
         let formData = new FormData();
-        formData.append("aaField",aa);
-        formData.append("protocolNo",protocolNo);
+        formData.append("aa",aa);
+        formData.append("recordField",protocolNo);
         this.shadow.querySelector("#actionStatus").innerHTML = "";
 
         const res = await runFetch("/api/removeEvent.php", "POST", formData);

@@ -347,8 +347,7 @@ class Attachments extends HTMLElement {
 
     async viewAttachment(attachmentNo, showProtocol=0){   // 15-12-2022 Θα αντικαταστήσει το παραπάνω ΚΑΙ ΤΟ VIEWATTACHMENTWITHPROTOCOL
         const currentYear = this.protocolYear;
-        const protocolDate = this.attributes.protocolDate.value;
-        const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol, protocolDate});
+        const urlpar = new URLSearchParams({attachmentNo, currentYear, showProtocol});
         this.shadow.querySelector("#actionStatus").innerHTML = "";
 
         const res = await runFetch("/api/viewAttachmentTest.php", "GET", urlpar, FetchResponseType.blob);

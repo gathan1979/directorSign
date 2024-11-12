@@ -154,16 +154,20 @@ const addContent = `
         <form id="addRecordForm">
             <div id="addFormDiv">
                 <div class="formRow">    
+                    <label class="formItem" for="fromField" class="col-sm-2 col-form-label">ΑΠΟ*</label>
+                    <input class="formInput" required=""  type="text"  id="fromField" value="${JSON.parse(localStorage.getItem('loginData')).user.user}"></input>
+                </div>
+                <div class="formRow">    
                     <label class="formItem" for="subjectField" class="col-sm-2 col-form-label">ΘΕΜΑ*</label>
                     <textarea class="formInput" required=""  type="text"  id="subjectField" ></textarea>
                 </div>
                 <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
                 <div class="formRow">    
-                    <label class="formItem" for="toField" class="col-sm-2 col-form-label">ΠΡΟΣ*</label>
+                    <label class="formItem" for="toField" class="col-sm-2 col-form-label">ΠΡΟΣ</label>
                     <input class="formInput" required=""  type="text"  id="toField">
                 </div>
                 <div class="formRow">   
-                    <label class="formItem" for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.*</label>
+                    <label class="formItem" for="outSubjectField" class="col-sm-2 col-form-label">ΘΕΜΑ ΕΞΕΡΧ.</label>
                     <input class="formInput" required=""  type="text"  id="outSubjectField">
                 </div>
             </div>
@@ -174,6 +178,7 @@ const addContent = `
 
 
 class RequestRecord extends HTMLElement {
+    static observedAttributes = ["timestamp"];
     shadow;
     changedProperties;
     emptyProperties = {
@@ -204,6 +209,10 @@ class RequestRecord extends HTMLElement {
         //this.shadow.querySelector("#restoreButtonModal").addEventListener("click",()=>this.saveAssignments());
         this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>{ this.requestRecord(); });
         this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.undoChanges());
+    }
+
+    attributeChangedCallback(name, oldValue, newValue){
+        this.shadow.querySelector("#fromField").value = JSON.parse(localStorage.getItem('loginData')).user.user;
     }
 
     disconnectedCallback() {

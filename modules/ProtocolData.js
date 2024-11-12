@@ -28,15 +28,24 @@ export async function getFilteredData(customPagingStart = pagingStart, customPag
 	const  completeOblect= Object.assign(filteredObject, customObject);
 
 	const urlpar = new URLSearchParams(completeOblect);
-	const res = await runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal);
-	if (!res.success){
-		console.log(res.msg);
-		//document.querySelector("#recordsSpinner").style.display = 'none';
+	const promises = [runFetch("/api/showTableData_test.php", "GET", urlpar, undefined, signal),getUserActiveEvents()];
+	const res = await Promise.allSettled(promises);
+	if (res[0].status === "rejected" || res[0].value.success === false){
+		console.log(res.value.msg);
+		return;
 	}
 	else{
-		const response = res.result;
+		
+		const response = res[0].value.result;
 		const protocolsArray = fillChargesTable(response);
-		await showListEvents(protocolsArray);
+		if (res[1].status !== "rejected" && res[1].value.success === true){
+			res[1].value.events.forEach( userEvent => {
+				if (document.querySelector(`#chargesTableContent [data-record="${userEvent}"]`)){
+					document.querySelector(`#chargesTableContent [data-record="${userEvent}"] [data-colname="aaField"]`).innerHTML += ` <i style="color:red;" class="fas fa-exclamation"></i>`;
+				}
+			})
+		}
+
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
 		return response.totalRecords;
 	}
@@ -80,8 +89,7 @@ export async function getProtocolData(customPagingStart = pagingStart, customPag
 		const response = res.result;
 		//console.log("εκτέλεση λήψης χρεώσεων 1");
 		document.querySelector("#syncRecords>i").classList.remove('faa-circle');
-		console.log(rangeEvents)
-		fillChargesTable(response, true, rangeEvents );
+		fillChargesTable(response, true);
 		return response.totalRecords;
 	}
 }
@@ -171,22 +179,19 @@ export function fillChargesTable(response, protocol = false, rangeEvents = [] ){
 	return protocols;
 }
 
-async function showListEvents(protocols = []){
-  
-	let urlparams = new URLSearchParams({protocols : JSON.stringify(protocols), currentYear : (localStorage.getItem("currentYear")?localStorage.getItem("currentYear"):new Date().getFullYear())});
 
-	const res = await runFetch("/api/getListEvents.php", "GET", urlparams);
+
+async function getUserActiveEvents(){
+  
+	const res = await runFetch("/api/getUserActiveEvents.php", "GET");
 	if (!res.success){
 		
 	}
 	else{
-		res.result.events.forEach( event => {
-			const eventStringForInfo = `${event['eventField']}, ${(event['startDateField'] !=null? "ΕΝΑΡΞΗ "+event['startDateField']:" ")}|${(event['endDateField'] !=null? " ΛΗΞΗ "+event['endDateField']:" ")}`;
-			document.querySelector(`[data-record="${event.recordField}"] [data-colname="aaField"]`).innerHTML += ` <i title="${eventStringForInfo}" style="color:red;" class="fas fa-exclamation"></i>`;
-		} )
+		return  res.result;
+		//<i title="${eventStringForInfo}" style="color:red;" class="fas fa-exclamation">
 	}
 }
-
 
 async function getRecord(year, protocolNo){
 	const urlData = new URLSearchParams();
@@ -407,8 +412,15 @@ async function changeStatus(protocolNo, newStatus){
 	}
 	else{
 		//await getFilteredData(event.currentPage -1, pagingSize, signals.charges, getControllers(), orderField, orderType);
-		await getFilteredData(paggingPage-1, pagingSize, signals.charges, getControllers());
-		document.querySelector(`[data-record="${protocolNo}"]`).scrollIntoView({behavior: 'smooth'});
+		let sibling  = null;
+		if (document.querySelector(`[data-record="${protocolNo}"] + div`)){
+			sibling = document.querySelector(`[data-record="${protocolNo}"] + div`).dataset.record;
+		}
+		else{
+			sibling = document.querySelector(`div:has(+ [data-record="${protocolNo}"])`).dataset.record;
+		}
+		await getFilteredData((paggingPage-1)<0?0:(paggingPage-1), pagingSize, signals.charges, getControllers());
+		document.querySelector(`[data-record="${sibling}"]`).scrollIntoView({behavior: 'smooth'});
 		alert(res.msg);
 	}
 }
@@ -454,41 +466,24 @@ async function getChangedRecords(days=1){
 }
 
 export async function printChangedRecords(days=1){
-	let changedRecords = await getChangedRecords(days);
+	document.querySelector("#changesContent").innerHTML = "";
+	let changedRecords = [];
+	if (days == 0){
+		changedRecords = (await getUserActiveEvents()).events;
+	}
+	else{
+		changedRecords = (await getChangedRecords(days)).changes;
+	}
+	console.log(changedRecords)
 	const changesContent  = document.querySelector("#changesContent");
 	const changesDetailsContent  = document.querySelector("#changesDetailsContent");
-	let changedRecordsMod = changedRecords.changes.map(item => {
-		let elem = document.createElement('button');
-		elem.setAttribute("type", "button");
-		elem.setAttribute("data-protocol", item);
-		elem.setAttribute("class", "isButton small");
-		elem.setAttribute("style", "margin:3px;");
-		elem.innerText = item;
-		elem.addEventListener("click", async (e) => {
-			const changesContentBtn = document.querySelectorAll("#changesContent button");
-			changesContentBtn.forEach(btn => {
-				btn.classList.remove("active");		
-			});
-			e.target.classList.add("active");
-			let res = await showChangesDetails(e);
-			//console.log(res.join());
-			changesDetailsContent.innerHTML = res.changesAnalytics.join('<br>');
-		});
-		return elem;
-		//return  '<button type="button" data-protocol="'+item+'" class="btn btn-warning btn-sm" style="margin:3px;">'+item+'</button>';	
+	changedRecords.forEach(item => {
+		if (localStorage.getItem("currentYear")){
+			document.querySelector("#changesContent").innerHTML += `<protocol-btn small protocolno="${item}" protocoldate="${localStorage.getItem("currentYear")}"></protocol-btn>`;
+		}
 	});
-	//console.log(changedRecordsMod);
-	changesContent.textContent = "";
-	changedRecordsMod.forEach( item => {
-		changesContent.appendChild(item);
-	});
-	const changesContentBtn = document.querySelectorAll("#changesContent button");
-	changesContentBtn.forEach(btn => {
-		btn.classList.remove("btn-primary");	
-		btn.classList.add("btn-warning");	
-	});
-	
-	//changesContent.innerHTML = changedRecordsMod.join('');
+
+
 }
 
 async function showChangesDetails(e){

@@ -63,6 +63,12 @@ class Comment extends HTMLElement {
         this.protocolNo = this.attributes.protocolNo.value;
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; // ημερομηνία πρωτοκόλλου στην μορφή 2023-06-06
         this.locked = this.dataset.locked;
+
+        const currentRole = localStorage.getItem("currentRole");
+        let loginData = null;
+        if ( localStorage.getItem("loginData")){
+            loginData = JSON.parse(localStorage.getItem("loginData"));
+        }
         if (!+this.locked){
             this.loadComments(this.protocolNo,1);
             this.shadow.querySelector("#showAddCommentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addCommentModal").showModal());
@@ -70,6 +76,13 @@ class Comment extends HTMLElement {
         else{
             this.loadComments(this.protocolNo,0);
             this.shadow.querySelector("#showAddCommentModalBtn").style.display = "none";
+            if (loginData !== null && currentRole !== null){
+                if (loginData.user.roles[currentRole].protocolAccessLevel === "1"){
+                    this.shadow.querySelector("#showAddCommentModalBtn").style.display = "block";
+                    this.shadow.querySelector("#showAddCommentModalBtn").addEventListener("click",()=> this.shadow.querySelector("#addCommentModal").showModal());
+                }
+            }
+           
         }
         this.shadow.querySelector("#saveCommentBtn").addEventListener("click",()=>{ 
             const comment = this.shadow.getElementById("insertCommentField").value; 
@@ -85,7 +98,12 @@ class Comment extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue){
         //console.log("attribute changed");
-        this.loadComments(this.protocolNo,1);
+        if (!+this.locked){
+            this.loadComments(this.protocolNo,1);
+        }
+        else{
+            this.loadComments(this.protocolNo,0);
+        }
     }
     
     async loadComments(protocolNo, active){
@@ -119,7 +137,9 @@ class Comment extends HTMLElement {
             this.shadow.querySelector("#commentsTable tbody").innerHTML = html;
             //onclick="removeComment('+resdec[key1]['aaField']+')"
             for (let key1=0;key1<resdec.length;key1++) {
+                if (active){
                    this.shadow.querySelector("#removeCommentBtn-"+resdec[key1]['aaField']).addEventListener("click", ()=>{this.removeComment(this.protocolNo, this.protocolYear, resdec[key1]['aaField'])}); 
+                }
             }
         }
     }

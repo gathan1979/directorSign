@@ -59,7 +59,7 @@ const passwordModalDiv =
 
 const addProtocolModal = 
 	`<dialog id="addProtocolRequestDialog" style="min-width:60%;max-width:80%;">
-		<record-request></record-request>
+		<record-request "></record-request>
 	</dialog>`;
 
 const requestProtocolAccessModal = 
@@ -667,7 +667,7 @@ async function createChargesUIstartUp(){
 				<button class="isButton extraSmall primary" type="button" id="openChangesBtn" data-toggle="tooltip" title="Αλλαγές σε πρωτόκολλα">
 					<i class="fas fa-info"></i>
 				</button>
-				
+				<div style="position:absolute;"></div>
 			</div>
 			${
 				+loginData.user.roles[cRole].protocolAccessLevel?
@@ -681,22 +681,26 @@ async function createChargesUIstartUp(){
 		</div>
 	</div>`;
 
-	const changesFilterDiv= `<dialog id="changesDiv" class="customModal" style="width: 80%;">
-								<div id="changesTitle" class="customDialogContentTitle">
-									<div>Τελευταίες αλλαγές</div>
-									<div class="topButtons" style="display:flex;gap: 7px;">
-										<div id="changesDatesDiv"> 
-											<button type="button" data-days="1" class="isButton  small">1ημ.</button>
-											<button type="button" data-days="7" class="isButton  small">7ημ.</button>
-											<button type="button" data-days="30" class="isButton  small">30ημ.</button>
+	const changesFilterDiv= `<dialog id="changesDiv" class="customModal" style="width: 600px; margin-top: 50px;">
+								<div id="changesTitle" class="customDialogContentTitle" style="align-items: center;">
+									<div>Πληροφορίες</div>
+									<div class="topButtons" style="display:flex;gap: 7px; align-items: center;">
+										<div id="changesDatesDiv" style="display: inline-flex; gap: 10px;"> 
+											<button type="button" data-days="0" class="isButton  small">Συμβάντα</button>
+											<div style="background-color: bisque; padding:5px;">
+												<span>Αλλαγές Χρεώσεων:</span>
+												<button type="button" data-days="1" class="isButton  small">1ημ.</button>
+												<button type="button" data-days="7" class="isButton  small">7ημ.</button>
+												<button type="button" data-days="30" class="isButton  small">30ημ.</button>
+											</div>
 										</div>
 										<div id="changesCloseButtonDiv">
-											<button id="changesCloseButton" type="button"  class="btn btn-danger btn-sm">Χ</button>
+											<button id="changesCloseButton" type="button"  class="btn btn-danger btn-sm"><i class="far fa-times-circle"></i></button>
 										</div>
 									</div>
 								</div>
-								<div id="changesContent"></div>
-								<div id="changesDetailsContent" style="margin-top:1em;"></div>
+								<div id="changesContent" style="margin-top:50px;"></div>
+								<div id="changesDetailsContent" style="margin-top: 20px;"></div>
 							</dialog>`;
 
 	const peddingRequestsDiv= `<dialog id="peddingRequestsModal" class="customModal" style="min-width:80%;">
@@ -800,6 +804,7 @@ async function createChargesUIstartUp(){
 
 	if (document.querySelector('#reqProtocolBtn')){
 		document.querySelector('#reqProtocolBtn').addEventListener("click", ()=>{
+			document.querySelector("record-request").setAttribute("timestamp",Date.now());
 			document.querySelector('#addProtocolRequestDialog').showModal();
 		});
 	}
@@ -1196,7 +1201,7 @@ export async function createUIstartUp(){
 		document.querySelector('#signAllModalBtn').style.display = "none";
 	}
 	
-}
+} 
 
 export async function createSignedUIstartUp(){
 	removeIntervals();
