@@ -213,7 +213,7 @@ export async function openProtocolRecord(record, recordDate, protocol){
 	if (recordDate.match(/\d{4}-\d{2}-\d{2}/i) !==null){
 		recordDate = recordDate.split("-")[0];
 	}
-	console.log(record, recordDate)
+	//console.log(record, recordDate)
 	const recordFields = await getRecord(recordDate, record);
 	const subject  = recordFields.subjectField;
 	const outSubjectField = recordFields.outSubjectField;

@@ -18,7 +18,7 @@ const isAssignedFilter = {filterName : "isAssigned", type: "boolean", extension 
 const isAssignedLastFilter = {filterName : "isAssignedLast", type: "boolean", extension : false, description:"Τελευταίες Χρεώσεις"};
 const isAssignedToDepFilter = {filterName : "isAssignedToDep", type: "boolean", extension : false, description:"Αχρέωτα"};
 const noNotificationsFilter = {filterName : "noNotifications", type: "boolean", extension : false, description:"Απόκρυψη κοινοποιήσεων"};
-const selectedFolderFilter = {filterName : "selectedFolder", type: "list", extension : false, description:"Λίστα φακέλων", dataSource: getFoldersFromLS()};
+const selectedFolderFilter = {filterName : "selectedFolder", type: "list", extension : false, description:"Λίστα φακέλων", dataSource: getFoldersFromLS};
 const extendedViewFilter = {filterName : "extendedView", type: "boolean", extension : true, description:"Εκτεταμένα στοιχεία"};
 
 //Αντιστοίχιση id κουμπιού φίλτρου με το αντίστοιχο φίλτρο object	
@@ -76,6 +76,9 @@ export function resetFilterStorage(extensions = true, saveToLS = true){
 				case "boolean": 
 					filter[elem.filterName] = 0;
 					break;
+				case "list": 
+					filter[elem.filterName] = 0;
+					break;
 			}
 		}
 	})
@@ -103,22 +106,22 @@ function getFoldersFromLS(that){
 		try{
 			const folderList = JSON.parse(localStorage.getItem("folders"));
 			//document.querySelector("#filterFolderSelection")
-			let temp = `<option value="0"></option>`
+			let temp = `<option value="0">Φάκελος</option>`
 			folderList.forEach( elem => {
 				//console.log(elem)
-				const template = document.createElement('template');
-				template.innerHTML = elem;
-				const btn = template.content.querySelector("button");
-				temp += `<option value="${btn.dataset.folderAa}">${btn.textContent}</option>`
+				// const template = document.createElement('template');
+				// template.innerHTML = elem;
+				// const btn = template.content.querySelector("button");
+				temp += `<option value="${elem[0]}">${elem[1]}</option>`
 			})
 			return temp;
 		}
 		catch(e){
-			return `<option value="-1">Αδυναμία λήψη δεδομένων </option>`;
+			return `<option value="-1">Αδυναμία λήψης δεδομένων </option>`;
 		}
 	}
 	else{
-		return `<option value="-1">Αδυναμία λήψη δεδομένων 2</option>`;
+		return `<option value="-1">Αδυναμία λήψης δεδομένων 2</option>`;
 	}	
 }
 
@@ -291,7 +294,7 @@ function debounce(func, timeout = 500){
 }
 
 //Δημιουργεί τα κουμπιά του φίλτρου χωρίς καμία ενημέρωση με το localStorage
-export default function createFilter(parentElement){
+export default async function createFilter(parentElement){
 	//console.log("creating filter")
 	resetFilterStorage();
 	//console.log("creating filter")
@@ -322,7 +325,7 @@ export default function createFilter(parentElement){
 				temp += `<input type="date" class="isButton" id="${mapBtnsToLSFilter.get(filter)}"  title="${filter.description}"/>`;
 				break;
 			case "list": 
-				temp +=`<select id="${mapBtnsToLSFilter.get(filter)}" >${filter.dataSource}</select>`;
+				temp +=`<select id="${mapBtnsToLSFilter.get(filter)}" >${filter.dataSource()}</select>`;
 				break
 			case "boolean": 
 				temp += `<button id="${mapBtnsToLSFilter.get(filter)}" class="isButton" title="${filter.description}" data-value="0">${filter.description}</button>`;
@@ -433,16 +436,20 @@ export function updateBtnsFromFilter(){
 	tempFiltersArray.forEach( itemFilter => {
 		//console.log(itemFilter)
 		const lsValue = filterFromLS[itemFilter.filterName];
+		let  customElement = document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`);
 		if (lsValue !== null){
-			document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).dataset.value = lsValue;
+			customElement.dataset.value = lsValue;
 			if (itemFilter.type === "date"){
-				document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).value = lsValue;
+				customElement.value = lsValue;
+			}
+			if (itemFilter.type === "list"){
+				lsValue == "" ? customElement.value = 0: customElement.value = lsValue;
 			}
 			if (lsValue !== "" && lsValue !==0){
-				document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).classList.add("active");
+				customElement.classList.add("active");
 			}
 			else{
-				document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).classList.remove("active");
+				customElement.classList.remove("active");
 			}
 		}
 	})

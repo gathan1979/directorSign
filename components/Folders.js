@@ -1,4 +1,5 @@
 import runFetch, {FetchResponseType} from "../modules/CustomFetch.js";
+import { getFoldersList } from "../modules/UI_test.js";
 
 const foldersContent = `
     <style>
@@ -158,16 +159,18 @@ class Folders extends HTMLElement {
         this.protocolYear = this.attributes.protocolDate.value.split("-")[0]; 
         this.locked = this.dataset.locked;
         let folderList = null;
-        if (localStorage.getItem("folders") !== null){
+        if (localStorage.getItem("foldersAsButtons") !== null){
             try{
-                folderList = JSON.parse(localStorage.getItem("folders"));
+                folderList = JSON.parse(localStorage.getItem("foldersAsButtons"));
             }
             catch(e){
-                folderList = await this.getFoldersList(this.protocolNo, this.protocolYear);
+                folderList = await getFoldersList(0);
+                localStorage.setItem("foldersAsButtons", folderList);
             }
         }
         else{
-            folderList = await this.getFoldersList(this.protocolNo, this.protocolYear);
+            folderList = await getFoldersList(0);
+            localStorage.setItem("foldersAsButtons", folderList);
         }
         const foldersArrFromDb = await this.getFolders(this.protocolNo, this.protocolYear);
         if (foldersArrFromDb === null){
@@ -224,20 +227,6 @@ class Folders extends HTMLElement {
 
     disconnectedCallback() {
     
-    }
-
-
-    async getFoldersList(protocolNo, protocolYear){
-        let urlparams = new URLSearchParams({protocolNo, currentYear : protocolYear});
-        const res = await runFetch("/api/getFoldersList.php", "GET", urlparams);
-        if (!res.success){
-            console.log(res.msg);
-        }
-        else{
-            const resdec = res.result;
-            localStorage.setItem("folders",JSON.stringify(resdec));
-            return resdec;
-        }    
     }
 
     async getFolders(protocolNo, protocolYear){

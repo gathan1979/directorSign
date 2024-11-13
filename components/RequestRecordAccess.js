@@ -271,11 +271,11 @@ class RequestRecordAccess extends HTMLElement {
         const urlpar = new URLSearchParams({asList: 1});
         const res = await runFetch("/api/getFoldersList.php", "GET", urlpar);
         if (!res.success){
-            console.log(res.msg);
+            return null;
         }
         else{
-            console.log(res);
-            return  res.result;
+            //console.log(res);
+            return  res.result.folderList;
         }
     }
 

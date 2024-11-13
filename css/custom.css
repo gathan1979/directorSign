@@ -556,6 +556,11 @@ td .fa-crosshairs{
 	background-color: var(--my-success);
 }
 
+select.active{
+	background-color: white;
+	border: 5px solid var(--my-success);
+}
+
 .dismiss{
 	background-color: var(--my-danger);
 }

@@ -852,7 +852,7 @@ async function createChargesUIstartUp(){
 		});
 	}
 
-	createFilter(document.querySelector("#filterDownDiv"));
+	await createFilter(document.querySelector("#filterDownDiv"));
 	updateBtnsFromFilter();
 
 	const lsGlobalSearchValue = localStorage.getItem("globalSearch");
@@ -1019,39 +1019,8 @@ async function createProtocolUIstartUp(){
 	document.querySelector('#showEmployeesBtn').style.display = "none"; 
 	document.querySelector('#showToSignOnlyBtn').style.display = "none"; 
 	let cRole = localStorage.getItem("currentRole");
-
-	
-	
-	// const chargesFilterMenuDiv = 
-	// `<div id="chargesFilterMenu" class="flexVertical ">
-	// 	<div id="topSettingsDiv" class="flexHorizontal" >	
-	// 		<div id="filterBtnDiv" >
-	// 			<button class="isButton extraSmall primary" type="button" id="openFilterBtn" data-toggle="tooltip" title="Φίλτρο">
-	// 				<i class="fas fa-filter"></i>
-	// 			</button>
-				
-	// 		</div>
-
-	// 	</div>
-	// 	</div>
-	// </div>`;
-	
-
-	//document.body.insertAdjacentHTML("afterend",changesFilterDiv);
 	
 	document.querySelector("role-selector").insertAdjacentHTML("afterend", `<year-selector id="yearSelectorDiv"></year-selector>`);
-	//document.querySelector("#outerFilterDiv").innerHTML += chargesFilterMenuDiv;	
-
-	//const filterButton  = document.querySelector("#openFilterBtn");	
-	//const filterCloseButton  = document.querySelector("#filterCloseButton");	
-
-	// filterButton.addEventListener("click", () => {
-	// 	const filterDiv  = document.querySelector("#filterDiv").showModal();
-	// });
-
-	// filterCloseButton.addEventListener("click", () => {
-	// 	const filterDiv  = document.querySelector("#filterDiv").close();
-	// });
 
 	let folderList = null;
 	if (localStorage.getItem("folders") !== null){
@@ -1065,12 +1034,15 @@ async function createProtocolUIstartUp(){
 	else{
 		folderList = await getFoldersList();
 	}
-	
-	createFilter(document.querySelector("#filterDownDiv"));
+
+	if (folderList !==null){
+		localStorage.setItem("folders",JSON.stringify(folderList));
+	}
+
+	await createFilter(document.querySelector("#filterDownDiv"));
 	updateBtnsFromFilter();
 
 	document.querySelector('#tableSearchInput').addEventListener("keyup", async ()=>{
-	
 		let debounceFunc = debounce( async () =>  {
 			const chargesRes = await getProtocolAndFill(); 
 		});
@@ -1089,15 +1061,14 @@ async function createProtocolUIstartUp(){
 	
 }
 
-async function getFoldersList(){
-	const res = await runFetch("/api/getFoldersList.php", "GET", null);
+export async function getFoldersList(asList=1){  // 0 ή 1. 1 σε περίπτωση που θέλουμε λίστα μόνο και όχι SSR
+	const urlpar = new URLSearchParams({asList});
+	const res = await runFetch("/api/getFoldersList.php", "GET", urlpar);
 	if (!res.success){
-		console.log(res.msg);
+		return null;
 	}
 	else{
-		const resdec = res.result;
-		localStorage.setItem("folders",JSON.stringify(resdec));
-		return resdec;
+		return res.result.folderList;
 	}    
 }
 
