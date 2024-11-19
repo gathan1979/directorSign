@@ -20,7 +20,6 @@ const noNotificationsFilter = {filterName : "noNotifications", type: "boolean", 
 const selectedFolderFilter = {filterName : "selectedFolder", type: "list", extension : false, description:"Λίστα φακέλων", dataSource: getFoldersFromLS};
 const extendedViewFilter = {filterName : "extendedView", type: "boolean", extension : true, description:"Εκτεταμένα στοιχεία"};
 const selectedUserFilter = {filterName : "selectedUser", type: "list", extension : false, description:"Εμφάνιση χρηστών", dataSource: getDepUsers};
-const extendedActiveFilter = {filterName : "activeStatus", type: "boolean", extension : true, description:"Ενεργά πρωτόκολλα"};
 
 //Αντιστοίχιση id κουμπιού φίλτρου με το αντίστοιχο φίλτρο object	
 const mapBtnsToLSFilter = new Map();
@@ -35,13 +34,12 @@ mapBtnsToLSFilter.set(isAssignedLastFilter, "lastAssignedFilter");
 mapBtnsToLSFilter.set(noNotificationsFilter, "hideNotificationsFilter");
 mapBtnsToLSFilter.set(selectedFolderFilter, "filterFolderSelection");
 mapBtnsToLSFilter.set(extendedViewFilter, "extendedView");
-mapBtnsToLSFilter.set(extendedActiveFilter, "activeStatus");
 mapBtnsToLSFilter.set(selectedUserFilter, "selectedUser");
 
 export const FILTERS = {};
 
 export const FILTERS_GROUPS = {
-	PROTOCOL: [selectedFolderFilter, selectedDateFilter, extendedViewFilter],
+	PROTOCOL: [ selectedFolderFilter, selectedDateFilter, extendedViewFilter],
 	CHARGES_USER: [hideArchievedFilter, isAssignedLastFilter, noNotificationsFilter, accessRequestsFilter, extendedViewFilter],
 	CHARGES_PROTOCOL: [hideArchievedFilter, isAssignedFilter, selectedDateFilter, showForArchiveFilter, extendedViewFilter],
 	CHARGES_DEP_DIRECTOR: [hideArchievedFilter, isAssignedLastFilter, isAssignedToDepFilter, noNotificationsFilter, selectedDateDepFilter, accessRequestsFilter, extendedViewFilter]
@@ -49,36 +47,7 @@ export const FILTERS_GROUPS = {
 
 //extensions=true Κάνει επαναφορά και τα extension Filters
 export function resetFilterStorage(extensions = true, saveToLS = true){
-	//Προσθέτω το φίλτρο των ενεργών πρωτοκόλλων αν απαιτείται
-	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
-	const currentRole = localStorage.getItem("currentRole");
-	const page = getPage();
-	//ΕΠΙΠΡΟΣΘΕΤΑ ΦΙΛΤΡΑ ΠΟΥ ΜΠΑΙΝΟΥΝ ΥΠΟ ΠΡΟΥΠΟΘΕΣΕΙΣ
-
-	if (page == Pages.PROTOCOL){
-		const indexSelectedUser = FILTERS_GROUPS.PROTOCOL.indexOf(selectedUserFilter);
-		const indexActiveFilter = FILTERS_GROUPS.PROTOCOL.indexOf(extendedActiveFilter);
-
-		if ( userData.roles[currentRole].accessLevel ==1){
-			
-			if ( indexSelectedUser === -1){
-				FILTERS_GROUPS.PROTOCOL.unshift(selectedUserFilter);
-			}	
-			if ( indexActiveFilter === -1){
-				FILTERS_GROUPS.PROTOCOL.unshift(extendedActiveFilter);
-			}
-		}
-		else{
-			if (indexSelectedUser !== -1){
-				FILTERS_GROUPS.PROTOCOL.splice(indexSelectedUser,1);
-			}
-			if (indexActiveFilter !== -1){
-				FILTERS_GROUPS.PROTOCOL.splice(extendedActiveFilter,1);
-			}
-		}
-	}
-	//console.log("protocol filters updated from reset",FILTERS_GROUPS.PROTOCOL)
-
+	//console.log("resetting filter")
 	let allfilters = [];
 	for (const filter_group  in FILTERS_GROUPS){
 		allfilters = allfilters.concat(FILTERS_GROUPS[filter_group]);
@@ -121,17 +90,17 @@ export function resetFilterStorage(extensions = true, saveToLS = true){
 }
 
 
-// if (localStorage.getItem("filter") !== null){
-// 	try{
-// 		filter = JSON.parse(localStorage.getItem("filter"));	
-// 	}
-// 	catch(e){
-// 		resetFilterStorage();
-// 	}
-// }
-// else{
-// 	resetFilterStorage();
-// }
+if (localStorage.getItem("filter") !== null){
+	try{
+		filter = JSON.parse(localStorage.getItem("filter"));	
+	}
+	catch(e){
+		resetFilterStorage();
+	}
+}
+else{
+	resetFilterStorage();
+}
 
 async function getDepUsers(type=1){
 	const urlparams = new URLSearchParams({type});
@@ -346,7 +315,7 @@ function debounce(func, timeout = 500){
 
 //Δημιουργεί τα κουμπιά του φίλτρου χωρίς καμία ενημέρωση με το localStorage
 export default async function createFilter(parentElement){
-	//console.log("protocol filters",FILTERS_GROUPS.PROTOCOL)
+	console.log("creating filter")
 	resetFilterStorage();
 	//console.log("creating filter")
 	const userData = JSON.parse(localStorage.getItem("loginData")).user;	
@@ -357,31 +326,17 @@ export default async function createFilter(parentElement){
 	const page = getPage();
 	let tempFiltersArray = []
 	if (page == Pages.PROTOCOL){
-		// if ( userData.roles[currentRole].accessLevel ==1){
-		// 	if (FILTERS_GROUPS.PROTOCOL.indexOf(selectedUserFilter) === -1){
-		// 		FILTERS_GROUPS.PROTOCOL.unshift(selectedUserFilter);
-		// 	}	
-		// 	console.log(FILTERS_GROUPS.PROTOCOL)
-		// 	if (FILTERS_GROUPS.PROTOCOL.indexOf(extendedActiveFilter) === -1){
-		// 		FILTERS_GROUPS.PROTOCOL.unshift(extendedActiveFilter);
-		// 	}
-		// 	console.log(FILTERS_GROUPS.PROTOCOL)
-		// }
-		// else{
-		// 	const indexSelectedUser = FILTERS_GROUPS.PROTOCOL.indexOf(selectedUserFilter);
-		// 	console.log(FILTERS_GROUPS.PROTOCOL)
-		// 	if ( indexSelectedUser === 1){
-				
-		// 		FILTERS_GROUPS.PROTOCOL.splice(indexSelectedUser, 1);
-		// 	}
-		// 	const indexActiveFilter = FILTERS_GROUPS.PROTOCOL.indexOf(extendedActiveFilter);
-		// 	console.log(FILTERS_GROUPS.PROTOCOL)
-		// 	if ( indexActiveFilter === 1){
-				
-		// 		FILTERS_GROUPS.PROTOCOL.splice(indexActiveFilter, 1);
-		// 	}
-		// }
-		//console.log("protocol filters updated",FILTERS_GROUPS.PROTOCOL)
+        if ( userData.roles[currentRole].accessLevel ==1){
+			if (tempFiltersArray.indexOf(selectedUserFilter) === -1){
+				FILTERS_GROUPS.PROTOCOL.unshift(selectedUserFilter);
+			}
+		}
+        else{
+            if (tempFiltersArray.indexOf(selectedUserFilter) === 1){
+				FILTERS_GROUPS.PROTOCOL.shift();
+			}
+        }
+        console.log(FILTERS_GROUPS.PROTOCOL);
 		tempFiltersArray = FILTERS_GROUPS.PROTOCOL;
 	}
 	else if (userData.roles[currentRole].protocolAccessLevel == 1){
@@ -454,7 +409,7 @@ export function getActiveFilters(){
 	//ΛΗΨΗ ΜΗ ΚΕΝΩΝ ΦΙΛΤΡΩΝ
 	pageRelevantFiltersArray.forEach( pageFilter =>{
 		//console.log(currentFilterFromLS[pageFilter.filterName]);
-		if (currentFilterFromLS[pageFilter.filterName] !== "" && +currentFilterFromLS[pageFilter.filterName] !== 0 && currentFilterFromLS[pageFilter.filterName] !== undefined){
+		if (currentFilterFromLS[pageFilter.filterName] !== "" && +currentFilterFromLS[pageFilter.filterName] !== 0 +currentFilterFromLS[pageFilter.filterName] !== undefined){
 			filteredObject[pageFilter.filterName] = currentFilterFromLS[pageFilter.filterName] ;
 		}
 	})

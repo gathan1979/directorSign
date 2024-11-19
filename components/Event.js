@@ -41,13 +41,19 @@ const eventContent = `
                     <label for="insertStartDateField">
                         Έναρξη 
                     </label>
-                    <input type="datetime-local" id="insertStartDateField"></input>
+                    <div>
+                        <input type="date" id="insertStartDateField"></input>
+                        <input type="time" id="insertStartTimeField" value="12:00"></input>
+                    </div>
                 </div>
                 <div class="flexHorizontal" style="justify-content:space-between;">
                     <label for="insertEndDateField">
                         Λήξη
                     </label>
-                    <input type="datetime-local" id="insertEndDateField"></input>
+                    <div>
+                        <input type="date" id="insertEndDateField"></input>
+                        <input type="time" id="insertEndTimeField" value="12:00"></input>
+                    </div>
                 </div>
                 <button id="saveEventBtn" type="button" class="isButton active" style="align-self:end;margin-top:10px;">Εισαγωγή</button>	
             </form>
@@ -83,12 +89,14 @@ class Event extends HTMLElement {
         }
         this.shadow.querySelector("#saveEventBtn").addEventListener("click",()=>{ 
             const event = this.shadow.getElementById("insertEventField").value; 
-            const startDate = this.shadow.getElementById("insertStartDateField").value; 
+            const startDate = this.shadow.getElementById("insertStartDateField").value;
+            const startTime = this.shadow.getElementById("insertStartTimeField").value;  
             const endDate = this.shadow.getElementById("insertEndDateField").value; 
-            this.saveEvent(this.protocolNo, event, startDate, endDate);
+            const endTime = this.shadow.getElementById("insertEndTimeField").value;  
+            this.saveEvent(this.protocolNo, event, startDate, startTime, endDate, endTime);
         });
         this.shadow.querySelector("#closeModalBtn").addEventListener("click", ()=> this.shadow.querySelector("#addEventModal").close());
-       
+
     }
 
     disconnectedCallback() {
@@ -163,7 +171,7 @@ class Event extends HTMLElement {
         }    
     }
 
-    async saveEvent(protocolNo, eventField, startDateField ="", endDateField = ""){
+    async saveEvent(protocolNo, eventField, startDateField ="", startTimeField="00:00", endDateField = "", endTimeField="00:00"){
         if (eventField == "" && startDateField =="" && endDateField == ""){
             this.shadow.querySelector("#actionStatus").innerHTML = "Δεν υπάρχουν στοιχεία για παραχώρηση";
             return;
@@ -171,7 +179,9 @@ class Event extends HTMLElement {
         let formData = new FormData();
         formData.append("eventField", eventField);
         formData.append("startDateField", startDateField);
+        formData.append("startTimeField", startTimeField);
         formData.append("endDateField", endDateField);
+        formData.append("endTimeField", endTimeField);
         formData.append("protocolNo", protocolNo);
         this.shadow.querySelector("#actionStatus").innerHTML = "";
 

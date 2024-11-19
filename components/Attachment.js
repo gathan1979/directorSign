@@ -19,7 +19,7 @@ const content =
                     <button class="btn btn-outline-danger btn-sm" id="zipFileButton"  title="Λήψη όλων"><i class="fas fa-file-archive"></i></button>
                     <button id="showAttachmentModalBtn" type="button"  class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></button>
                 </div>
-                <div style="height:90%;overflow-y:scroll;">
+                <div style="max-height:300px; min-height: 150px; height: auto; overflow-y:scroll;">
                     <table id="attachments" name="attachments" class="table table-striped">
                         <tbody> 
                         </tbody>

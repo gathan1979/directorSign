@@ -231,11 +231,10 @@ class Assignments extends HTMLElement {
             // Προς το παρόν δεν κάνει κάτι
         }
         else if (currentRoleObject.accessLevel == 1){
-            // ενεργοποίηση μόνο για τμήμα  -- Απαιτεί διόρθωση για υπαλλήλους εκτός τμήματος
             const employeesOutOfDep = await this.getEmployeesOutOfDep();
             //console.log(employeesOutOfDep);
             this.shadow.querySelectorAll(".departmentEmployees>button").forEach((element,index)=> {
-                if (departmentChildren.includes(element.parentNode.parentNode.dataset.dep)){
+                if (departmentChildren.includes(element.parentNode.parentNode.parentNode.dataset.dep)){
                     element.removeAttribute("disabled");
                 }
                 else if(employeesOutOfDep.includes(element.dataset.user)){

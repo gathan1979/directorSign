@@ -674,7 +674,7 @@ async function createChargesUIstartUp(){
 					``:
 					`<div id="removeNotificationsBtnDiv" >
 						<button class="isButton extraSmall primary" name="removeNotifications" id="removeNotifications" data-toggle="tooltip" title="" data-original-title="Αποχρέωση Κοινοποιήσεων">
-						<i class="fab fa-stack-overflow"></i>
+							<i class="fab fa-stack-overflow"></i>
 						</button>
 					</div>`}
 
@@ -710,7 +710,7 @@ async function createChargesUIstartUp(){
 					<button class="isButton " name="peddingReqsCloseBtn" id="peddingReqsCloseBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
 				</div>
 			</div>
-			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(6, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
+			<div id="peddingReqsRecords" style="display:grid;gap:10px; grid-template-columns:repeat(7, 1fr);align-items:center; justify-items: center; font-size: 0.85em;"></div>
 		</dialog>`;
 
 	
@@ -882,10 +882,11 @@ async function createChargesUIstartUp(){
 		const changesDiv  = document.querySelector("#changesDiv").showModal();
 	});
 
-	// filterButton.addEventListener("click", () => {
-	// 	//const filterDiv  = document.querySelector("#filterDiv").showModal();
-	// 	document.querySelector("#filterDiv").display 
-	// });
+
+	const removeNotificationsButton  = document.querySelector("#removeNotifications");
+	if (removeNotificationsButton){
+		removeNotificationsButton.addEventListener("click", () => removeNotifications());
+	}
 
 	changesCloseButton.addEventListener("click", () => {
 		const changesDiv  = document.querySelector("#changesDiv").close();
@@ -1485,12 +1486,13 @@ async function getPeddingProtocolReqs(){
 			let countActive = 0;
 			document.querySelector("#peddingRequestsNo").parentElement.style.backgroundColor = "red";
 			document.querySelector("#peddingRequestsNo").style.backgroundColor = "red";
-			document.querySelector("#peddingReqsRecords").innerHTML = `<div><b>Αίτημα από</b></div><div><b>Θέμα</b></div><div><b>Προς</b></div><div><b>Θέμα Εξερχομένου</b></div><div>Ημερ.</div><div><b>Ενέργειες</b></div>`;
+			document.querySelector("#peddingReqsRecords").innerHTML = `<div><b>Αίτημα από</b></div><div><b>Αποστολέας</b></div><div><b>Θέμα</b></div><div><b>Προς</b></div><div><b>Θέμα Εξερχομένου</b></div><div>Ημερ.</div><div><b>Ενέργειες</b></div>`;
 			resdec.requests.forEach(elem => {
 					const rejectReqBtn = '<button data-req="'+elem.aa+'" data-action="dismissReq" class="isButton dismiss" style="margin-left:0.25rem;"><i class="far fa-window-close"></i></button>';
 					const acceptReqBtn = '<button data-req="'+elem.aa+'" data-action="acceptReq" class="isButton active" style="margin-left:0.25rem;"><i class="far fa-plus-square"></i></button>';
 					document.querySelector("#peddingReqsRecords").innerHTML+= 
 						`<div data-req="${elem.aa}" data-name="requestFromNameField" >${elem.requestFromNameField}</div>
+						<div data-req="${elem.aa}" data-name="fromField" >${elem.fromField}</div>
 						<div data-req="${elem.aa}" data-name="subjectField" >${elem.subjectField}</div>
 						<div data-req="${elem.aa}" data-name="toField" >${elem.toField}</div>
 						<div data-req="${elem.aa}" data-name="outSubjectField">${elem.outSubjectField}</div>
@@ -1842,4 +1844,17 @@ function debounce(func, timeout = 1000){
 		clearTimeout(timer);
 		timer = setTimeout(() => { func.apply(this, args); }, timeout);
 	};
+}
+
+async function removeNotifications(){
+	if ( !confirm("Διαγραφή των κοινοποιήσεων; Προσοχή. Δεν υπάρχει δυνατότητα αυτόματης επαναφοράς.")){
+		return;
+	}
+	const res = await runFetch("/api/removeNotifications.php", "POST");
+	if (!res.success){
+		alert(res.msg);
+	}
+	else{
+		res = await getChargesAndFill();
+	}
 }

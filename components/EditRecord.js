@@ -164,22 +164,22 @@ const editContent = `
                         <textarea class="formInput" required=""  type="text"  id="subjectField" disabled="true"></textarea>
                     </div>
                     <div class="formRow">
-                        <label class="formItem" for="docDate" >ΗΜΕΡ. ΠΑΡΑΛ.*</label>
+                        <label class="formItem" for="docDate" >ΗΜΕΡ. ΠΑΡΑΛ.</label>
                         <input class="formInput" required=""  type="text"  id="docDate" disabled="true">
                     </div>
                     <div class="formRow">    
-                        <label class="formItem" for="docNumber" >ΑΡΙΘΜ. ΕΙΣ.*</label>
+                        <label class="formItem" for="docNumber" >ΑΡΙΘΜ. ΕΙΣ.</label>
                         <input class="formInput" required=""  type="text"  id="docNumber" disabled="true">
                     </div>
                     <hr style="width : 100%;border:4px solid orange; border-radius: 2px;">
                 </fieldset>
                 <fieldset id="external" style="display:flex; flex-direction:column; gap:10px;">
                     <div class="formRow">    
-                        <label class="formItem" for="toField" >ΠΡΟΣ*</label>
+                        <label class="formItem" for="toField" >ΠΡΟΣ</label>
                         <input class="formInput" required=""  type="text"  id="toField" disabled="true">
                     </div>
                     <div class="formRow">   
-                        <label class="formItem" for="outSubjectField" >ΘΕΜΑ ΕΞΕΡΧ.*</label>
+                        <label class="formItem" for="outSubjectField" >ΘΕΜΑ ΕΞΕΡΧ.</label>
                         <input class="formInput" required=""  type="text"  id="outSubjectField" disabled="true">
                     </div>
                     <div class="formRow">
@@ -189,15 +189,15 @@ const editContent = `
                 </fieldset>
                 <fieldset>
                     <div class="formRow">    
-                        <label class="formItem" for="statusField" >ΚΑΤΑΣΤ.*</label>
+                        <label class="formItem" for="statusField" >ΚΑΤΑΣΤ.</label>
                         <input class="formInput" required="" type="number" step="1"  id="statusField" disabled="true">
                     </div>
                     <div class="formRow">
-                        <label class="formItem" for="linkField" >ΣΤΟΙΧΕΙΑ EMAIL*</label>
+                        <label class="formItem" for="linkField" >ΣΤΟΙΧΕΙΑ EMAIL</label>
                         <input class="formInput" required="" type="text"  id="linkField" disabled="true">
                     </div>
                     <div class="formRow">
-                        <label class="formItem" for="insertDateField" >ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ*</label>
+                        <label class="formItem" for="insertDateField" >ΗΜΕΡ. ΕΙΣΑΓΩΓΗΣ</label>
                         <input class="formInput" required="" type="date"  id="insertDateField" disabled="true">
                     </div>
                 </fieldset>
@@ -236,26 +236,29 @@ class EditRecord extends HTMLElement {
 
         //Συμπλήρωση περιεχομένου πεδίων και ενεργοποίηση ανάλογα με την ιδιότητα
         this.shadow.querySelectorAll(".formInput").forEach((element,index)=> {
-           element.value = this.protocolProperties[element.id];
-           if (+currentRoleObject.protocolAccessLevel !== 1){
+           
+            element.value = this.protocolProperties[element.id];
+            if (+currentRoleObject.protocolAccessLevel !== 1){
                 if (this.shadow.querySelector(`#external #${element.id}`)){
                     element.removeAttribute("disabled");
                 }
-           }
-           else{
+            }
+            else{
                 if (this.shadow.querySelector(`#external #${element.id}`)){
                     element.removeAttribute("disabled");
                 }
                 if (this.shadow.querySelector(`#internal #${element.id}`)){
-                    element.removeAttribute("disabled");
+                    if (element.id !== "aaField"){
+                        element.removeAttribute("disabled");
+                    } 
                 }
-           }
-           if (element.type == "date"){
-                element.addEventListener("change", (event) => this.updateChangedProperties(event)); 
-           }
-           else{
-                element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); 
-           }
+            }
+            if (element.type == "date"){
+                    element.addEventListener("change", (event) => this.updateChangedProperties(event)); 
+            }
+            else{
+                    element.addEventListener("keyup", (event) => this.updateChangedProperties(event)); 
+            }
         });
  
        
@@ -264,8 +267,8 @@ class EditRecord extends HTMLElement {
         //Listeners πάνω κουμπιών
         //this.shadow.querySelector("#archiveButtonModal").addEventListener("click",()=>this.saveAssignments());
         //this.shadow.querySelector("#restoreButtonModal").addEventListener("click",()=>this.saveAssignments());
-        this.shadow.querySelector("#saveRecordBtn").addEventListener("click",()=>this.editRecord());
-        this.shadow.querySelector("#undoBtn").addEventListener("click",()=>this.undoChanges());
+        this.shadow.querySelector("#saveRecordBtn").addEventListener("click",() => this.editRecord());
+        this.shadow.querySelector("#undoBtn").addEventListener("click",() => this.undoChanges());
     }
 
     disconnectedCallback() {
