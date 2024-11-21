@@ -103,6 +103,8 @@ export function fillChargesTable(response, protocol = false, rangeEvents = [] ){
 	document.querySelector("#chargesTableUsers").style.display = "none"; 
 	document.querySelector("#chargesTableFolders").style.display = "none";
 
+	let protocols = [];
+
 	for (const record of result){
 		let recordColor = "#B6EACB";
 		if (protocol){
@@ -158,23 +160,24 @@ export function fillChargesTable(response, protocol = false, rangeEvents = [] ){
 			tableContent +=`<span style="width:${customWidth};"`;
 			tableContent +=`" data-colname="`+key+'">'+value+"</span>"	
 		}
-		tableContent +="</div>"
+		tableContent +="</div>";
+		protocols.push(record["aaField"]);
 	}
 	document.querySelector("#chargesTableContent").innerHTML = tableContent;
 	
-	let protocols = [];
+	
 	//if(!protocol){	
-	for (const record of result){
-		protocols.push(record["aaField"]);
-		document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["aaField"], record["insertDateField"], protocol));
-	}
+	//for (const record of result){
+		//document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["aaField"], record["insertDateField"], protocol));
 	//}
-	//else{
-		//for (const record of result){
-			//document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => openProtocolRecord(record["subjectField"], record["aaField"], record["insertDateField"], record["statusField"], event));
-			////document.querySelector('[data-record="'+record.aaField+'"]').addEventListener("click", (event) => document.querySelector('#requestProtocolAccessDialog').showModal());
-		//}
-	//}
+	
+	document.querySelector(`#chargesTableContent`).addEventListener("click", (event) => {
+		if (event.target.parentNode.dataset.record && localStorage.getItem("currentYear")){
+			openProtocolRecord(event.target.parentNode.dataset.record, localStorage.getItem("currentYear"), protocol);
+		}
+		//openProtocolRecord(record["aaField"], record["insertDateField"], protocol)
+	})
+
 	createSearch();
 	return protocols;
 }

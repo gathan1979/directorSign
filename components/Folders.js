@@ -185,14 +185,22 @@ class Folders extends HTMLElement {
             if (this.protocolFolders.indexOf(element.dataset.folderAa) !== -1){
                 element.dataset.active = 1;
             }
-            element.addEventListener("click",(event)=>{this.changeFolderStatus(element.dataset.folderAa)})
+            //element.addEventListener("click",(event)=>{this.changeFolderStatus(element.dataset.folderAa)})
             this.shadow.querySelector(".customDialogContent").innerHTML += '<div><b>'+element.innerText+"</b> : "+element.title+'</div>';
         });
+
+        this.shadow.querySelector("#folderList").addEventListener("click", (event) =>{
+            console.log(event.target)
+            if (event.target.dataset.folderAa){
+                this.changeFolderStatus(event.target.dataset.folderAa);
+            }
+        })
+
         this.showFolders(this.protocolFolders);
 
         if (!+this.locked){
-            this.shadow.querySelector("#saveFoldersButton").addEventListener("click",()=>this.saveFolders());
-            this.shadow.querySelector("#undoButton").addEventListener("click",()=>this.undoChanges());
+            this.shadow.querySelector("#saveFoldersButton").addEventListener("click", ()=> this.saveFolders());
+            this.shadow.querySelector("#undoButton").addEventListener("click", ()=> this.undoChanges());
         }
         else{
             this.shadow.querySelector("#saveFoldersButton").setAttribute("disabled","true");

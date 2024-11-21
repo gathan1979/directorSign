@@ -282,7 +282,7 @@ export function createSearch(event) {
 		const showEmployeesBtn = document.getElementById('showEmployeesBtn');
 		//console.log(event);
 		if (event !== undefined){
-			console.log("in")
+			//console.log("in")
 			if(event.target.dataset.active == "0"){
 				event.target.classList.remove('dismiss');
 				event.target.classList.add('active');
