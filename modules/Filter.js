@@ -417,12 +417,8 @@ export default async function createFilter(parentElement){
 								<i class="fas fa-plus"></i>							
 								<div id="filterExtensions" class="flexHorizontal" style=" justify-content: center; flex-wrap : wrap; padding: 5px; gap: 5px; font-size: 0.8em;">${parentElementExtendedContent}</div>`;	
 	
-	if (page == Pages.PROTOCOL){
-		addListeners(tempFiltersArray, true);						
-	}
-	else{
-		addListeners(tempFiltersArray, false);
-	}
+	addListeners(tempFiltersArray, page);						
+
 }
 
 export function getActiveFilters(){
@@ -598,24 +594,14 @@ export function updateFilterStorage(event = null){
 	updateBtnsFromFilter();
 }
 
-function addListeners(filterArray, getFromProtocolData){
+function addListeners(filterArray, page){
 	filterArray.forEach(itemFilter => {
 		if (document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`)){
-			if(itemFilter.type == "boolean"){
-				if(getFromProtocolData){
-					document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("click",(event)=> {updateFilterStorage(event); getProtocolAndFill();});
-				}
-				else{
-					document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("click",(event)=> {updateFilterStorage(event); getChargesAndFill();});
-				}
-			}
-			else{
-				if(getFromProtocolData){
-					document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("change",(event)=> {updateFilterStorage(event); getProtocolAndFill();});
-				}
-				else{
-					document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener("change",(event)=> {updateFilterStorage(event); getChargesAndFill();});
-				}
+			if(page === Pages.PROTOCOL || page === Pages.CHARGES){
+				document.querySelector(`#${mapBtnsToLSFilter.get(itemFilter)}`).addEventListener((itemFilter.type==="boolean"?"click":"change"),(event)=> {
+					updateFilterStorage(event); 
+					page === Pages.PROTOCOL?getProtocolAndFill():getChargesAndFill();
+				});
 			}
 		}
 	} )

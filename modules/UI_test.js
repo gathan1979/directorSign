@@ -190,8 +190,8 @@ export  function startUp(){
 		console.log("storage changed");
 		const changeUrl = new URL(event.url);
 		if (changeUrl.hash != location.hash){
-			//console.log(event.key, changeUrl.hash);
 			if (event.key === "currentYear"){
+				console.log("year changed")	
 				if (document.querySelector("year-selector")){
 					document.querySelector("year-selector").setAttribute("year", event.newValue);
 				}
