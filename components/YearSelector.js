@@ -127,6 +127,7 @@ class YearSelector extends HTMLElement {
     shadow;
     static observedAttributes = ["year"];
     protocolYears;
+    yearsActiveTable;
 
     constructor() {
         super();
@@ -135,37 +136,50 @@ class YearSelector extends HTMLElement {
     async connectedCallback(){
         this.shadow = this.attachShadow({mode: 'open'});
         this.shadow.innerHTML = yearSelectorDiv;
-        
-        const protocolYearsRes = await this.getProtocolYears();
+        const extended = 1;
+        const protocolYearsRes = await this.getProtocolYears(extended); // extented με πεδίο active
         if (protocolYearsRes == false){
-            return;
+            return null;
         }
-        this.protocolYears = protocolYearsRes.result;
+        if (extended){
+            this.protocolYears = protocolYearsRes.result.map( yearObject => {
+                return yearObject.year;
+            });
+            this.yearsActiveTable = protocolYearsRes.result.map( yearObject => {
+                return yearObject.active;
+            });
+        }
+        else{
+            this.protocolYears = protocolYearsRes.result;
+        }
+
+        const unlock = `<span> <i style="color: darkorange;" class="fas fa-lock"></i></span>`;
+        const lock =`<span> <i class="fas fa-unlock"></i></span>`;
 
         if (Array.isArray(this.protocolYears.sort())){
-                let currentYear = localStorage.getItem('currentYear');
-                let currentYearIndex = this.protocolYears.indexOf(currentYear);
-                console.log(currentYear, currentYearIndex)
-                if (currentYear == null || (this.protocolYears.indexOf(currentYear) == -1)){
-                    currentYear = this.protocolYears.at(-1);
-                    localStorage.setItem("currentYear", currentYear);
-                    currentYearIndex = this.protocolYears.length-1;
-                }
-                
-                console.log(currentYear, currentYearIndex)
-                if (currentYearIndex == 0){
-                    this.shadow.querySelector('#downYearsBtn').setAttribute("disabled","disabled");  
-                }
-                else if (currentYearIndex == this.protocolYears.length-1){
-                    this.shadow.querySelector('#upYearsBtn').setAttribute("disabled","disabled"); 
-                }
-                else{
-                    this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled"); 
-                    this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled"); 
-                }
-               
-                const btn1 = `<button class="isButton extraSmall" style="background-color: var(--bs-success);" data-year="${this.protocolYears.at(currentYearIndex)}">${this.protocolYears.at(currentYearIndex)}</button>`;
-                this.shadow.querySelector("#protocolYears").innerHTML += btn1;
+            let currentYear = localStorage.getItem('currentYear');
+            let currentYearIndex = this.protocolYears.indexOf(currentYear);
+            //console.log(currentYear, currentYearIndex)
+            if (currentYear == null || (this.protocolYears.indexOf(currentYear) == -1)){
+                currentYear = this.protocolYears.at(-1);
+                localStorage.setItem("currentYear", currentYear);
+                currentYearIndex = this.protocolYears.length-1;
+            }
+
+            console.log(currentYear, currentYearIndex);
+            if (currentYearIndex == 0){
+                this.shadow.querySelector('#downYearsBtn').setAttribute("disabled","disabled");  
+            }
+            else if (currentYearIndex == this.protocolYears.length-1){
+                this.shadow.querySelector('#upYearsBtn').setAttribute("disabled","disabled"); 
+            }
+            else{
+                this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled"); 
+                this.shadow.querySelector('#upYearsBtn').removeAttribute("disabled"); 
+            }
+            const btn1 = `<button class="isButton extraSmall" style="background-color: var(--bs-success);" data-year="${this.protocolYears.at(currentYearIndex)}">${this.protocolYears.at(currentYearIndex)}
+            ${protocolYearsRes.result[currentYearIndex].active==0?unlock:lock}`;
+            this.shadow.querySelector("#protocolYears").innerHTML += btn1;
         }
         this.shadow.querySelector("#protocolYears>button").addEventListener("click", (elem)=>{
             const index = this.protocolYears.indexOf(elem.target.dataset.year);
@@ -180,7 +194,7 @@ class YearSelector extends HTMLElement {
                     const index = this.protocolYears.indexOf(elem.dataset.year);
                     if (+index !== 0){
                         this.shadow.querySelector("#protocolYears>button").dataset.year = this.protocolYears.at(index-1);
-                        this.shadow.querySelector("#protocolYears>button").textContent = this.protocolYears.at(index-1);
+                        this.shadow.querySelector("#protocolYears>button").innerHTML = this.protocolYears.at(index-1)+`${this.yearsActiveTable.at(index-1)==0?`${unlock}`:`${lock}`}</button>`;
                         localStorage.setItem("currentYear", this.protocolYears[index-1]);
                         const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
                         this.dispatchEvent(yearChangeEvent);
@@ -203,7 +217,7 @@ class YearSelector extends HTMLElement {
                 const index = this.protocolYears.indexOf(elem.dataset.year);
                 if (index !== (this.protocolYears.length-1)){
                     this.shadow.querySelector("#protocolYears>button").dataset.year = this.protocolYears.at(index+1);
-                    this.shadow.querySelector("#protocolYears>button").textContent =this.protocolYears.at(index+1);
+                    this.shadow.querySelector("#protocolYears>button").innerHTML = this.protocolYears.at(index+1)+`${this.yearsActiveTable.at(index+1)==0?`${unlock}`:`${lock}`}</button>`;
                     localStorage.setItem("currentYear", this.protocolYears[index+1]);
                     const yearChangeEvent = new CustomEvent("yearChangeEvent",  { bubbles: true, cancelable: false });
                     this.dispatchEvent(yearChangeEvent);
@@ -260,8 +274,9 @@ class YearSelector extends HTMLElement {
        
     }
 
-    async getProtocolYears(){
-        const res = await runFetch("/api/getProtocolYears.php", "GET", null);
+    async getProtocolYears(extended = 1){
+        const urlparams = new URLSearchParams({extended: extended})
+        const res = await runFetch("/api/getProtocolYears.php", "GET", urlparams);
         if (!res.success){
             console.log(res.msg);
             return false;
