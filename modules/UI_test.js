@@ -1,9 +1,6 @@
-import {uploadFileTest, uploadComponents,enableFileLoadButton} from "./Upload.js";
 import {createActionsTemplate,getSigRecords, getSignedRecords, fillTableWithSigned, signProviders, selectSignProvider, signAllDocuments}  from "./Records_test.js";
-import getFromLocalStorage from "./LocalStorage.js";
 import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
 import {getFilteredData, getProtocolData,openProtocolRecord, printChangedRecords} from "./ProtocolData.js";
-import refreshToken,{refreshTokenTest} from "./RefreshToken.js";
 import runFetch from "./CustomFetch.js";
 
 let loginData = null;
@@ -11,9 +8,6 @@ let page = null;
 export let paggingPage = 0;
 export let Pages = {CHARGES : 'charges' , SIGNATURE : 'signature', SIGNED : 'signed', PROTOCOL : "protocol"};
 Object.freeze(Pages);       
-const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
-const pwdBtn = '<button class="isButton warning" id="changePwdBtn" title="αλλαγή κωδικού"><i class="fas fa-key" id="changePwdBtnIcon"></i></button>';
-const logoutBtn = '<div><button class="isButton warning" id="logoutBtn" title="αποσύνδεση"><i class="fas fa-sign-out-alt"></i></button></div>';
 
 let interPeddingReqs = null;
 let interPeddingPublishReqs = null;
@@ -24,174 +18,68 @@ let timer = null;
 export let abortControllers = {};
 export let signals = {};
 
+const signTable = 		`<table id="dataToSignTable" class="table" style="font-size:0.9em;">
+							<thead>
+							<tr>
+								<th id="filename" class="text-right">Έγγραφο</th>
+								<th id="date" class="text-right">Αρ.Πρωτ.-Εισαγωγή</th>
+								<th id="author" class="text-right">Συντάκτης</th>
+								<th id="status" class="text-right">Κατάσταση</th>
+								<th id="fileActions" class="text-right">
+									<div style="display:flex; justify-content: space-between;">
+										<span>Ενέργειες</span>
+										<button id="signAllModalBtn" class="isButton" style="color:green; background-color: white;" title="Μαζική υπογραφή"><i class="fas fa-tags"></i></button>
+									</div>
+								</th>
+							</tr>
+							</thead>
+							<tbody>
 
-const passwordModalDiv =
-`<dialog id="passwordModal" class="customDialog" style="max-width: 800px;; min-width:500px;"> 
-	<div class="customDialogContentTitle">
-		<span style="font-weight:bold;">Αλλαγή κωδικού πρόσβασης</span>
-		<div class="topButtons" style="display:flex;gap: 7px;">
-			<button id="setPwd" title="Αποθήκευση αλλαγών" type="button" class="isButton active"><i class="far fa-save"></i></button>
-			<button class="isButton " name="closePasswordModalBtn" id="closePasswordModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
-		</div>
-	</div>
-	<div class="customDialogContent" style="margin-top:10px;">
-		<form id="passwordModalForm">
-			<div id="passwordForm" style="display:flex; flex-direction: column; gap: 5px;">
-				<div class="formRow" style="display:flex; align-items: center;">    
-					<label class="formItem" for="oldPwd" style="flex-basis:300px;">Παλιός Κωδικός*</label>
-					<input class="formInput" required=""  type="text"  id="oldPwd" ></input>
-					<i id="showOldPassBtn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
-				</div>
-				<div class="formRow" style="display:flex; align-items: center;">    
-					<label class="formItem" for="newPwd" style="flex-basis:300px;">Νέος Κωδικός*</label>
-					<input class="formInput" required=""  type="text"  id="newPwd">
-					<i id="showNewPass1Btn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
-				</div>
-				<div class="formRow" style="display:flex; align-items: center;">   
-					<label class="formItem" for="newPwd2" style="flex-basis:300px;">Επανεισαγωγή Νέου Κωδικού*</label>
-					<input class="formInput" required=""  type="text"  id="newPwd2">
-					<i id="showNewPass2Btn" style="cursor:pointer"  class="fas fa-eye fa-1x"></i>
-				</div>
-			</div>
-		</form>
-	</div>
-</dialog>`;
+							</tbody>
+						</table>`;
 
-const addProtocolModal = 
-	`<dialog id="addProtocolRequestDialog" style="min-width:60%;max-width:80%;">
-		<record-request "></record-request>
-	</dialog>`;
-
-const requestProtocolAccessModal = 
-	`<dialog id="requestProtocolAccessDialog" style="min-width:60%;max-width:80%;">
-		<record-request-access></record-request-access>
-	</dialog>`;
-
-const fileOpenModal = 
-	`<dialog id="fileOpenDialog">
-	</dialog>`;
-
-const fileMoveModal = 
-	`<dialog id="fileMoveDialog" style="width:30%;">
-	</dialog>`;
-
-const loadingModal = 
-	`<dialog id="loadingDialog">
-		<div class="spinner-border" role="status">
-			<span class="visually-hidden">Loading...</span>
-		</div>
-	</dialog>`;
-
-const navBarDiv = `<nav id="myNavBar">
-	<div  id="prosIpografi" ><a>Προς Υπογραφή</a></div>
-	<div  id="ipogegrammena" ><a>Διεκπεραιωμένα</a></div>
-		
-	<div id="xreoseis"><a><span id="protocolAppText">Χρεώσεις</span></a></div>	
-	<div id="protocolBookBtn"><a>Πρωτόκολλο</a></div>
-	<!--<li class="nav-item" id="minimata" class="text-center"><a class="nav-link" href="/messages.php">Μηνύματα</a></li>-->
-	<!--<div id="rithmiseis" ><a href="settings.php">Ρυθμίσεις</a></div>-->
-	<div  id="myNavBarLogo"><div  id="myNavBarLogoContent"></div></div>
-	</nav><!-- /.container-fluid -->`;
-
-
-
-const signTable = `<table id="dataToSignTable" class="table" style="font-size:0.9em;">
-	<thead>
-	<tr>
-		<th id="filename" class="text-right">Έγγραφο</th>
-		<th id="date" class="text-right">Αρ.Πρωτ.-Εισαγωγή</th>
-		<th id="author" class="text-right">Συντάκτης</th>
-		<th id="status" class="text-right">Κατάσταση</th>
-		<th id="fileActions" class="text-right">
-			<div style="display:flex; justify-content: space-between;">
-				<span>Ενέργειες</span>
-				<button id="signAllModalBtn" class="isButton" style="color:green; background-color: white;" title="Μαζική υπογραφή"><i class="fas fa-tags"></i></button>
-			</div>
-		</th>
-	</tr>
-	</thead>
-	<tbody>
-
-	</tbody>
-	</table>`;
-
-const chargesTable = `<div id="chargesTable" style="font-size:0.9em;">
-						<div id="chargesTableHeader">
-							<div class="flexHorizontal" style="background: linear-gradient(90deg, white, lightgray);font-weight: bold;">
-								<span id="chargesTableAA"  style="width:5%;text-align:center;cursor: pointer;" data-filter="aaField"">AA<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:20%; text-align:center;cursor: pointer;" id="chargesTableApostoleas" data-filter="fromField">Αποστολέας<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:20%;text-align:center;cursor: pointer;" id="chargesTableThema" data-filter="subjectField">Θέμα<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:10%text-align:center;cursor: pointer;" id="chargesTableImParal" data-filter="docDate">Ημ.Παραλ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableArEiserx" data-filter="docNumber">Αρ.Εισερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTablePros" data-filter="toField">Προς<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableThemaEkserx" data-filter="toField"outSubjectField">Θέμα Εξερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableImEkserx" data-filter="outDocDate">Ημ.Εξερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:5%;text-align:center;cursor: pointer;" id="chargesTableKatast" data-filter="statusField">Κατάστ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableFolders" >Φάκελοι<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
-								<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableUsers" >Χρέωση<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+const chargesTable = 	`<div id="chargesTable" style="font-size:0.9em;">
+							<div id="chargesTableHeader">
+								<div class="flexHorizontal" style="background: linear-gradient(90deg, white, lightgray);font-weight: bold;">
+									<span id="chargesTableAA"  style="width:5%;text-align:center;cursor: pointer;" data-filter="aaField"">AA<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:20%; text-align:center;cursor: pointer;" id="chargesTableApostoleas" data-filter="fromField">Αποστολέας<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:20%;text-align:center;cursor: pointer;" id="chargesTableThema" data-filter="subjectField">Θέμα<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:10%text-align:center;cursor: pointer;" id="chargesTableImParal" data-filter="docDate">Ημ.Παραλ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableArEiserx" data-filter="docNumber">Αρ.Εισερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTablePros" data-filter="toField">Προς<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableThemaEkserx" data-filter="toField"outSubjectField">Θέμα Εξερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableImEkserx" data-filter="outDocDate">Ημ.Εξερχ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:5%;text-align:center;cursor: pointer;" id="chargesTableKatast" data-filter="statusField">Κατάστ.<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableFolders" >Φάκελοι<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+									<span style="width:10%;text-align:center;cursor: pointer;" id="chargesTableUsers" >Χρέωση<i style="display:none; margin-left:5px;" class="fas fa-chevron-circle-up"></i></span>
+								</div>
 							</div>
-						</div>
-						<div id="chargesTableContent" class="flexVertical" style="background-color:white;margin-top:2em;overflow-y:scroll; max-height: 60vh; gap:10px;">
-						</div>
-					</div>`;
-
-const protocolRecordModal = 
-	`<dialog id="protocolRecordDialog">
-	</dialog>`;
+							<div id="chargesTableContent" class="flexVertical" style="background-color:white;margin-top:2em;overflow-y:scroll; max-height: 60vh; gap:10px;">
+							</div>
+						</div>`;
 
 
-export function getPage(){
-	return page;
+loginData = localStorage.getItem("loginData");
+let cRole = null;
+if (loginData === null){
+	logout();
 }
-
-function generateHash(length) {
-	const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	let result = ' ';
-	const charactersLength = characters.length;
-	for ( let i = 0; i < length; i++ ) {
-		result += characters.charAt(Math.floor(Math.random() * charactersLength));
-	}
-	result = "#"+result;	
-	return result;
-}
-
-async function getProtocolYears(){
-	const res = await runFetch("/api/getProtocolYears.php", "GET", null);
-	if (!res.success){
-		console.log(res.msg);
-		return false;
-	}
-	else{
-		return  res.result;
-	}
-}
-
-function getRoles(){
-	let loginData = localStorage.getItem("loginData");
-	let cRole = null;
-	if (loginData === null){
-		alert("Δεν υπάρχουν στοιχεία χρήστη");
-		return;
-	}
-	else{
-		loginData = JSON.parse(loginData);
-		cRole = localStorage.getItem("currentRole");
-		const roles = loginData.user.roles;
-		return {currentRole : cRole, roles};
-	}
+else{
+	loginData = JSON.parse(loginData);
+	cRole = localStorage.getItem("currentRole");
 }
 
 
 
 export  function startUp(){
-	
+	//Δημιουργία location hash 
 	window.location.hash = generateHash(8);
+	
+	//Προσθήκη storage Listeners για αλλαγές ρόλου και έτους
 	window.addEventListener("storage", async (event) => {
-		console.log("storage changed");
 		const changeUrl = new URL(event.url);
 		if (changeUrl.hash != location.hash){
 			if (event.key === "currentYear"){
-				console.log("year changed")	
 				if (document.querySelector("year-selector")){
 					document.querySelector("year-selector").setAttribute("year", event.newValue);
 				}
@@ -203,7 +91,7 @@ export  function startUp(){
 			}
 		}
 		else{
-			console.log("storage changed from this tab");
+			//Ο κώδικας αυτός έχει νόημα μόνο για αλλαγές στο localStorage που γίνονται απευθείας στο browser, διαφορετικά δεν εκτελείται
 			if (event.key === "currentYear"){
 				console.log("currentYear changed from storage data")
 				//Έλεγχος αν το έτος είναι στα διαθέσιμα της βάσης
@@ -216,23 +104,19 @@ export  function startUp(){
 				}
 				const protocolYears = protocolYearsRes.result;
 				if (protocolYears.includes(event.newValue)){
-					console.log("year is included in database years table")
 					if (document.querySelector("year-selector")){
 						document.querySelector("year-selector").setAttribute("year", event.newValue);
 					}
 				}
 				else {
 					//Το έτος δεν ανήκει στα διαθέσιμα
-					console.log("resetting year")
 					localStorage.setItem("currentYear", event.oldValue);
 					return;
 				}
 			}
 			if (event.key === "currentRole"){
-				console.log("currentRole changed from storage data")
 				//Έλεγχος αν το έτος είναι στα διαθέσιμα της βάσης
 				const {currentRole, roles} =  getRoles();
-				console.log(roles)
 				if ( (event.newValue >=0) && (event.newValue <= (roles.length-1))){
 					console.log("role is included in database roles")
 					if (document.querySelector("role-selector")){
@@ -241,7 +125,6 @@ export  function startUp(){
 				}
 				else {
 					//Το έτος δεν ανήκει στα διαθέσιμα
-					console.log("resetting role")
 					localStorage.setItem("currentRole", event.oldValue);
 					return;
 				}
@@ -249,212 +132,35 @@ export  function startUp(){
 		}
 	});
 
-	
-	//console.log("common page code executing...");
-	if (document.querySelector("#myNavBar")!==null){
-		document.querySelector("#myNavBar").remove();
-	}
-	if (document.querySelector("#headmasterExtraMenuDiv")!==null){
-		document.querySelector("#headmasterExtraMenuDiv").remove();
-	}
-	if (document.querySelector("#uploadBtn")!==null){
-		document.querySelector("#uploadBtn").remove();
-	}
-	if (document.querySelector("#uploadModal")!==null){
-		document.querySelector("#uploadModal").remove();
-	}
-	if (document.querySelector("#passwordModal") !== null){
-		document.querySelector("#passwordModal").remove();
-	}
-	if (document.querySelector("#fileOpenDialog") !== null){
-		document.querySelector("#fileOpenDialog").remove();
-	}
-
-	document.body.insertAdjacentHTML("beforeend", fileOpenModal);
-	document.body.insertAdjacentHTML("beforeend", fileMoveModal);
-	document.body.insertAdjacentHTML("beforeend", addProtocolModal);
-	document.body.insertAdjacentHTML("beforeend", requestProtocolAccessModal);
-	
-	if (document.querySelector("#loadingDialog")){
-		document.querySelector("#loadingDialog").remove();
-	}
-	document.body.insertAdjacentHTML("beforeend",loadingModal);
-
-	const uploadModal = `<dialog id="uploadModal" class="customDialog"></dialog>`;
-	document.body.insertAdjacentHTML("afterbegin",uploadModal);
-	//console.log("upload added");
-
-	document.body.insertAdjacentHTML("afterbegin",navBarDiv);
-	document.body.insertAdjacentHTML("beforeend",passwordModalDiv);
-
-	document.querySelector("#prosIpografi>a").addEventListener("click",()=>{
-		if(!document.startViewTransition){
-			createUIstartUp();
+	document.querySelector("#myNavBar").addEventListener("click", (event) =>{
+		if (event.target.tagName === "SPAN"){
+			let funcToRun = null;
+			switch (event.target.parentNode.parentNode.id){
+				case "prosIpografi":
+					funcToRun = createUIstartUp;
+					break;
+				case "ipogegrammena":
+					funcToRun = createSignedUIstartUp;
+					break;
+				case "xreoseis":
+					funcToRun = createChargesUIstartUp;
+					break;
+				case "protocolBookBtn":
+					funcToRun = createProtocolUIstartUp;
+					break;
+			}
+			if(!document.startViewTransition){
+				funcToRun();
+			}
+			else{
+				document.startViewTransition(()=>{
+					funcToRun();
+				})
+			}
 		}
-		else{
-			document.startViewTransition(()=>{
-				createUIstartUp();
-			})
-		}
-	});
-	document.querySelector("#ipogegrammena>a").addEventListener("click",()=>{
-		if(!document.startViewTransition){
-			createSignedUIstartUp();
-		}
-		else{
-			document.startViewTransition(()=>{
-				createSignedUIstartUp();
-			})
-		}
-	});	
-	document.querySelector("#xreoseis>a").addEventListener("click",()=>{
-		if(!document.startViewTransition){
-			createChargesUIstartUp();
-		}
-		else{
-			document.startViewTransition(()=>{
-				createChargesUIstartUp();
-			})
-		}	
-	});	
-	document.querySelector("#protocolBookBtn>a").addEventListener("click",()=>{
-		if(!document.startViewTransition){
-			createProtocolUIstartUp();
-		}
-		else{
-			document.startViewTransition(()=>{
-				createProtocolUIstartUp();
-			})
-		}
-	});		
-
-	createUIstartUp();
-}
-
-function pagesCommonCode(){
-	loginData = localStorage.getItem("loginData");
-	let cRole = null;
-	if (loginData === null){
-		logout();
-	}
-	else{
-		loginData = JSON.parse(loginData);
-		//Πρόσβαση στο Πρωτόκολλο λεκτικό
-		cRole = localStorage.getItem("currentRole");
-	}
-	
-	//--------- Μεταφέρθηκαν στο starτUp()
-
-	const extraMenuDiv = 	`<div id="headmasterExtraMenuDiv">
-								<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton primary"><i class="fas fa-sync"></i></button>
-								<div class="flexVertical" id="uploadBtnDiv"></div>
-								<!--<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal"><i class="fab fa-usb"></i></button>-->
-								<div id="outerFilterDiv" class="flexHorizontal smallPadding" style="align-items: flex-start;">
-									<div id="generalFilterDiv" class="flexHorizontal ">
-										<input id="tableSearchInput" autocomplete="off" type="text" placeholder="Αναζήτηση" >
-										<button data-active="0" class="isButton extraSmall dismiss" id="showEmployeesBtn">Προσωπικά</button>
-										<button data-active="0" class="isButton extraSmall dismiss" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
-									</div>
-								</div>
-								<div id="recentProtocolsDiv"></div>
-							</div>
-							<div id="filterDownDiv" class="flexHorizontal" style="background-color:#f3ecec; justify-content: center; align-items:center; gap:15px;" ></div>`;
-
-	if (document.body.querySelector("#headmasterExtraMenuDiv")){
-		document.body.querySelector("#headmasterExtraMenuDiv").remove();
-	}
-	if (document.body.querySelector("#filterDownDiv") !== null){
-		document.body.querySelector("#filterDownDiv").remove();
-	}
-
-	document.querySelector("#myNavBar").insertAdjacentHTML("afterend",extraMenuDiv);
-
-
-	if (document.querySelector("#chargesTable")!==null){
-		document.querySelector("#chargesTable").remove();
-	}
-	if (document.querySelector("#protocolRecordDialog")!==null){
-		document.querySelector("#protocolRecordDialog").remove();
-	}
-	if (document.querySelector("#dataToSignTable")!==null){
-		document.querySelector("#dataToSignTable").remove();
-	}
-	if(document.querySelector("#pageSelectorDiv")){
-		document.querySelector("#pageSelectorDiv").remove();	
-	}
-
-	switch (page){
-		case Pages.SIGNATURE :
-			document.body.insertAdjacentHTML("beforeend",signTable);
-			document.querySelector("#ipogegrammena>a").classList.remove("active");
-			document.querySelector("#xreoseis>a").classList.remove("active");
-			document.querySelector("#protocolBookBtn>a").classList.remove("active");
-			document.querySelector("#prosIpografi>a").classList.add("active");
-			break;
-		case Pages.SIGNED :
-			document.body.insertAdjacentHTML("beforeend",signTable);
-			document.querySelector("#ipogegrammena>a").classList.add("active");
-			document.querySelector("#xreoseis>a").classList.remove("active");
-			document.querySelector("#prosIpografi>a").classList.remove("active");
-			document.querySelector("#protocolBookBtn>a").classList.remove("active");
-			break;
-		case Pages.CHARGES :
-			document.body.insertAdjacentHTML("beforeend",chargesTable);
-			document.body.insertAdjacentHTML("beforeend",protocolRecordModal);
-			document.querySelector("#ipogegrammena>a").classList.remove("active");
-			document.querySelector("#prosIpografi>a").classList.remove("active");
-			document.querySelector("#protocolBookBtn>a").classList.remove("active");
-			document.querySelector("#xreoseis>a").classList.add("active");
-			break;
-		case Pages.PROTOCOL :
-			document.body.insertAdjacentHTML("beforeend",chargesTable);
-			document.body.insertAdjacentHTML("beforeend",protocolRecordModal);
-			document.querySelector("#ipogegrammena>a").classList.remove("active");
-			document.querySelector("#prosIpografi>a").classList.remove("active");
-			document.querySelector("#xreoseis>a").classList.remove("active");
-			document.querySelector("#protocolBookBtn>a").classList.add("active");	
-		break;
-		default :
-			alert("Σελίδα μη διαθέσιμη");
-			return;
-	}
-
-	//Πρόσβαση στο Πρωτόκολλο λεκτικό
-	
-	if (cRole !== null){
-		if (+loginData.user.roles[cRole].protocolAccessLevel){
-			document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
-		}
-		else{
-			document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
-		}
-	}
-	else{
-		alert("Δεν υπάρχουν στοιχεία ιδιότητας χρήστη");	
-	}
-
-	//Πρόσβαση στο Παρουσιολόγιο
-	//if (+loginData.user.roles[cRole].privilege){
-		//const adeiesBtn = '<div><a target="_blank" href="/adeies/index.php">Άδειες</a></div>';
-		//document.querySelector("#protocolBookBtn").insertAdjacentHTML("afterend",adeiesBtn);
-	//}
-
-	//const basicBtns ='<li><a class="dropdown-item" id="changePwdBtn">Αλλαγή Κωδικού</a></li>';
-	//document.querySelector("#userRoles").innerHTML = basicBtns;
-	document.querySelector("#myNavBarLogoContent").innerHTML = loginData.user.user;
-	document.querySelector("#myNavBarLogoContent").innerHTML += pwdBtn;
-	document.querySelector("#myNavBarLogoContent").innerHTML += logoutBtn;
-
-	if (document.querySelector("#roleSelectorDiv") == null ){
-		document.querySelector("#uploadBtnDiv").insertAdjacentHTML("afterend",`<role-selector id="roleSelectorDiv"></role-selector>`);
-	}
-
-	document.querySelector("#roleSelectorDiv").addEventListener("roleChangeEvent", async ()=>{
-		let debounceFunc = debounce( async () =>  {
-			const res = await roleChanged();  // το await αφορά μόνο το SESSION
-		});
-		debounceFunc();
 	})
+	document.querySelector("#myNavBarLogoContent").innerHTML += loginData.user.user;
+	createUIstartUp();
 
 	document.querySelector("#logoutBtn").addEventListener("click",logout);	
 	document.querySelector("#changePwdBtn").addEventListener("click",()=>{
@@ -469,7 +175,35 @@ function pagesCommonCode(){
 	document.querySelector("#showNewPass2Btn").addEventListener("click",()=>showPass('newPwd2'));
 
 	document.querySelector("#setPwd").addEventListener("click",changePassword);	
+}
 
+function pagesCommonCode(){
+	
+	const extraMenuDiv = 	`<div id="headmasterExtraMenuDiv">
+								<button id="syncRecords" title="Ανανέωση εγγραφών" type="button" class="isButton primary"><i class="fas fa-sync"></i></button>
+								<div class="flexVertical" id="uploadBtnDiv"></div>
+								<role-selector id="roleSelectorDiv"></role-selector>
+								<div id="outerFilterDiv" class="flexHorizontal smallPadding" style="align-items: flex-start;">
+									<div id="generalFilterDiv" class="flexHorizontal ">
+										<input id="tableSearchInput" autocomplete="off" type="text" placeholder="Αναζήτηση" >
+										<button data-active="0" class="isButton extraSmall dismiss" id="showEmployeesBtn">Προσωπικά</button>
+										<button data-active="0" class="isButton extraSmall dismiss" id="showToSignOnlyBtn">Πορεία Εγγρ.</button>
+									</div>
+								</div>
+								<div id="recentProtocolsDiv"></div>
+							</div>
+							<div id="filterDownDiv" class="flexHorizontal" style="background-color:#f3ecec; justify-content: center; align-items:center; gap:15px;" ></div>`;
+
+	removeElementsOnPageChange();
+	document.querySelector("#myNavBar").insertAdjacentHTML("afterend",extraMenuDiv);
+	refreshNavBar();
+
+	document.querySelector("#roleSelectorDiv").addEventListener("roleChangeEvent", async ()=>{
+		let debounceFunc = debounce( async () => {
+			const res = await roleChanged();  
+		});
+		debounceFunc();
+	})
 
 	if (page == Pages.SIGNATURE || page == Pages.SIGNED){
 		if (document.querySelector('#showEmployeesBtn')){
@@ -481,7 +215,6 @@ function pagesCommonCode(){
 	}
 
 	document.querySelector("#filterDownDiv").innerHTML = "";
-	
 
 	document.querySelector("#syncRecords").addEventListener("click", async ()=>  { 
 		let res = null;
@@ -514,6 +247,67 @@ function pagesCommonCode(){
 	}	
 	paggingPage = 0;
 
+}
+
+function removeElementsOnPageChange(){
+	if (document.body.querySelector("#headmasterExtraMenuDiv")){
+		document.body.querySelector("#headmasterExtraMenuDiv").remove();
+	}
+	if (document.body.querySelector("#filterDownDiv") !== null){
+		document.body.querySelector("#filterDownDiv").remove();
+	}
+	if (document.querySelector("#chargesTable")!==null){
+		document.querySelector("#chargesTable").remove();
+	}
+	if (document.querySelector("#dataToSignTable")!==null){
+		document.querySelector("#dataToSignTable").remove();
+	}
+	if(document.querySelector("#pageSelectorDiv")){
+		document.querySelector("#pageSelectorDiv").remove();	
+	}
+}
+
+function refreshNavBar(){
+	document.querySelector("#ipogegrammena>a").classList.remove("active");
+	document.querySelector("#xreoseis>a").classList.remove("active");
+	document.querySelector("#prosIpografi>a").classList.remove("active");
+	document.querySelector("#protocolBookBtn>a").classList.remove("active");
+
+	switch (page){
+		case Pages.SIGNATURE :
+			document.body.insertAdjacentHTML("beforeend",signTable);
+			document.querySelector("#prosIpografi>a").classList.add("active");
+			break;
+		case Pages.SIGNED :
+			document.body.insertAdjacentHTML("beforeend",signTable);
+			document.querySelector("#ipogegrammena>a").classList.add("active");
+			break;
+		case Pages.CHARGES :
+			document.body.insertAdjacentHTML("beforeend",chargesTable);
+			//document.body.insertAdjacentHTML("beforeend",protocolRecordModal);
+			document.querySelector("#xreoseis>a").classList.add("active");
+			break;
+		case Pages.PROTOCOL :
+			document.body.insertAdjacentHTML("beforeend",chargesTable);
+			//document.body.insertAdjacentHTML("beforeend",protocolRecordModal);
+			document.querySelector("#protocolBookBtn>a").classList.add("active");	
+		break;
+		default :
+			alert("Σελίδα μη διαθέσιμη");
+			return;
+	}
+	
+	if (cRole !== null){
+		if (+loginData.user.roles[cRole].protocolAccessLevel){
+			document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
+		}
+		else{
+			document.querySelector("#protocolAppText").textContent = "Χρεώσεις";
+		}
+	}
+	else{
+		alert("Δεν υπάρχουν στοιχεία ιδιότητας χρήστη");	
+	}
 }
 
 function removeIntervals(){
@@ -1291,16 +1085,6 @@ async function fixRole(){
 }
 
 async function roleChanged(){
-	//localStorage.setItem("currentRole",index);	24-10-23
-	//Προσοχή να αφαιρεθεί!!!!!!!!!!!!!!
-	//await fixRole(); // Θα αφαιρεθεί όταν απαλλαγεί και το πρωτόκολλο από τα  SESSION. Αλλάζει το χρήστη στο SESSION
-	// -----------------------------------------------------------								
-	//updateRolesUI();								24-10-23
-
-	//document.querySelector("#prosIpografi>a").addEventListener("click",createUIstartUp);
-	//document.querySelector("#ipogegrammena>a").addEventListener("click",createSignedUIstartUp);	
-	//document.querySelector("#xreoseis>a").addEventListener("click",createChargesUIstartUp);	
-	//document.querySelector("#protocolBookBtn>a").addEventListener("click",createProtocolUIstartUp);		
 
     switch (page){
         case Pages.SIGNATURE :
@@ -1320,7 +1104,7 @@ async function roleChanged(){
             return;
     }
 
-	let cRole = localStorage.getItem("currentRole");
+	cRole = localStorage.getItem("currentRole");
 	if (cRole !== null){
 		if (+loginData.user.roles[cRole].protocolAccessLevel){
 			document.querySelector("#protocolAppText").textContent = "Διαχειριστής";
@@ -1856,5 +1640,47 @@ async function removeNotifications(){
 	}
 	else{
 		res = await getChargesAndFill();
+	}
+}
+
+
+export function getPage(){
+	return page;
+}
+
+function generateHash(length) {
+	const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	let result = ' ';
+	const charactersLength = characters.length;
+	for ( let i = 0; i < length; i++ ) {
+		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	result = "#"+result;	
+	return result;
+}
+
+async function getProtocolYears(){
+	const res = await runFetch("/api/getProtocolYears.php", "GET", null);
+	if (!res.success){
+		console.log(res.msg);
+		return false;
+	}
+	else{
+		return  res.result;
+	}
+}
+
+function getRoles(){
+	let loginData = localStorage.getItem("loginData");
+	let cRole = null;
+	if (loginData === null){
+		alert("Δεν υπάρχουν στοιχεία χρήστη");
+		return;
+	}
+	else{
+		loginData = JSON.parse(loginData);
+		cRole = localStorage.getItem("currentRole");
+		const roles = loginData.user.roles;
+		return {currentRole : cRole, roles};
 	}
 }
