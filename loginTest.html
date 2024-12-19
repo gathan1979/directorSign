@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<html lang="el" style="height:100%">
+	<head>
+
+			<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<title>Ηλεκτρονικές Υπηρεσίες Εγγράφων</title>
+		
+				<!-- Bootstrap core CSS 
+			<link rel="stylesheet" type="text/css" href="/libraries/fontawesome-free-5.15.4-web/css/all.css" />-->
+			
+			<link rel="icon" type="image/png" href="/directorSign/css/images/server4.png">
+			<link rel="stylesheet" type="text/css" href="css/custom.css" />
+			<link rel="stylesheet" type="text/css" href="/libraries/fontawesome-free-5.15.4-web/css/all.css" >
+			
+			<script type="module">
+				import runFetch from "./modules/CustomFetch.js";
+				import Keycloak from './node_modules/keycloak-js/lib/keycloak.js'
+				
+				const LOGS = {APACHE : 0, PHP : 1, LIQUIBASE : 2}
+
+				
+				const defaultSettings = {
+					'#header@background-color': "#99614d",
+					'#topMenu@background-color' : "#99614d",
+					'.protocol@background-color':"#f5f5dc",
+					'.report@background-color':"#90ee90",
+					'.report@display':"none",
+					'body@background-color':"#ffffff",
+					'body@color':"#000000"
+				}
+
+				
+				const keycloak = new Keycloak({
+					url: "https://10.142.49.91:8443/",
+					realm: "pde",
+					clientId: "public-client"
+				});
+
+				try {
+					console.log("go to login")
+					const authenticated = await keycloak.init();
+					console.log(authenticated)
+					console.log("after login")
+					if (authenticated) {
+						console.log(keycloak)
+						//window.location = "loginTest.html";
+					} else {
+						keycloak.login();
+						console.log('User is not authenticated');
+					}
+				} catch (error) {
+					console.error('Failed to initialize adapter:', error);
+				}		
+
+			</script>
+			
+
+		
+	</head>
+	
+	<body style="font-family: roboto; ">
+		<div id="containerDiv" style="display:flex; flex-direction: column;align-items: center;padding-top: 3em;">
+			<div id="loginDiv" style="box-shadow: 0.5em 0.5em rgba(255,215,0,0.5); border-style:solid; background-color: white; display:flex; flex-direction: column; gap: 10px; width: 450px;padding: 2em; border-radius : 10px; color: black">
+				<div id="logoContainer"  style="display:flex; justify-content: center; margin-bottom:60px;margin-top:20px;gap:10px; align-items:center;">
+					<div><img src="css/images/aianiHorseEdge3.png" alt="logoimage" style="width:60px; "></div>
+					<div><label class="titlos">Αιανός</label></div>
+					<div><i id="logDialogBtn" class="fab fa-docker fa-2x" style="cursor: pointer;"></i></div>
+				</div >
+				<div  style="display:flex; flex-direction: column; gap: 10px; ">
+						<div  style="display: flex; flex-direction: row; justify-content: space-between;">
+							<label for="name" >ΟΝΟΜΑ ΧΡΗΣΤΗ</label>
+							<input  id="name" name="name" value="" placeholder="ΕΠΙΛΕΞΤΕ ΑΠΟ ΤΗ ΛΙΣΤΑ"/>
+						</div>
+						<div  style="display: flex; flex-direction: row; justify-content: space-between;">
+							<label for="pass" >ΚΩΔΙΚΟΣ</label>
+							<input type="password"  id="pass" name="pass" placeholder="ΚΩΔΙΚΟΣ ΠΡΟΣΒΑΣΗΣ" />
+						</div>
+						<div style="display:none;color:red" id="caps">Προσοχή! Το πλήκτρο CapsLock είναι ενεργοποιημένο</div>
+						<div style="display:none;color:red" id="lang">Προσοχή! Δε γράφετε στην Αγγλική Γλώσσα</div>
+						<button class="isButton active" style="margin-top : 0.5em;height:40px;" type="button"  id="submit_form1">Σύνδεση</button>
+				</div>
+
+			</div>
+			<div  style="display:flex; flex-wrap: wrap; margin-top : 3em; width: 80%; justify-content: center;" id="nameList"></div>
+			<div id="bottomSection" style="margin-top:4em;"></div>
+		</div>
+
+		<dialog id="logModal" class="customDialog" style="width:clamp(600px, 800px, 800px); margin-top: 0; margin-bottom:0; top:30px;"> 
+			<div class="customDialogContentTitle">
+				<span style="font-weight:bold;">Εμφάνιση Εκδόσεων Εφαρμογής</span>
+				<div class="topButtons" style="display:flex;gap: 7px;">
+					<button class="isButton " name="closelogModalBtn" id="closelogModalBtn" title="Κλείσιμο παραθύρου"><i class="far fa-times-circle"></i></button>
+				</div>
+			</div>
+			<div class="customDialogContent" style="margin-top:10px;">
+				<div id="currentVersionsDiv" style="display:flex; gap:15px;"></div>
+				<div id="log"></div>
+				
+			</div>
+		</dialog>
+	</body>
+</html>
