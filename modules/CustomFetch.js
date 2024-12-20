@@ -20,10 +20,10 @@ async function fetchAuthHeader(url){
         }
     }
     else{
-        const {jwt,role} = getFromLocalStorage() || {};	
+        const {jwt,role,loginData} = getFromLocalStorage() || {};	
         if (jwt !== undefined){
             myHeaders.append('Authorization', jwt);
-            return {myHeaders, role};    
+            return {myHeaders, role, id: loginData.user.id};    
         }
         else{
             const init = {method: "POST"};
@@ -35,7 +35,7 @@ async function fetchAuthHeader(url){
 }
 
 export default async function runFetch(url, method, params, responseType = FetchResponseType.json, signal = null){   //params FormData || URLSearchParams || null
-    const {myHeaders, role} = await fetchAuthHeader(url);
+    const {myHeaders, role, id} = await fetchAuthHeader(url);
     let  res;
     let init ={method, headers : myHeaders};
     let msg = "";
@@ -46,6 +46,7 @@ export default async function runFetch(url, method, params, responseType = Fetch
             params = new FormData();
         }
         params.append("currentRole", role);
+        params.append("currentId", id);
         if (!params.has("currentYear")){
             params.append("currentYear", currentYear);
         }
@@ -56,6 +57,7 @@ export default async function runFetch(url, method, params, responseType = Fetch
             params = new URLSearchParams();
         }
         params.append("currentRole", role);
+        params.append("currentId", id);
         if (!params.has("currentYear")){
             params.append("currentYear", currentYear);
         }

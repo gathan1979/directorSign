@@ -40,25 +40,50 @@
 					});
 
 					try {
-						keycloak.init({onLoad: 'login-required'}).then((authenticated) => {
+						keycloak.init({onLoad: 'login-required'}).then(async (authenticated) => {
 							if (authenticated) {
+
 								const token = keycloak.token;
 								const tokenParsed = keycloak.tokenParsed;
-								loginDataObject ={};
+
+								let loginDataObject ={};
 								loginDataObject.jwt = keycloak.token;
 								loginDataObject.user = {};
 								loginDataObject.user.user = keycloak.tokenParsed.name;
-								loginDataObject.user.signatureSch = keycloak.tokenParsed.name??"";
+								loginDataObject.user.signatureSch = keycloak.tokenParsed.signatureSch??"";
+								loginDataObject.user.aa_staff = keycloak.tokenParsed.email.split("temp_email")[1].split("@")[0];
+								loginDataObject.user.aa_user = keycloak.tokenParsed.email.split("temp_email")[1].split("@")[0];
+								loginDataObject.user.roles = keycloak.tokenParsed.groups.map(group => {
+									let temp = {};
+									temp.aa_role = group;
+									temp.accessLevel = group.split("/").at(-1).includes("director")?1:0;
+									temp.canPublish = keycloak.tokenParsed.generalRoles.find(el=> el==="canPublish")!==undefined?1:0;
+									temp.canSignAsLast = group.split("/").at(-1).includes("director")?1:0;
+									temp.department = group;
+									temp.departmentName = group.split("/").at(-2)??"";
+									temp.prime = keycloak.tokenParsed.primeRole;
+									temp.protocolAccessLevel = group;
+									temp.roleName = `${(temp.accessLevel===1?"ΠΡΟΪΣΤ.":"ΥΠΑΛΛΗΛΟΣ")} ${group.split("/").at(-2)??""}`;
+									temp.signatureSch = keycloak.tokenParsed.signatureSch??"";
+									return temp;
+								});
+								loginDataObject.user.protocolAdmin = keycloak.tokenParsed.generalRoles.find(el=> el==="protocolAdmin")!==undefined?1:0;
+								loginDataObject.user.canPublish = keycloak.tokenParsed.generalRoles.find(el=> el==="canPublish")!==undefined?1:0;
+								loginDataObject.user.primeRole = keycloak.tokenParsed.primeRole;
+								loginDataObject.user.id = keycloak.tokenParsed.sub;
 
 								const settingFromStorage = JSON.parse(localStorage.getItem("settings")) ?? defaultSettings;
 								localStorage.clear();
 								localStorage.setItem("settings", JSON.stringify(settingFromStorage));
 								//const loginData = await res.json();
-								localStorage.setItem("loginData", JSON.stringify(result.loginData));
+								localStorage.setItem("loginData", JSON.stringify(loginDataObject));
 								//console.log(JSON.parse(localStorage.getItem("loginData")));
 								localStorage.setItem("currentRole",0);
-								location.href= "signatures_test.html";
 								localStorage.removeItem('filter');
+								const formData = new FormData();
+								formData.append("refreshToken", keycloak.refreshToken);
+								await runFetch("/api/saveKeycloakRefreshToken.php","POST", formData);
+								location.href= "signatures_test.html";
 							}
 						})
 					} catch (error) {

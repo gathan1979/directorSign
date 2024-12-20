@@ -60,5 +60,41 @@ export async function refreshTokenTest(){
 	return peddingReq;
 }
 
+export async function refreshTokenKeycloak(){
+	//console.log(isRunning+".. τρέχει ")
+	if (!isRunning){
+		peddingReq = new Promise((resolve,reject)=>{
+			isRunning = true;
+			const loginData = JSON.parse(localStorage.getItem("loginData"));
+			//console.log(loginData.user.aa_staff);
+			const params = new URLSearchParams({
+				aa_staff: loginData.user.aa_staff
+			});
+			fetch("/api/refreshTokenKeycloak.php",{method: "POST"}).then((res)=>{
+				if (res.ok){
+					if (res.status >= 200 && res.status <= 299) {
+						res.json().then((val)=>{
+							loginData.jwt = val;
+							localStorage.setItem("loginData",JSON.stringify(loginData));
+							resolve(1);
+						})
+					}
+					else{	
+						 resolve(0);;
+					}
+				}
+				else{
+					res.json().then((val)=>{
+						console.log(val['message']);
+						resolve(0);
+					})
+				}
+				isRunning = false;
+			}) 
+			//console.log("refresh token running");
+		})
+	}
+	return peddingReq;
+}
 
 
