@@ -249,7 +249,7 @@ export async function getSigRecords(signal, controllers) {
 		}
 	}
 
-	const res = await runFetch("/api/getSigRecords.php", "GET", null, undefined, signal);
+	const res = await runFetch("/api/signatures", "GET", null, undefined, signal);
 	if (!res.success){
 		alert(res.msg);
 	}

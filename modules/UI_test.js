@@ -2,6 +2,7 @@ import {createActionsTemplate,getSigRecords, getSignedRecords, fillTableWithSign
 import createFilter,{updateBtnsFromFilter, createSearch, pagingStart, pagingSize} from "./Filter.js";
 import {getFilteredData, getProtocolData,openProtocolRecord, printChangedRecords} from "./ProtocolData.js";
 import runFetch from "./CustomFetch.js";
+import {Logout} from "../Classes/Logout.js"
 
 let loginData = null;
 let page = null;
@@ -159,6 +160,7 @@ export  function startUp(){
 			}
 		}
 	})
+
 	document.querySelector("#myNavBarLogoContent").innerHTML += loginData.user.user;
 	createUIstartUp();
 
@@ -1207,18 +1209,10 @@ export async function getProtocolAndFill(){
 
 
 async function logout(){
-	const res = await runFetch("/api/logout.php", "POST", null);
-	const settingFromStorage = localStorage.getItem("settings")!==null? JSON.parse(localStorage.getItem("settings")): {};
-	if (!res.success){
-		alert(res.msg);
-		localStorage.clear();
-		
+	const logoutObject = new Logout(); // default keycloak logout και επανεγγραφή settings
+	if (logoutObject.logout()){
+		console.log("logout success")
 	}
-	else{
-		localStorage.clear();
-	}
-	localStorage.setItem("settings", JSON.stringify(settingFromStorage));
-	window.location.href ="/directorSign";
 }
 
 //--------------------------------------- ΕΤΙΚΕΤΕΣ -------------------------------------------

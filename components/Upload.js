@@ -211,7 +211,7 @@ class Upload extends HTMLElement {
 
     }
 
-    async uploadFileTest(uploadURL="/api/uploadSigFiles.php",reloadNo = this.reuploadNo){
+    async uploadFileTest(uploadURL="/api/signatures",reloadNo = this.reuploadNo){
         const files = this.shadow.getElementById('selectedFile').files;
         let numFiles = files.length;
         let data = new FormData();
@@ -248,7 +248,7 @@ class Upload extends HTMLElement {
         
         data.append('numFiles',numFiles);
             
-        const res = await runFetch("/api/uploadSigFiles.php", "POST", data);
+        const res = await runFetch(uploadURL, "POST", data);
         if (!res.success){
             alert(res.msg);
         }
@@ -256,7 +256,7 @@ class Upload extends HTMLElement {
             //this.shadow.querySelector("#loadingDialog").close();
             //this.shadow.querySelector("#viewSelectedFiles").innerHTML = "";
             //this.shadow.querySelector("#selectedFile").value = null;
-            const uploadEvent = new CustomEvent("uploadEvent",  { bubbles: true, cancelable: false });
+            const uploadEvent = new CustomEvent("uploadEvent",  {});
             this.dispatchEvent(uploadEvent);
             //const records = getSigRecords().then( res => {
             //    createSearch();

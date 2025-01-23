@@ -1,11 +1,13 @@
-import { refreshTokenTest } from "./RefreshToken.js";
+import { refreshTokenKeycloak } from "./RefreshToken.js";
 import getFromLocalStorage from "./LocalStorage.js";
+
 
 export const FetchResponseType = {
     json : "json",
     blob : "blob",
     text : "text"
 }
+
 
 async function fetchAuthHeader(url){
     const myHeaders = new Headers();
@@ -76,18 +78,16 @@ export default async function runFetch(url, method, params, responseType = Fetch
             }
             //-------------
             if (res.status == 401){
-                if (resdec.message){
-                    if (resdec.message.includes("authFailed")){
-                        if (resdec.message.includes("email")){
-                            msg="Σφάλμα αυθεντικοποίησης αλληλογραφιας. Αποσυνδεθείτε και επανασυνδεθείτε";
-                        }
-                        if (resdec.message.includes("mindigital")){
-                            msg="Σφάλμα αυθεντικοποίησης υπογραφών. Αποσυνδεθείτε και επανασυνδεθείτε";
-                        }
-                        else{
-                            msg="Σφάλμα αυθεντικοποίησης";
-                        }
-                    }  
+                if (resdec.message && resdec.message.includes("authFailed")){
+                    if (resdec.message.includes("email")){
+                        msg="Σφάλμα αυθεντικοποίησης αλληλογραφιας. Αποσυνδεθείτε και επανασυνδεθείτε";
+                    }
+                    if (resdec.message.includes("mindigital")){
+                        msg="Σφάλμα αυθεντικοποίησης υπογραφών. Αποσυνδεθείτε και επανασυνδεθείτε";
+                    }
+                    else{
+                        msg="Σφάλμα αυθεντικοποίησης";
+                    } 
                 }
                 else{
                     if (role === null){
@@ -99,15 +99,15 @@ export default async function runFetch(url, method, params, responseType = Fetch
                         return;  
                     }
                     else{
-                        const resRef = await refreshTokenTest();
-                        console.log("o "+url+" περιμένει...λέμε τώρα");
-                        if (resRef === 1){
+                        const resRef = await refreshTokenKeycloak();
+                        console.log(resRef);
+                        if (resRef === true){
                             const rerunRes = await runFetch(url, method, params, responseType, signal);
                             return rerunRes;
                         }
                         else{
                             msg = ("Σφάλμα εξουσιοδότησης");
-                            window.location = "/directorSign/";	
+                            window.location = "/directorSign/index.html";	
                             return;
                         }
                     }
