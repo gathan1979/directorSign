@@ -269,7 +269,7 @@ class RequestRecordAccess extends HTMLElement {
     async getFolderList(){
        
         const urlpar = new URLSearchParams({asList: 1});
-        const res = await runFetch("/api/getFoldersList.php", "GET", urlpar);
+        const res = await runFetch("/api/folders", "GET", urlpar);
         if (!res.success){
             return null;
         }
@@ -280,7 +280,7 @@ class RequestRecordAccess extends HTMLElement {
     }
 
     async getActiveYears(){
-        const res = await runFetch("/api/getActiveYears.php", "GET");
+        const res = await runFetch("/api/years", "GET");
         if (!res.success){
             console.log(res.msg);
         }

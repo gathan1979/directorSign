@@ -327,7 +327,6 @@ export function fillTableToBeSigned(result){
 		alert("Δεν υπάρχουν πληροφορίες ιδιότητας χρήστη");
 		return null;
 	}
-
 	for (let key=0;key<result.length;key++) {
 		//document.querySelector("#"+tableName+">tr")
 		let row = table.insertRow(-1); // We are adding at the end
@@ -346,29 +345,43 @@ export function fillTableToBeSigned(result){
 
 		let temp1=[];
 		let filenameBtn = "";
+		let primaryFileIndex = 0;
 
-		let relevantDocs = result[key].relevantDocs;
-		let relevantDocsArray = relevantDocs.split("*");
+		let relevantDocsArray =  result[key].files;
 		let relevantDocsElement = "";
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")){
 			for (let l=0;l<relevantDocsArray.length;l++){
-				relevantDocsElement +='<i style="cursor : pointer;" id="rel_btn_'+result[key]['aa']+'_'+l+'" class="fas fa-paperclip" title="'+relevantDocsArray[l]+'"></i>';
+				if (+relevantDocsArray[l]['isPrimary'] === 0){
+					relevantDocsElement +=`<i style="cursor: pointer;" data-id="${relevantDocsArray[l]['aa']}" id="relevant_doc_${relevantDocsArray[l]['aa']}" class="fas fa-paperclip" title="${relevantDocsArray[l]['fileName']}"></i>`;
+				}
+				else{
+					primaryFileIndex = l;
+				}
 			}
 		}
-		
+		console.log("is exact :"+result[key].isExactCopy)
 		if (!result[key].isExactCopy){
-			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-warning btn-sm" >'+result[key]['filename']+'</button>'+((accessLevel==1) && (result[key].currentDep == department)?`<input type="checkbox" checked>`:`<input type="checkbox" disabled>`)+'<i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
+			filenameBtn = 	`<div class="filenameDiv">
+								<button style="width:70%;" data-id="${relevantDocsArray[primaryFileIndex]['aa']}" id="primary_file_${relevantDocsArray[primaryFileIndex]['aa']}" class="btn btn-warning btn-sm" >
+									${relevantDocsArray[primaryFileIndex]['fileName']}
+								</button>
+								${((accessLevel==1) && (result[key].currentDep == department)?`<input type="checkbox" checked>`:`<input type="checkbox" disabled>`)}
+								<i id="btn_${relevantDocsArray[primaryFileIndex]['aa']}_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>${relevantDocsElement}
+							</div>`;
 		}
 		else{
-			filenameBtn = '<div class="filenameDiv"><button style="width:70%;" id="btn_'+result[key]['aa']+'" class="btn btn-info btn-sm" >'+result[key]['filename']+'</button>'+`<input type="checkbox" checked>`+'<i id="btn_'+result[key]['aa']+'_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>'+relevantDocsElement+'</div>';
+			filenameBtn = 	`<div class="filenameDiv">
+								<button style="width:70%;" data-id="${relevantDocsArray[primaryFileIndex]['aa']}" id="exact_copy_${relevantDocsArray[primaryFileIndex]['aa']}" class="btn btn-info btn-sm" >
+									${relevantDocsArray[primaryFileIndex]['fileName']}
+								</button><input type="checkbox" checked>
+								<i id="btn_${relevantDocsArray[primaryFileIndex]['aa']}_position" class="isButton outline fas fa-crosshairs fa-1x" title="Επιλογή θέσης υπογραφής" ></i>${relevantDocsElement}
+							</div>`;
 		}
-
-		let attention = ""
+		let attention = "";
 		if (result[key].objection>0){
 			attention = '<span style="margin-left:3px;background-color :darkorange!important" class="badge rounded-pill bg-warning " title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></span>';
 			//attention = '<button  class="btn btn-warning btn-sm" type="button" disabled style="margin-left:3px;"  title="έγγραφη αντίρρηση"><i class="fas fa-exclamation-circle"></i></button>';
 		}
-
 		temp1[0] = filenameBtn;
 		temp1[1] = result[key].comment??"---"+"/"+result[key].date;
 		temp1[2] = result[key].fullName;
@@ -395,12 +408,12 @@ export function fillTableToBeSigned(result){
 			recordStatus = "Ακριβές Αντίγραφο";
 		}
 		temp1[3] =  recordStatus;
-
 		let signModalBtn = "";
 		let historyBtn = "";
 		let rejectBtn = "";
 		let returnBtn = "";
 		let reuploadFile = "";
+		console.log(1);
 		if (result[key].currentDep == department){  // το τρέχον τμήμα του εγγράφου είναι ίδιο με το τμήμα του χρήστη
 			if (result[key].isExactCopy){
 				signModalBtn = '<button id="showSignModalBtn'+result[key]['aa']+'" type="button" class="isButton active"  data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+"<i class='fa fa-tag' aria-hidden='true' data-toggle='tooltip' title='Ψηφιακή Υπογραφή και Αυτόματη Προώθηση'><span style='display:none;'>#sign#</span></i></button>";
@@ -439,6 +452,7 @@ export function fillTableToBeSigned(result){
 				}
 			}
 		}	
+
 		historyBtn = '<button id="showHistoryModal'+result[key]['aa']+'" class="isButton small primary" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-inbox" data-toggle="tooltip" title="Προβολή Ιστορικού"></i></button>';
 		rejectBtn = '<button id="showRejectModal'+result[key]['aa']+'"  class="isButton small dismiss" data-isExactCopy="'+result[key].isExactCopy+'" data-whatever="'+result[key].aa+'">'+'<i class="fas fa-ban" data-toggle="tooltip" title="Οριστική Απόρριψη"></i>'+"</button>";
 		temp1[4] = 	'<div class="recordButtons">'+reuploadFile+signModalBtn+returnBtn+historyBtn+rejectBtn+'</div>';
@@ -448,8 +462,6 @@ export function fillTableToBeSigned(result){
 		c3.innerHTML = temp1[2];
 		c4.innerHTML = temp1[3];
 		c5.innerHTML = temp1[4];
-
-		
 
 		if(document.querySelector("#showSignModalBtn"+result[key]['aa'])){
 			document.querySelector("#showSignModalBtn"+result[key]['aa']).addEventListener("click", (event) => {
@@ -469,7 +481,6 @@ export function fillTableToBeSigned(result){
 				const recordAA = event.currentTarget.getAttribute('data-whatever');
 				const isExactCopy = event.currentTarget.getAttribute('data-isExactCopy');
 				document.querySelector("#signModal").dataset.isexactcopy = isExactCopy;
-				
 				if (+isExactCopy){
 					document.querySelector("#signDialogTitle").innerText ="Υπογραφή Ακριβούς Αντιγράφου";
 					document.querySelector("#attentionTextDiv").style.display = "none";
@@ -518,7 +529,6 @@ export function fillTableToBeSigned(result){
 				document.querySelector("#signModal").showModal();
 			})
 		}
-
 		if(document.querySelector("#showRejectModal"+result[key]['aa'])){
 			document.querySelector("#showRejectModal"+result[key]['aa']).addEventListener("click", (event) => {
 				document.querySelector("#rejectModal .topActionButtons").innerHTML = `<button id="rejectButton" type="button" class="btn btn-danger" disabled>Απόρριψη</button>`;
@@ -536,7 +546,6 @@ export function fillTableToBeSigned(result){
 				document.querySelector("#rejectModal").showModal();
 			})
 		}
-
 
 		if(document.querySelector("#showReturnModal"+result[key]['aa'])){
 			document.querySelector("#showReturnModal"+result[key]['aa']).addEventListener("click", (event) => {
@@ -563,18 +572,18 @@ export function fillTableToBeSigned(result){
 				document.querySelector("#historyModal").showModal();
 			})
 		}
-
-		document.querySelector("#btn_"+result[key]['aa']).addEventListener("click",()=>viewFile(result[key]['filename'],result[key].date));
+		document.querySelector(`#primary_file_${relevantDocsArray[primaryFileIndex]['aa']}`).addEventListener("click",()=>viewFile(relevantDocsArray[primaryFileIndex]['fileName'],result[key].date));
 		// result[key].preview_file_last  Τελευταίο αρχείο που υπάρχει στον πίνακα για αυτό το αα
-		document.querySelector("#btn_"+result[key]['aa']+"_position").addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['preview_file_last']+"&insertDate="+result[key].date+"&id="+result[key].aa+"#zoom=page-fit"));
-
+		document.querySelector(`#btn_${relevantDocsArray[primaryFileIndex]['aa']}_position`).addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['preview_file_last']+"&insertDate="+result[key].date+"&id="+result[key].aa+"#zoom=page-fit"));
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
-				document.querySelector("#rel_btn_"+result[key]['aa']+"_"+l).addEventListener("click",()=>viewFile(relevantDocsArray[l],result[key].date));
+				if (l == primaryFileIndex) continue;
+				document.querySelector(`#relevant_doc_${relevantDocsArray[l]['aa']}`).addEventListener("click",()=>viewFile(relevantDocsArray[l],result[key].date));
 			}
 		}
 	}
-
+	
+	console.log(3.6);
 	[...document.querySelectorAll(".uploadBtns")].forEach( btn => {
 		btn.addEventListener("click",(event) =>{
 			document.querySelector("#uploadModal").showModal();
@@ -586,6 +595,7 @@ export function fillTableToBeSigned(result){
 	document.querySelector("#closeRejectModalBtn").addEventListener("click", () => {document.querySelector("#rejectModal").close();});
 	document.querySelector("#closeReturnModalBtn").addEventListener("click", () => {document.querySelector("#returnModal").close();});
 	document.querySelector("#closeHistoryModalBtn").addEventListener("click", () => {document.querySelector("#historyModal").close();});
+	console.log(4);
 	createSearch();
 }
 
@@ -695,14 +705,14 @@ async function moveSignedToProtocol(filename, folder="",relevantDocs, protocolNo
 	}
 }
 
-export async function viewFile(filename, folder=""){
+export async function viewFile(filename, uuid){
 	if(filename === ""){
 		alert("Δεν έχει οριστεί όνομα αρχείου");
 		return;
 	}
 	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename), folder});
 
-	const res = await runFetch("/api/viewFile.php", "GET", urlpar, FetchResponseType.blob);
+	const res = await runFetch(`/api/signatures/files/${uuid}`, "GET", urlpar, FetchResponseType.blob);
 	if (!res.success){
 		alert(res.msg);
 	}
