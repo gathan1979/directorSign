@@ -572,13 +572,13 @@ export function fillTableToBeSigned(result){
 				document.querySelector("#historyModal").showModal();
 			})
 		}
-		document.querySelector(`#primary_file_${relevantDocsArray[primaryFileIndex]['aa']}`).addEventListener("click",()=>viewFile(relevantDocsArray[primaryFileIndex]['fileName'],result[key].date));
+		document.querySelector(`#primary_file_${relevantDocsArray[primaryFileIndex]['aa']}`).addEventListener("click",()=>viewFile(relevantDocsArray[primaryFileIndex]['fileName'], relevantDocsArray[primaryFileIndex]['aa']));
 		// result[key].preview_file_last  Τελευταίο αρχείο που υπάρχει στον πίνακα για αυτό το αα
 		document.querySelector(`#btn_${relevantDocsArray[primaryFileIndex]['aa']}_position`).addEventListener("click",()=> window.open("pdfjs-3.4.120-dist/web/viewer.html?file="+result[key]['preview_file_last']+"&insertDate="+result[key].date+"&id="+result[key].aa+"#zoom=page-fit"));
 		if (!(relevantDocsArray.length === 1 && relevantDocsArray[0]==="")) {
 			for (let l=0;l<relevantDocsArray.length;l++){
 				if (l == primaryFileIndex) continue;
-				document.querySelector(`#relevant_doc_${relevantDocsArray[l]['aa']}`).addEventListener("click",()=>viewFile(relevantDocsArray[l],result[key].date));
+				document.querySelector(`#relevant_doc_${relevantDocsArray[l]['aa']}`).addEventListener("click",()=>viewFile(relevantDocsArray[l]['fileName'], relevantDocsArray[l],result[key].aa));
 			}
 		}
 	}
@@ -710,7 +710,7 @@ export async function viewFile(filename, uuid){
 		alert("Δεν έχει οριστεί όνομα αρχείου");
 		return;
 	}
-	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename), folder});
+	const urlpar = new URLSearchParams({filename : encodeURIComponent(filename)});
 
 	const res = await runFetch(`/api/signatures/files/${uuid}`, "GET", urlpar, FetchResponseType.blob);
 	if (!res.success){
@@ -722,14 +722,13 @@ export async function viewFile(filename, uuid){
 			const parts = dispHeader.split(';');
 			filename = parts[1].split('=')[1];
 			filename = filename.replaceAll('"',"");
-		}
-		else{
-			filename = "tempfile.tmp";
+			filename= decodeURI(filename);
 		}
 		const fileExtension = filename.split('.').pop();
 		const blob = res.result;
 		const href = URL.createObjectURL(blob);
 		const inBrowser = ['pdf','PDF','html','htm','jpg','png'];
+		console.log(href);
 
 		if (inBrowser.includes(fileExtension)){
 			if (document.querySelector("#fileOpenDialog")){
@@ -757,7 +756,7 @@ export async function viewFile(filename, uuid){
 }
 
 function openFromDialog(href,filename){
-	const pdfWin = window.open(href);
+	const pdfWin = window.open(href, "_blank");
 	//pdfWin.document.title = decodeURI(filename);
 	setTimeout(()=>{pdfWin.document.title = decodeURI(filename)},1000);
 	closeFromDialog();
